@@ -1,0 +1,72 @@
+#toolbar {
+  background-color: lightgray;
+  overflow: hidden;
+}
+.toolbar-row {
+  display: inline-block;
+  position: relative;
+  padding-top: 10px;
+  margin-top: 10px;
+  border: solid black 1px;
+}
+.toolbar-row:before {
+  content: attr(data-name);
+  position: absolute;
+  top: -10px;
+  left: 2px;
+  background-color: lightgray;
+}
+
+#holder {
+  /*background-color: red;*/
+  position: relative;
+  display: contents;
+}
+
+.center {
+  /*background-color: blue;*/
+  display: inline-block;
+  white-space: nowrap;
+  position: absolute;  
+  left: 50%;  
+  transform: translate(-50%, -50%);
+  top: 50%;  
+}
+
+.page {
+  background-color: white;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
+  width: 400px;
+  height: 600px;
+  box-shadow: 0 0 4px;
+  position: relative;
+  display: inline-block;
+  margin: 5px;
+  overflow: hidden;
+}
+
+.text {
+  position: absolute;
+  /*background-color: green;*/
+  margin: 0;
+  /*user-select: none;*/
+  transition: background-color 1s;
+}
+.text:focus,
+.text:hover {
+  background-color: lightgray;
+}
+
+#toolBox {
+  position: absolute;
+  transform: translateY(-100%);
+  visibility: hidden;
+  /*background-color: red;*/
+}
+
+#moveBtn {
+  transform: translateX(-100%);
+}
