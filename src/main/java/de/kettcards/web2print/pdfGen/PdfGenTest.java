@@ -8,6 +8,8 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PdfGenTest {
 
@@ -15,7 +17,7 @@ public class PdfGenTest {
 
         PDDocument doc = new PDDocument();
         PDRectangle pdr1 = new PDRectangle(mm2pt(400.0f), mm2pt(300.0f));
-        PDPage page1 = new PDPage(pdr1); //erstellt eine Seite die 400mm x 300mm gross ist
+        PDPage page1 = new PDPage(pdr1);
         doc.addPage(page1);
         System.out.println(pdr1.getWidth() + ";" + pdr1.getHeight());
 
@@ -24,6 +26,11 @@ public class PdfGenTest {
         doc.addPage(page2);
         System.out.println(pdr2.getWidth() + ";" + pdr2.getHeight());
 
+        HashMap<FontStyle,String> textStyle = new HashMap<>();
+        textStyle.put(FontStyle.BOLD,"This");
+        textStyle.put(FontStyle.ITALIC,"is");
+        textStyle.put(FontStyle.UNDERLINE,"a");
+        textStyle.put(FontStyle.NONE,"test");
 
         try (PDPageContentStream contentStream = new PDPageContentStream(doc, page1)) {
             /*
@@ -40,15 +47,16 @@ public class PdfGenTest {
              */
             contentStream.beginText();
             contentStream.setFont(PDType1Font.HELVETICA, 14);
-            contentStream.setLeading(2f);
-            contentStream.newLineAtOffset(20,30);
-            for(int i = 0 ; i < 100; i+=20){
-                contentStream.newLineAtOffset(0, i);
-                //contentStream.newLine();
-
-                contentStream.showText(String.format("Diese Seite ist %f mm x %f mm groß.", pt2mm(pdr1.getWidth()), pt2mm(pdr1.getHeight())));
-            }
-            contentStream.newLineAtOffset(0, 55);
+            contentStream.setLeading(mm2pt(10.0f));
+            contentStream.newLineAtOffset(300,300);
+            contentStream.showText("1. This is a text at x:300 and y:300");
+            contentStream.newLine();
+            contentStream.showText("2. This is a text at newLine");
+            //contentStream.newLineAtOffset(20,250);
+            contentStream.newLineAtOffset(200, 200);
+            contentStream.showText("3. This is a text at x:200 and y:200");
+            contentStream.newLine();
+            contentStream.showText("4. This is a text at newLine");
             contentStream.endText();
 
         } catch (IOException ex) {
@@ -57,8 +65,22 @@ public class PdfGenTest {
 
         try(PDPageContentStream content = new PDPageContentStream(doc, page2)){
             content.beginText();
-            content.setFont(PDType1Font.TIMES_ROMAN, 12);
+            String output = "";
+            for(Map.Entry<FontStyle,String> entry : textStyle.entrySet()){
+                switch(entry.getKey()){
+                    case BOLD:
 
+                        break;
+                    case ITALIC:
+                        break;
+                    case UNDERLINE:
+                        break;
+                    case NONE:
+                        break;
+                    default:
+                        break;
+                }
+            }
             content.endText();
         }catch (IOException ex) {
             ex.printStackTrace();
