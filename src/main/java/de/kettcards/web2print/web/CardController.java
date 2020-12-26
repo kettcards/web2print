@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("api")
+@RequestMapping("${web2print.link.api-path}")
 public class CardController {
 
     @Autowired
@@ -28,7 +28,7 @@ public class CardController {
             page = 0;
         if (size == null)
             size = 25;
-        if (page < 0 || size < 1)
+        if (page < 0 || size < 1 || size > configuration.getPage().getMaxPageSize())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
         return cardRepository.findAllProjectedBy(PageRequest.of(page, size), CardOverview.class);

@@ -19,6 +19,8 @@ public class Web2PrintApplicationConfiguration {
     @Data
     public static class Link {
 
+        private String apiPath;
+
         private String thumbnailUrl;
 
     }
