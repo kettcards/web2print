@@ -16,6 +16,17 @@ configurations {
 
 repositories {
 	mavenCentral()
+	maven {
+		url "https://formbar.raillab.de/gitlab/api/v4/groups/" + System.getenv("CI_PROJECT_ID") + "/-/packages/maven"
+		name "GitLab"
+		credentials(HttpHeaderCredentials) {
+			name = 'Job-Token'
+			value = System.getenv("CI_JOB_TOKEN")
+		}
+		authentication {
+			header(HttpHeaderAuthentication)
+		}
+	}
 }
 
 dependencies {
