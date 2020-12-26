@@ -2,11 +2,32 @@ package de.kettcards.web2print.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.context.annotation.Configuration;
 
 @Data
+@Configuration
 @ConfigurationProperties(prefix = "web2print", ignoreUnknownFields = false)
 public class Web2PrintApplicationConfiguration {
 
-    private Integer maxCardsForPage = 20;
+    @NestedConfigurationProperty
+    private Link link;
+
+    @NestedConfigurationProperty
+    private Page page;
+
+    @Data
+    public static class Link {
+
+        private String thumbnailUrl;
+
+    }
+
+    @Data
+    public static class Page {
+
+        private Integer maxPageSize, defaultPageSize;
+
+    }
 
 }
