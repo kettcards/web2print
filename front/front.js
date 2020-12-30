@@ -25,17 +25,54 @@ function pageScale(container, pageWidth, pageHeight){
   return [shownwidth, shownheight];
 }
 
-const outerHolder = holder.parent();
-for(var p of pages){
-  let scale = pageScale(outerHolder, p.w, p.h);
+const bgStrechObjs = {
+  STRETCH: {
+    'background-size': 'cover',   
+    'background-repeat': 'no-repeat ',
+    'background-position': 'center center',
+  },
+  //todo: add more tiling modes, osuld work just fine - the fallback is just no special background styling, page dimensions are still correct
+};
+
+const loadPage = function(page){
+  let scale = pageScale(holder.parent(), page.aspectRatio.width, page.aspectRatio.height);
   const newPage = $('<div class="page"></div>');
-  newPage.css({
+  newPage.css(Object.assign({
     width: scale[0],
     height: scale[1],
-    'background-image': 'url(\'../motives/'+p.i+'\')',
-  });
+    //nomerge: straigt up wrong, for testing purposes this slices the ending and ads a 'png'
+    'background-image': 'url("/bg/'+page.material.textureSlug.slice(0, -3)+'png'+'")',
+  }, bgStrechObjs[page.material.tiling]));
   holder.append(newPage);
-}
+};
+
+const Parameters = (function(){
+  let ret = {}, url = window.location.search;
+  if(url){
+    let split = url.substr(1).split('&'), subSplit;
+    for(let s of split){
+      subSplit = s.split('=');
+      ret[subSplit[0]] = subSplit[1] || 'no_value';
+    }
+  }
+  return ret;
+})();
+
+//nomerge: move this to its own file that gets generated
+const apiBase = 'https://bppraktikum.tk/web2print/api/'; 
+$.get(apiBase+'card/'+Parameters.card)
+ .then(function(data) {
+   return new Promise(function(resolve, reject){
+     if(data) resolve(data);
+     else     reject(Parameters.card);
+   })
+ })
+ .then(loadPage, function(id){ 
+   alert(id ? 'Die Karte "'+id+'" konnte nicht gefunden werden!'
+            : 'Es wurde keine Karte gefunden!');
+   location.href = '/tileview/tileview.html'; 
+ })
+ .catch(console.error);
 
 const Spawner = {
   TEXT: function(p){
