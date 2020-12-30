@@ -43,10 +43,12 @@ dependencies {
 
 	runtimeOnly group: 'org.webjars.bower', name: 'jquery', version: '3.5.1'
 
-	// https://mvnrepository.com/artifact/org.apache.pdfbox/pdfbox
-	compile group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.22'
-	// https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-csv
-	compile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-csv', version: '2.11.3'
+	implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.22'
+
+	implementation group: 'org.apache.poi', name: 'poi', version: '4.1.2'
+	implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
+
+	implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-csv', version: '2.11.3'
 
 }
 
