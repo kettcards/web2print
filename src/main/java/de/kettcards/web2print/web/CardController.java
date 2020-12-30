@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("${web2print.link.api-path}")
+@RequestMapping("${web2print.links.api-path}")
 public class CardController {
 
     @Autowired

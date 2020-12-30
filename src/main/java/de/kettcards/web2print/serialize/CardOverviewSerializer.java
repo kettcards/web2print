@@ -22,7 +22,7 @@ public class CardOverviewSerializer extends JsonSerializer<CardOverview> {
 
         gen.writeStringField("name", value.getName());
         gen.writeStringField("orderId", value.getOrderId());
-        gen.writeStringField("thumbnail", configuration.getLink().getThumbnailUrl().concat(value.getThumbSlug()));
+        gen.writeStringField("thumbnail", configuration.getLinks().getThumbnailUrl().concat(value.getThumbSlug()));
 
         gen.writeEndObject();
     }
