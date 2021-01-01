@@ -31,7 +31,7 @@ const bgStrechObjs = {
     'background-repeat': 'no-repeat ',
     'background-position': 'center center',
   },
-  //todo: add more tiling modes, osuld work just fine - the fallback is just no special background styling, page dimensions are still correct
+  //todo: add more tiling modes, should work just fine - the fallback is just no special background styling, page dimensions are still correct
 };
 
 const loadPage = function(page){
@@ -40,8 +40,7 @@ const loadPage = function(page){
   newPage.css(Object.assign({
     width: scale[0],
     height: scale[1],
-    //nomerge: straigt up wrong, for testing purposes this slices the ending and ads a 'png'
-    'background-image': 'url("/bg/'+page.material.textureSlug.slice(0, -3)+'png'+'")',
+    'background-image': 'url("'+web2print.links.materialUrl+page.material.textureSlug+'")',
   }, bgStrechObjs[page.material.tiling]));
   holder.append(newPage);
 };
@@ -58,9 +57,7 @@ const Parameters = (function(){
   return ret;
 })();
 
-//nomerge: move this to its own file that gets generated
-const apiBase = 'https://bppraktikum.tk/web2print/api/'; 
-$.get(apiBase+'card/'+Parameters.card)
+$.get(web2print.links.apiUrl+'card/'+Parameters.card)
  .then(function(data) {
    return new Promise(function(resolve, reject){
      if(data) resolve(data);
