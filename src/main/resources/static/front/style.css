@@ -50,9 +50,6 @@ body {
 
 .page {
   background-color: white;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center center;
   width: 400px;
   height: 600px;
   box-shadow: 0 0 4px;
