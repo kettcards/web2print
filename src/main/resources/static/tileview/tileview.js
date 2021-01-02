@@ -1,18 +1,17 @@
 const $container = $('div.container');
 
-function setCards(cards, cardId) {
+function setCards(cards) {
   $container.empty();
   for (let card of cards) {
-    console.log(card);
     let name = document.createElement('span');
     name.className = 'caption';
     name.textContent = card.name;
 
     let image = document.createElement('img');
-    image.src = card.thumbnail;
+    image.src = web2print.links.thumbnailUrl + card.thumbSlug;
 
     let item = document.createElement('a');
-    item.href = web2print.links.basePath+'editor/editor.html?card='+cardId;
+    item.href = web2print.links.basePath+'front/front.html?card='+card.orderId;
     item.className = 'item';
 
     item.append(image);
@@ -25,7 +24,6 @@ function setCards(cards, cardId) {
 //TODO add page support
 window.addEventListener('load', function () {
   $.get(web2print.links.apiUrl+"cards").then(function (response) {
-    console.log(response.page);
-    setCards(response.content, card.orderId);
+    setCards(response.content);
   });
 });

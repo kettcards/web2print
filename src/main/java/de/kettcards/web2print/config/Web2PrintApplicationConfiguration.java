@@ -31,7 +31,7 @@ public class Web2PrintApplicationConfiguration {
         private String apiPath;
 
         @JsonView(Include.Public.class)
-        private String materialPath;
+        private String materialUrl;
 
         @JsonView(Include.Public.class)
         private String thumbnailUrl;

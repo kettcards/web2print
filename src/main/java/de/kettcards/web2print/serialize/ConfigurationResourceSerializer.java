@@ -19,9 +19,9 @@ public class ConfigurationResourceSerializer extends JsonSerializer<Web2PrintApp
         gen.writeFieldName("links");
         gen.writeStartObject();
         gen.writeStringField("basePath", links.getBasePath());
-        gen.writeStringField("apiPath", links.getBasePath() + links.getApiPath());
+        gen.writeStringField("apiUrl", links.getBasePath() + links.getApiPath());
 
-        gen.writeStringField("matPath", links.getThumbnailUrl());
+        gen.writeStringField("materialUrl", links.getMaterialUrl());
         gen.writeStringField("thumbnailUrl", links.getThumbnailUrl());
         gen.writeEndObject();
 
