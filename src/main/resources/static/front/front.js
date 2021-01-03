@@ -34,6 +34,7 @@ const bgStrechObjs = {
   //todo: add more tiling modes, should work just fine - the fallback is just no special background styling, page dimensions are still correct
 };
 
+let $pages;
 const loadPage = function(page){
   let scale = pageScale(holder.parent(), page.aspectRatio.width, page.aspectRatio.height);
   const newPage = $('<div class="page"></div>');
@@ -43,6 +44,19 @@ const loadPage = function(page){
     'background-image': 'url("'+web2print.links.materialUrl+page.material.textureSlug+'")',
   }, bgStrechObjs[page.material.tiling]));
   holder.append(newPage);
+  //spawning
+  newPage.click(function(e){
+    if(state.isEditing){
+      return;
+    }
+    if(!state.addOnClick)
+      return;
+    const el = state.addOnClick({left: e.originalEvent.offsetX, top: e.originalEvent.offsetY});
+    $(e.originalEvent.originalTarget || e.originalEvent.srcElement).append(el);
+    state.addOnClick = undefined;
+  });
+
+  $pages = newPage;
 };
 
 const Parameters = (function(){
@@ -61,15 +75,52 @@ $.get(web2print.links.apiUrl+'card/'+Parameters.card)
  .then(function(data) {
    return new Promise(function(resolve, reject){
      if(data) resolve(data);
-     else     reject(Parameters.card);
+     else     reject();
    })
  })
- .then(loadPage, function(id){ 
-   alert(id ? 'Die Karte "'+id+'" konnte nicht gefunden werden!'
-            : 'Es wurde keine Karte gefunden!');
-   location.href = '/tileview/tileview.html'; 
- })
- .catch(console.error);
+ .then(loadPage)
+ .catch(function(){
+   if(Parameters.debug) {
+     loadPage({
+       "orderId" : "grsubi071schwarz",
+       "thumbSlug" : "grsubi071schwarz.jpg",
+       "name" : "Test Grusskarte",
+       "aspectRatio" : {
+         "width" : 210,
+         "height" : 297,
+         "name" : "A4"
+       },
+       "material" : {
+         "name" : "Grau",
+         "textureSlug" : "grau.jpg",
+         "tiling" : "STRETCH"
+       },
+       "folds" : [ {
+         "cardId" : 1,
+         "x1" : 0,
+         "y1" : 0,
+         "x2" : 0,
+         "y2" : 0,
+         "angle" : 0
+       } ],
+       "geometry" : [ {
+         "cut" : 3,
+         "name" : "NonExistenCut",
+         "geometry" : "Imagine you have some nice shape data",
+         "side" : "FRONT"
+       } ],
+       "motive" : [ {
+         "textureSlug" : "grsubi071schwarz.jpg",
+         "side" : "FRONT"
+       } ]
+     });
+     return;
+   }
+   alert(Parameters.card
+    ? 'Die Karte "'+Parameters.card+'" konnte nicht gefunden werden!'
+    : 'Es wurde keine Karte gefunden!');
+   location.href = web2print.links.basePath+'tileview/tileview.html';
+ });
 
 const Spawner = {
   TEXT: function(p){
@@ -180,7 +231,7 @@ $(".fontTypeButton").click(function(){
     }
 
     node = nodes[nodes.length - 1];
-    txt = node.textContent;
+    let txt = node.textContent;
     if(!hasFormat(node)){
       if(range.endOffset < txt.length - 1){
         node.parentElement.insertBefore(wrap(txt.substr(0, range.endOffset)), node);
@@ -200,7 +251,7 @@ $('#moveBtn').mousedown(function(){
   state.isEditing = false;
 });
 
-$('body').mousemove(function(e){
+let $body = $('body').mousemove(function(e){
   if(!state.dragging)
     return;
   state.dx += e.originalEvent.movementX;
@@ -224,14 +275,91 @@ $('body').mousemove(function(e){
     toolBox.css('visibility', 'hidden');
 });
 
-//spawning
-$('.page').click(function(e){
-  if(state.isEditing){
-    return;
+const MMPerPx = (function(){
+  const $resTester = $('<div style="height:100mm;width:100mm;display:none;"></div>')
+  $body.append($resTester);
+  return { x: 100/$resTester.width(), y: 100/$resTester.height() };
+})();
+
+// (lucas 03.01.20) mbe generate this form the api
+const FontAttributeMap = {
+  'b': 0b001,
+  'i': 0b010,
+  'u': 0b100,
+};
+
+//serialize data
+$('#submitBtn').click(function(){
+  let data = {
+    v: '0.1',
+    card: Parameters.card,
+    texts: []
+  };
+
+  let $children = $pages.children();
+  for(let i = 0; i < $children.length; i++) {
+    let $el = $children.eq(i);
+    let offs = $el.position();
+    let bounds = {
+      x: offs.left * MMPerPx.x,
+      y: (offs.top + $el.height()) * MMPerPx.y,
+      w: $el.width() * MMPerPx.x,
+      h: $el.height() * MMPerPx.y
+    };
+    switch($el[0].nodeName){
+      case 'SPAN': {
+        let align = $el.css('text-align');
+        switch (align) {
+          case 'justify': align = 'j'; break;
+          case 'right':   align = 'r'; break;
+          case 'center':  align = 'c'; break;
+          default:        align = 'l';
+        }
+        let box = Object.assign({
+          a: align,
+          r: []
+        }, bounds);
+        let $innerChildren = $el.contents();
+        for (let j = 0; j < $innerChildren.length; j++) {
+          let $iel = $innerChildren.eq(j);
+          switch ($iel[0].nodeName) {
+            case '#text': {
+              box.r.push({
+                f: $el.css('font-family'),
+                s: $el.css('font-size'),
+                a: 0,
+                t: $iel.text()
+              });
+            } break;
+            case 'SPAN': {
+              let attributes = 0;
+              for(const [k, v] of Object.entries(FontAttributeMap))
+                if ($iel.hasClass(k))
+                  attributes |= v;
+              box.r.push({
+                f: $iel.css('font-family'),
+                s: $iel.css('font-size'),
+                a: attributes,
+                t: $iel.text()
+              });
+            } break;
+            case 'BR':
+              box.r.push('br');
+            break;
+            default: console.warn('cannot serialize element', $iel[0]);
+          }
+        }
+        data.texts.push(box);
+      } break;
+      /* (lucas 02.01.20) deferred todo: add handling for images here
+      case 'IMG':{
+
+      } break;
+      */
+      default: console.warn('cannot serialize element', $el[0]);
+    }
   }
-  if(!state.addOnClick)
-    return;
-  const el = state.addOnClick({left: e.originalEvent.offsetX, top: e.originalEvent.offsetY});  
-  $(e.originalEvent.originalTarget || e.originalEvent.srcElement).append(el);
-  state.addOnClick = undefined;
+
+  console.log(data);
+  //send data
 });

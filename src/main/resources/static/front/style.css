@@ -9,10 +9,34 @@ body {
   padding: 8px;
 }
 
+#horizontal-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
 #editor-container {
   height: 100%;
   display: flex;
-  flex-direction: column;  
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+#right-container {
+  width: 20%;
+  max-width: 300px;
+  background-color: gray;
+  position: relative;
+}
+
+#submitBtn {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  max-width: 67%;
+  height: 75px;
 }
 
 #toolbar {
