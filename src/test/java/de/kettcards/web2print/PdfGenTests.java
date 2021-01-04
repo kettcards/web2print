@@ -50,6 +50,10 @@ class PdfGenTests {
     var font = new PDFGenerator.Font(PDType1Font.HELVETICA, PDType1Font.HELVETICA_BOLD, PDType1Font.HELVETICA_OBLIQUE, PDType1Font.HELVETICA_BOLD_OBLIQUE);
     return new PDFGenerator.TextRun(font, 12, attributes, text);
   }
+  static PDFGenerator.TextRun makeCustomTextRun(File[] fonts, EnumSet<FontStyle> attributes, String text){
+    var font = new PDFGenerator.CustomFont(fonts[0],fonts[1],fonts[2],fonts[3]);
+    return new PDFGenerator.CustomTextRun(font,12, attributes,text);
+  }
 
 
   @Test
@@ -83,6 +87,12 @@ class PdfGenTests {
     box.getTextRuns().add(PDFGenerator.lineBreak);
 
     box.getTextRuns().add(makeDefaultTextRun(EnumSet.of(FontStyle.BOLD, FontStyle.ITALIC, FontStyle.UNDERLINE), "BOLD_ITALIC_UNDERLINE"));
+
+    File[] customFont = {new File("src/test/java/de/kettcards/web2print/customFontTest/HanaleiFill-Regular.ttf"),new File("src/test/java/de/kettcards/web2print/customFontTest/HanaleiFill-Regular.ttf"),new File("src/test/java/de/kettcards/web2print/customFontTest/HanaleiFill-Regular.ttf"),new File("src/test/java/de/kettcards/web2print/customFontTest/HanaleiFill-Regular.ttf")};
+    for(var attribute : FontStyle.values()){
+      box.getTextRuns().add(makeCustomTextRun(customFont,EnumSet.of(attribute), attribute.toString()));
+      box.getTextRuns().add(makeDefaultTextRun(" "));
+    }
 
     data.getTextBoxes().add(box);
 

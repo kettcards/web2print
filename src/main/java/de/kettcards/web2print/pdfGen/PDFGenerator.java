@@ -62,10 +62,10 @@ public class PDFGenerator {
     }
     @Value
     public static class TextRun implements ITextRun {
-        private final Font font;
-        private final float fontSize;
-        private final EnumSet<FontStyle> attributes;
-        private final String text;
+        protected Font font;
+        protected float fontSize;
+        protected EnumSet<FontStyle> attributes;
+        protected String text;
 
         public TextRun(Font font, float fontSize, EnumSet<FontStyle> attributes, String text) {
             this.font = font;
@@ -82,6 +82,22 @@ public class PDFGenerator {
 
         }
     }
+
+    public static class CustomTextRun extends TextRun{
+        private CustomFont customFont;
+
+        public CustomTextRun(CustomFont customFont, float fontSize, EnumSet<FontStyle> attributes, String text) {
+            super(null, fontSize, attributes, text);
+            this.customFont = customFont;
+        }
+
+        public void applyTo(PDPageContentStream content, PDDocument doc) throws IOException{
+            content.setFont(PDType0Font.load(doc, customFont.Resolve(getAttributes())), getFontSize());
+            content.setLeading(getFontSize());
+            content.showText(getText());
+        }
+    }
+
     @Value
     public static class Font {
         private final PDFont _default;
@@ -112,27 +128,31 @@ public class PDFGenerator {
     }
 
     @Value
-    public static class customFont {
-        private PDFont custom;
-        private PDFont custom_bold;
-        private PDFont custom_italic;
-        private PDFont custom_bold_Italic;
+    public static class CustomFont {
+        private File custom;
+        private File custom_bold;
+        private File custom_bold_italic;
+        private File custom_italic;
 
-        public customFont(File custom, File bold, File italic, File bold_italic){
 
+        public CustomFont(File custom, File custom_bold, File custom_italic, File custom_bold_italic){
+            this.custom = custom;
+            this.custom_bold = custom_bold;
+            this.custom_italic = custom_italic;
+            this.custom_bold_italic = custom_bold_italic;
         }
 
-        public PDFont Resolve(EnumSet<FontStyle> style) {
+        public File Resolve(EnumSet<FontStyle> style) throws IOException {
             if(style.contains(FontStyle.BOLD)){
                 if(style.contains(FontStyle.ITALIC)){
-                    return custom_bold_Italic;
+                    return custom_bold_italic;
                 } else {
                     return custom_bold;
                 }
             } else if(style.contains(FontStyle.ITALIC)) {
                 return custom_italic;
             } else {
-                return custom;
+                return custom_italic;
             }
         }
     }
@@ -143,10 +163,8 @@ public class PDFGenerator {
         void applyTo(PDPageContentStream content) throws IOException;
     }
 
-    private static PDDocument doc = null;
-
     public static PDDocument Generate(CardData data) throws IOException {
-        doc = new PDDocument();
+        PDDocument doc = new PDDocument();
 
         var page = new PDPage(data.getPageBounds());
         doc.addPage(page);
