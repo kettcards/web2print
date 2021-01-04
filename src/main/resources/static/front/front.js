@@ -25,7 +25,7 @@ function pageScale(container, pageWidth, pageHeight){
   return [shownwidth, shownheight];
 }
 
-const bgStrechObjs = {
+const bgStretchObjs = {
   STRETCH: {
     'background-size': 'cover',   
     'background-repeat': 'no-repeat ',
@@ -42,7 +42,7 @@ const loadPage = function(page){
     width: scale[0],
     height: scale[1],
     'background-image': 'url("'+web2print.links.materialUrl+page.material.textureSlug+'")',
-  }, bgStrechObjs[page.material.tiling]));
+  }, bgStretchObjs[page.material.tiling]));
   holder.append(newPage);
   //spawning
   newPage.click(function(e){
@@ -72,16 +72,9 @@ const Parameters = (function(){
 })();
 
 $.get(web2print.links.apiUrl+'card/'+Parameters.card)
- .then(function(data) {
-   return new Promise(function(resolve, reject){
-     if(data) resolve(data);
-     else     reject();
-   })
- })
- .then(loadPage)
- .catch(function(){
-   if(Parameters.debug) {
-     loadPage({
+ .catch(function(e) {
+   if(Parameters.debug) { //nomerge - debug
+     return {
        "orderId" : "grsubi071schwarz",
        "thumbSlug" : "grsubi071schwarz.jpg",
        "name" : "Test Grusskarte",
@@ -113,9 +106,18 @@ $.get(web2print.links.apiUrl+'card/'+Parameters.card)
          "textureSlug" : "grsubi071schwarz.jpg",
          "side" : "FRONT"
        } ]
-     });
-     return;
-   }
+     };
+   } else throw e;
+ })
+ .then(function(data) { //(lucas 04.01.20) mbe moce this 'check' into loadPage
+   return new Promise(function(resolve, reject){
+     if(data) resolve(data);
+     else     reject();
+   })
+ })
+ .then(loadPage)
+ .catch(function(){
+
    alert(Parameters.card
     ? 'Die Karte "'+Parameters.card+'" konnte nicht gefunden werden!'
     : 'Es wurde keine Karte gefunden!');
@@ -124,7 +126,7 @@ $.get(web2print.links.apiUrl+'card/'+Parameters.card)
 
 const Spawner = {
   TEXT: function(p){
-    return $('<span class="text" contenteditable>test</span>')
+    return $('<span class="text" contenteditable><span class="fontStyle">Ihr Text Hier!</span></span>')
       .mousedown(hElMDown)
       .click(hElClick)
       .css(p);
@@ -165,85 +167,80 @@ $(".alignmentBtn").click(function(){
 }).mouseup(function(e){  
   e.stopPropagation();
 });
-$(".fontTypeButton").click(function(){  
+$(".fontTypeButton").click(function(){
+  $(makeNodesFromSelection()).addClass($(this).val());
+}).mouseup(function(e){  
+  e.stopPropagation();
+});
+
+const makeNodesFromSelection = function() {
   let selection = document.getSelection();
   if(selection.isCollapsed || selection.rangeCount < 1)
     return;
-  
-  let range = selection.getRangeAt(0);  
-  let _itter = document.createNodeIterator(
+
+  let range = selection.getRangeAt(0);
+  let _iter = document.createNodeIterator(
     range.commonAncestorContainer, NodeFilter.SHOW_TEXT, {
-      acceptNode: function(n) { 
-        return (n.nodeName === 'BR') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT; 
+      acceptNode: function(n) {
+        return (n.nodeName === 'BR') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
       }
-    });
+    }
+  );
   let nodes = [];
-  while(_itter.nextNode()){
-    let ref = _itter.referenceNode;
+  // (lucas) iterate over all _text_ nodes in the selection and save their parents (spans)
+  while(_iter.nextNode()) {
+    let ref = _iter.referenceNode;
     if(nodes.length < 1 && ref !== range.startContainer)
-        continue;    
-    nodes.push(ref);
+      continue;
+    nodes.push(ref.parentNode);
     if(ref === range.endContainer)
       break;
   }
 
-  const tag = $(this).val();
-  const upper = tag.toUpperCase();
-  let make = function(){ return document.createElement(tag); };
-  let wrap = function(t){ let d=make();d.appendChild(document.createTextNode(t));return d; };
-  let hasFormat = function(n){
-    let current = n.parentNode;
-    while(current.nodeName !== 'DIV'){
-      if(current.nodeName === upper)
-        return true;
-        current = current.parentNode;
+  if(nodes.length === 1) {
+    const node = nodes[0];
+
+    const txt = node.textContent;
+    const parent = node.parentNode;
+    let slice = false;
+    if(range.startOffset !== 0) {
+      const w = node.cloneNode();
+      w.appendChild(document.createTextNode(txt.substr(0, range.startOffset)));
+      parent.insertBefore(w, node);
+      slice = true;
     }
-    return false;
-  };
-  if(nodes.length === 1){ /*start and end are in the same node*/
-    let node = nodes[0];
-    if(hasFormat(node))
-      return;
-    let txt = node.textContent;
-    
-    let first = txt.substr(0, range.startOffset);
-    node.parentNode.insertBefore(document.createTextNode(first), node);
-    let wrapped = wrap(txt.substr(range.startOffset, range.endOffset - range.startOffset));
-    node.parentNode.insertBefore(wrapped, node);
-    let end = txt.substr(range.endOffset);
-    node.replaceWith(end);
-  } else if (nodes.length > 1) { /*seperate start and end*/
-    let node = nodes[0];
-    if(!hasFormat(node)){
-      if(range.startOffset > 0){
-        let txt = node.textContent;
-        node.parentElement.insertBefore(wrap(txt.substr(range.startOffset)), node.nextSibling);
-        node.replaceWith(txt.substr(0, range.startOffset));
-      } else {
-        $(node).wrap(make());
-      }
+    if(range.endOffset !== txt.length) {
+      const w = node.cloneNode();
+      w.appendChild(document.createTextNode(txt.substr(range.endOffset)));
+      parent.insertBefore(w, node.nextSibling);
+      slice = true;
     }
 
-    if(nodes.length > 2){ /*additional nodes in the middle*/
-      for(let i = 1; i < nodes.length - 1; i++)
-        if(!hasFormat(nodes[i]))
-          $(nodes[i]).wrap(make());
+    if(slice) {
+      node.childNodes[0].replaceWith(txt.substr(range.startOffset, range.endOffset - range.startOffset));
     }
 
-    node = nodes[nodes.length - 1];
-    let txt = node.textContent;
-    if(!hasFormat(node)){
-      if(range.endOffset < txt.length - 1){
-        node.parentElement.insertBefore(wrap(txt.substr(0, range.endOffset)), node);
-        node.replaceWith(txt.substr(range.endOffset));
-      } else {
-        $(node).wrap(make());
-      }
+  } else if (nodes.length > 1) {
+    if(range.startOffset !== 0) {
+      const first = nodes[0];
+      const txt = first.textContent;
+      const c = first.cloneNode();
+      c.appendChild(document.createTextNode(txt.substr(0, range.startOffset)));
+      first.parentNode.insertBefore(c, first);
+      first.childNodes[0].replaceWith(txt.substr(range.startOffset));
+    }
+
+    const last = nodes[nodes.length - 1];
+    const txt = last.textContent;
+    if(range.endOffset !== txt.length) {
+      const c = last.cloneNode();
+      c.appendChild(document.createTextNode(txt.substr(range.endOffset)));
+      last.parentNode.insertBefore(c, last.nextSibling);
+      last.childNodes[0].replaceWith(txt.substr(0, range.endOffset));
     }
   }
-}).mouseup(function(e){  
-  e.stopPropagation();
-});
+  return nodes;
+};
 
 //dragging
 $('#moveBtn').mousedown(function(){
@@ -281,12 +278,7 @@ const MMPerPx = (function(){
   return { x: 100/$resTester.width(), y: 100/$resTester.height() };
 })();
 
-// (lucas 03.01.20) mbe generate this form the api
-const FontAttributeMap = {
-  'b': 0b001,
-  'i': 0b010,
-  'u': 0b100,
-};
+const FontAttributeMap = {};
 
 //serialize data
 $('#submitBtn').click(function(){
@@ -361,5 +353,80 @@ $('#submitBtn').click(function(){
   }
 
   console.log(data);
-  //send data
+  //(lucas) todo: send data
 });
+
+//font stuff
+const $fontSelect = $('#fontSelect').mouseup(function(e){e.stopPropagation();});
+
+$.get(web2print.links.apiUrl+'fonts')
+ .catch(function() { //nomerge - debug
+   if(Parameters.debug){
+     return ['no test font', 'test_font', 'test font 2'];
+   }
+   alert('[fatal] failed to obtain data form fonts api');
+ })
+ .then(function(data) {
+   let $options = new Array(data.length);
+   for(let i = 0; i < data.length; i++) {
+     const fName = data[i];
+     $options[i] = $('<option value="'+fName+'">'+fName+'</option>');
+   }
+   $fontSelect.append($options);
+   $fontSelect.change(applyFont)
+ }).catch(function(e) {
+  alert('[fatal] something went wrong loading fonts: '+JSON.stringify(e));
+ });
+
+const applyFont = function() {
+  const nodes = makeNodesFromSelection();
+  const fName = $fontSelect.val();
+  (!FontAttributeMap[fName] ? beginLoadFont(fName) : Promise.resolve())
+  .then(function() {
+    $(nodes).css('font-family', fName);
+  });
+};
+
+const beginLoadFont = function(name) {
+  return $.get(web2print.links.apiUrl+'font/'+name)
+    .catch(function(e){ //nomerge - debug
+      if(Parameters.debug && name === 'test_font') {
+        return {
+          name: 'test_font',
+          faces: [
+            { v: 0b000, fs: 'normal', fw: 400, s: 'OpenSans/OpenSans-Regular.ttf' },
+            { v: 0b001, fs: 'normal', fw: 'bold', s: 'OpenSans/OpenSans-Bold.ttf' },
+            { v: 0b010, fs: 'italic', fw: 400, s: 'OpenSans/OpenSans-Italic.ttf' },
+            { v: 0b011, fs: 'italic', fw: 'bold', s: 'OpenSans/OpenSans-BoldItalic.ttf' },
+          ]
+        }
+      } else throw e;
+    }).then(loadFont)
+    .catch(function(e) {
+      alert('[error] could not load font: '+JSON.stringify(e));
+    });
+};
+
+// (lucas 04.01.21) this might need to use another api, coverage is 93% but that has to mean nothing
+const loadFont = function(font) {
+  let attribs = {};
+  let promises = new Array(font.faces.length);
+  for(let i = 0; i < font.faces.length; i++) {
+    const face = font.faces[i];
+    promises[i] = new FontFace(font.name, 'url('+web2print.links.fontUrl+face.s+')', {
+      style: face.fs,
+      weight: face.fw
+    })
+    .load()
+    .then(function(f){ //(lucas) cant call .then(document.fonts.add) for some reason
+      document.fonts.add(f);
+      attribs[face.v] = face.n;
+    })
+    .catch(function(e) {
+      alert('[error] could not load font: '+JSON.stringify(e));
+    });
+  }
+  return Promise.allSettled(promises).then(function() {
+    FontAttributeMap[font.name] = attribs;
+  });
+};
