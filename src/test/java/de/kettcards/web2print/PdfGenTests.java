@@ -2,6 +2,9 @@ package de.kettcards.web2print;
 
 import de.kettcards.web2print.pdfGen.FontStyle;
 import de.kettcards.web2print.pdfGen.PDFGenerator;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -33,27 +36,30 @@ class PdfGenTests {
   }
 
   @Test
-  void US015_PageDims() throws IOException {
+  //US015 - "PDF Generator - Seitenformat"
+  void freePageDims() throws IOException {
     var data = new PDFGenerator.CardData(CURRENT_FORMAT_VERSION, 400, 300);
     var doc  = PDFGenerator.Generate(data);
     doc.save(GetOutputFile());
   }
 
-  static PDFGenerator.TextRun MakeDefaultTextRun(String text){
-    return MakeDefaultTextRun(EnumSet.of(FontStyle.NONE), text);
+  static PDFGenerator.TextRun makeDefaultTextRun(String text){
+    return makeDefaultTextRun(EnumSet.of(FontStyle.NONE), text);
   }
-  static PDFGenerator.TextRun MakeDefaultTextRun(EnumSet<FontStyle> attributes, String text){
+  static PDFGenerator.TextRun makeDefaultTextRun(EnumSet<FontStyle> attributes, String text){
     var font = new PDFGenerator.Font(PDType1Font.HELVETICA, PDType1Font.HELVETICA_BOLD, PDType1Font.HELVETICA_OBLIQUE, PDType1Font.HELVETICA_BOLD_OBLIQUE);
     return new PDFGenerator.TextRun(font, 12, attributes, text);
   }
 
+
   @Test
-  void US016_TextPositioning() throws IOException {
+  //US016 - "PDF Generator - Text, Positionierung"
+  void freeTextPositioning() throws IOException {
     var data = new PDFGenerator.CardData(CURRENT_FORMAT_VERSION, 150, 200);
     var box  = new PDFGenerator.TextBox(20, data.getPageWidth() - 100, -1, -1, 'l');
-    box.getTextRuns().add(MakeDefaultTextRun("Diese Zeile ist auf X: " + box.getX() + ";Y: " + box.getY()));
-    box.getTextRuns().add(PDFGenerator.LineBreak);
-    box.getTextRuns().add(MakeDefaultTextRun("Zeile 2"));
+    box.getTextRuns().add(makeDefaultTextRun("Diese Zeile ist auf X: " + box.getX() + ";Y: " + box.getY()));
+    box.getTextRuns().add(PDFGenerator.lineBreak);
+    box.getTextRuns().add(makeDefaultTextRun("Zeile 2"));
     data.getTextBoxes().add(box);
 
     var doc  = PDFGenerator.Generate(data);
@@ -61,21 +67,22 @@ class PdfGenTests {
   }
 
   @Test
-  void US019_TextFont() throws IOException {
+  //US019 - "PDF Generator - Text, Schriftart"
+  void customTextFont() throws IOException {
     var data = new PDFGenerator.CardData(CURRENT_FORMAT_VERSION, 200, 200);
     var box  = new PDFGenerator.TextBox(10, data.getPageWidth() - 20, -1, -1, 'l');
     for(var attribute : FontStyle.values()){
-      box.getTextRuns().add(MakeDefaultTextRun(EnumSet.of(attribute), attribute.toString()));
-      box.getTextRuns().add(MakeDefaultTextRun(" "));
+      box.getTextRuns().add(makeDefaultTextRun(EnumSet.of(attribute), attribute.toString()));
+      box.getTextRuns().add(makeDefaultTextRun(" "));
     }
-    box.getTextRuns().add(PDFGenerator.LineBreak);
+    box.getTextRuns().add(PDFGenerator.lineBreak);
 
-    box.getTextRuns().add(MakeDefaultTextRun(EnumSet.of(FontStyle.BOLD, FontStyle.ITALIC), "BOLD_ITALIC"));
-    box.getTextRuns().add(MakeDefaultTextRun(" "));
-    box.getTextRuns().add(MakeDefaultTextRun(EnumSet.of(FontStyle.BOLD, FontStyle.UNDERLINE), "BOLD_UNDERLINE"));
-    box.getTextRuns().add(PDFGenerator.LineBreak);
+    box.getTextRuns().add(makeDefaultTextRun(EnumSet.of(FontStyle.BOLD, FontStyle.ITALIC), "BOLD_ITALIC"));
+    box.getTextRuns().add(makeDefaultTextRun(" "));
+    box.getTextRuns().add(makeDefaultTextRun(EnumSet.of(FontStyle.BOLD, FontStyle.UNDERLINE), "BOLD_UNDERLINE"));
+    box.getTextRuns().add(PDFGenerator.lineBreak);
 
-    box.getTextRuns().add(MakeDefaultTextRun(EnumSet.of(FontStyle.BOLD, FontStyle.ITALIC, FontStyle.UNDERLINE), "BOLD_ITALIC_UNDERLINE"));
+    box.getTextRuns().add(makeDefaultTextRun(EnumSet.of(FontStyle.BOLD, FontStyle.ITALIC, FontStyle.UNDERLINE), "BOLD_ITALIC_UNDERLINE"));
 
     data.getTextBoxes().add(box);
 

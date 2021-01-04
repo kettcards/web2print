@@ -6,7 +6,9 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -39,84 +41,117 @@ public class PDFGenerator {
     // (lucas) not complete/final
     @Value
     public static class TextBox {
-        private final float X, Y, W, H;
-        private final char  Alignment;
-        private final List<ITextRun> TextRuns;
+        private final float x, y, w, h;
+        private final char alignment;
+        private final List<ITextRun> textRuns;
 
         public TextBox(float x, float y, float w, float h, char alignment) {
-            X = x;
-            Y = y;
-            W = w;
-            H = h;
-            Alignment = alignment;
-            TextRuns  = new ArrayList<>();
+            this.x = x;
+            this.y = y;
+            this.w = w;
+            this.h = h;
+            this.alignment = alignment;
+            textRuns = new ArrayList<>();
         }
 
-        public void ApplyTo(PDPageContentStream content) throws IOException {
-            content.newLineAtOffset(mm2pt(X), mm2pt(Y));
+        public void applyTo(PDPageContentStream content) throws IOException {
+            content.newLineAtOffset(mm2pt(x), mm2pt(y));
             // (lucas) do something with box related attributes here (alignment etc)
 
         }
     }
     @Value
     public static class TextRun implements ITextRun {
-        private final Font      Font;
-        private final float     FontSize;
-        private final EnumSet<FontStyle> Attributes;
-        private final String    Text;
+        private final Font font;
+        private final float fontSize;
+        private final EnumSet<FontStyle> attributes;
+        private final String text;
 
         public TextRun(Font font, float fontSize, EnumSet<FontStyle> attributes, String text) {
-            Font       = font;
-            FontSize   = fontSize;
-            Attributes = attributes;
-            Text       = text;
+            this.font = font;
+            this.fontSize = fontSize;
+            this.attributes = attributes;
+            this.text = text;
         }
 
-        public void ApplyTo(PDPageContentStream content) throws IOException {
-            content.setFont(Font.Resolve(Attributes), FontSize);
-            content.setLeading(FontSize);
-            content.showText(Text);
+        public void applyTo(PDPageContentStream content) throws IOException {
+            content.setFont(font.Resolve(attributes), fontSize);
+            content.setLeading(fontSize);
+            content.showText(text);
             // (lucas) todo: draw a line for underlined text
+
         }
     }
     @Value
     public static class Font {
-        private final PDFont Default;
-        private final PDFont Bold;
-        private final PDFont Italic;
-        private final PDFont Bold_Italic;
+        private final PDFont _default;
+        private final PDFont bold;
+        private final PDFont italic;
+        private final PDFont bold_Italic;
 
         public Font(PDFont _default, PDFont bold, PDFont italic, PDFont bold_italic) {
-            Default     = _default;
-            Bold        = bold;
-            Italic      = italic;
-            Bold_Italic = bold_italic;
+            this._default = _default;
+            this.bold = bold;
+            this.italic = italic;
+            bold_Italic = bold_italic;
         }
 
         public PDFont Resolve(EnumSet<FontStyle> style) {
           if(style.contains(FontStyle.BOLD)){
             if(style.contains(FontStyle.ITALIC)){
-              return Bold_Italic;
+              return bold_Italic;
             } else {
-              return Bold;
+              return bold;
             }
           } else if(style.contains(FontStyle.ITALIC)) {
-            return Italic;
+            return italic;
           } else {
-            return Default;
+            return _default;
           }
         }
     }
 
-    public static final ITextRun LineBreak = PDPageContentStream::newLine;
+    @Value
+    public static class customFont {
+        private PDFont _default = null;
+        private PDFont bold = null;
+        private PDFont italic = null;
+        private PDFont bold_Italic = null;
 
-    public interface ITextRun {
-        void ApplyTo(PDPageContentStream content) throws IOException;
+        public customFont(File _default, File bold, File italic, File bold_italic) throws IOException{
+
+                this._default = PDType0Font.load(doc, _default);
+                this.bold = PDType0Font.load(doc, bold);
+                this.italic = PDType0Font.load(doc, italic);
+                bold_Italic = PDType0Font.load(doc, bold_italic);
+
+        }
+
+        public PDFont Resolve(EnumSet<FontStyle> style) {
+            if(style.contains(FontStyle.BOLD)){
+                if(style.contains(FontStyle.ITALIC)){
+                    return bold_Italic;
+                } else {
+                    return bold;
+                }
+            } else if(style.contains(FontStyle.ITALIC)) {
+                return italic;
+            } else {
+                return _default;
+            }
+        }
     }
 
+    public static final ITextRun lineBreak = PDPageContentStream::newLine;
+
+    public interface ITextRun {
+        void applyTo(PDPageContentStream content) throws IOException;
+    }
+
+    private static PDDocument doc = null;
 
     public static PDDocument Generate(CardData data) throws IOException {
-        var doc = new PDDocument();
+        doc = new PDDocument();
 
         var page = new PDPage(data.getPageBounds());
         doc.addPage(page);
@@ -124,9 +159,9 @@ public class PDFGenerator {
         var content = new PDPageContentStream(doc, page);
         content.beginText();
         for(var box : data.textBoxes) {
-            box.ApplyTo(content);
-            for(var run : box.TextRuns) {
-                run.ApplyTo(content);
+            box.applyTo(content);
+            for(var run : box.textRuns) {
+                run.applyTo(content);
             }
         }
         content.endText();
