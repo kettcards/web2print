@@ -1,5 +1,6 @@
 package de.kettcards.web2print.pdfGen;
 
+import javassist.expr.Instanceof;
 import lombok.Value;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -62,10 +63,10 @@ public class PDFGenerator {
     }
     @Value
     public static class TextRun implements ITextRun {
-        protected Font font;
-        protected float fontSize;
-        protected EnumSet<FontStyle> attributes;
-        protected String text;
+        private final Font font;
+        private final float fontSize;
+        private final EnumSet<FontStyle> attributes;
+        private final String text;
 
         public TextRun(Font font, float fontSize, EnumSet<FontStyle> attributes, String text) {
             this.font = font;
@@ -83,18 +84,28 @@ public class PDFGenerator {
         }
     }
 
-    public static class CustomTextRun extends TextRun{
+    public static class CustomTextRun implements ITextRun{
         private CustomFont customFont;
+        private final float fontSize;
+        private final EnumSet<FontStyle> attributes;
+        private final String text;
 
         public CustomTextRun(CustomFont customFont, float fontSize, EnumSet<FontStyle> attributes, String text) {
-            super(null, fontSize, attributes, text);
             this.customFont = customFont;
+            this.fontSize = fontSize;
+            this.attributes = attributes;
+            this.text = text;
         }
 
         public void applyTo(PDPageContentStream content, PDDocument doc) throws IOException{
-            content.setFont(PDType0Font.load(doc, customFont.Resolve(getAttributes())), getFontSize());
-            content.setLeading(getFontSize());
-            content.showText(getText());
+            content.setFont(PDType0Font.load(doc, customFont.Resolve(attributes)), fontSize);
+            content.setLeading(fontSize);
+            content.showText(text);
+        }
+
+        @Override
+        public void applyTo(PDPageContentStream content) throws IOException {
+
         }
     }
 
@@ -175,6 +186,9 @@ public class PDFGenerator {
             box.applyTo(content);
             for(var run : box.textRuns) {
                 run.applyTo(content);
+                if (run instanceof CustomTextRun){
+                    ((CustomTextRun) run).applyTo(content,doc);
+                }
             }
         }
         content.endText();

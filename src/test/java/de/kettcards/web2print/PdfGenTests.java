@@ -9,8 +9,10 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumSet;
@@ -50,11 +52,10 @@ class PdfGenTests {
     var font = new PDFGenerator.Font(PDType1Font.HELVETICA, PDType1Font.HELVETICA_BOLD, PDType1Font.HELVETICA_OBLIQUE, PDType1Font.HELVETICA_BOLD_OBLIQUE);
     return new PDFGenerator.TextRun(font, 12, attributes, text);
   }
-  static PDFGenerator.TextRun makeCustomTextRun(File[] fonts, EnumSet<FontStyle> attributes, String text){
+  static PDFGenerator.CustomTextRun makeCustomTextRun(File[] fonts, EnumSet<FontStyle> attributes, String text){
     var font = new PDFGenerator.CustomFont(fonts[0],fonts[1],fonts[2],fonts[3]);
     return new PDFGenerator.CustomTextRun(font,12, attributes,text);
   }
-
 
   @Test
   //US016 - "PDF Generator - Text, Positionierung"
@@ -87,6 +88,7 @@ class PdfGenTests {
     box.getTextRuns().add(PDFGenerator.lineBreak);
 
     box.getTextRuns().add(makeDefaultTextRun(EnumSet.of(FontStyle.BOLD, FontStyle.ITALIC, FontStyle.UNDERLINE), "BOLD_ITALIC_UNDERLINE"));
+    box.getTextRuns().add(PDFGenerator.lineBreak);
 
     File[] customFont = {new File("src/test/java/de/kettcards/web2print/customFontTest/HanaleiFill-Regular.ttf"),new File("src/test/java/de/kettcards/web2print/customFontTest/HanaleiFill-Regular.ttf"),new File("src/test/java/de/kettcards/web2print/customFontTest/HanaleiFill-Regular.ttf"),new File("src/test/java/de/kettcards/web2print/customFontTest/HanaleiFill-Regular.ttf")};
     for(var attribute : FontStyle.values()){
