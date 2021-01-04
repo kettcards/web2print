@@ -17,7 +17,7 @@ public class Material implements Serializable {
     @JsonIgnore
     @Id
     @Column(name = "id")
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @JsonBackReference
@@ -30,11 +30,11 @@ public class Material implements Serializable {
     @Column(name = "textureSlug")
     private String textureSlug;
 
-    @Convert(converter = TilingConverter.class)
+    //@Convert(converter = TilingConverter.class)
     @Column(name = "tiling")
-    private Tiling tiling;
+    private String tiling;
 
-    enum Tiling {
+    public enum Tiling {
         STRETCH, REPEAT
     }
 

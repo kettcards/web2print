@@ -14,7 +14,7 @@ public class Fold implements Serializable {
     @JsonIgnore
     @Id
     @Column(name = "id")
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "card_id")
