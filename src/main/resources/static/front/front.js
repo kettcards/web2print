@@ -221,9 +221,11 @@ const makeNodesFromSelection = function() {
     }
 
   } else if (nodes.length > 1) {
-    if(range.startOffset !== 0) {
-      const first = nodes[0];
-      const txt = first.textContent;
+    const first = nodes[0];
+    let txt = first.textContent;
+    if(range.startOffset === txt.length){
+      nodes.shift();
+    } else if(range.startOffset !== 0) {
       const c = first.cloneNode();
       c.appendChild(document.createTextNode(txt.substr(0, range.startOffset)));
       first.parentNode.insertBefore(c, first);
@@ -231,8 +233,10 @@ const makeNodesFromSelection = function() {
     }
 
     const last = nodes[nodes.length - 1];
-    const txt = last.textContent;
-    if(range.endOffset !== txt.length) {
+    txt = last.textContent;
+    if(range.endOffset === 0){
+      nodes.pop();
+    } else if(range.endOffset !== txt.length) {
       const c = last.cloneNode();
       c.appendChild(document.createTextNode(txt.substr(range.endOffset)));
       last.parentNode.insertBefore(c, last.nextSibling);
