@@ -113,31 +113,26 @@ public class PDFGenerator {
 
     @Value
     public static class customFont {
-        private PDFont _default = null;
-        private PDFont bold = null;
-        private PDFont italic = null;
-        private PDFont bold_Italic = null;
+        private PDFont custom;
+        private PDFont custom_bold;
+        private PDFont custom_italic;
+        private PDFont custom_bold_Italic;
 
-        public customFont(File _default, File bold, File italic, File bold_italic) throws IOException{
-
-                this._default = PDType0Font.load(doc, _default);
-                this.bold = PDType0Font.load(doc, bold);
-                this.italic = PDType0Font.load(doc, italic);
-                bold_Italic = PDType0Font.load(doc, bold_italic);
+        public customFont(File custom, File bold, File italic, File bold_italic){
 
         }
 
         public PDFont Resolve(EnumSet<FontStyle> style) {
             if(style.contains(FontStyle.BOLD)){
                 if(style.contains(FontStyle.ITALIC)){
-                    return bold_Italic;
+                    return custom_bold_Italic;
                 } else {
-                    return bold;
+                    return custom_bold;
                 }
             } else if(style.contains(FontStyle.ITALIC)) {
-                return italic;
+                return custom_italic;
             } else {
-                return _default;
+                return custom;
             }
         }
     }
