@@ -31,7 +31,8 @@ public class MotiveScaleService {
         PDDocument document = PDDocument.load(inputStream);
         if (document.getNumberOfPages() > 2)
             throw new IOException("pdf file shouldn't have more than 2 sides (front & back)");
-        for (int i = 0; i < 2; i++) {
+        int numberOfPages = document.getNumberOfPages();
+        for (int i = 0; i < numberOfPages; i++) {
             PDPage page = document.getPage(i);
             page.setMediaBox(page.getTrimBox()); //should work if pdf is valid
             PDFRenderer renderer = new PDFRenderer(document);

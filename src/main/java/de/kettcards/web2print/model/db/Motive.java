@@ -14,6 +14,7 @@ public class Motive implements Serializable, VirtualId {
     @JsonIgnore
     @Id
     @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "textureSlug")
