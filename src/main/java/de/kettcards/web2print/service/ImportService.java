@@ -84,13 +84,15 @@ public class ImportService {
                     targetCard.setId(oldCardId);
 
                 }
-                //if (targetCard.getAspectRatio() == null)
-                //    invalidCard(targetCard);
+
+                //skips cards with illegal format
+                if (targetCard.getAspectRatio() == null)
+                    invalidCard(targetCard);
 
                 //if (targetCard.getMaterial() == null)
                 //    invalidCard(targetCard);
 
-                log.info("saving card: " + targetCard);
+                log.debug("saving card: " + targetCard);
                 Card saveCard = cardRepository.save(targetCard);
                 //Fold fold = foldVirtualMapper.get(saveCard.getId());
                 //fold.setCardId(saveCard.getId());
