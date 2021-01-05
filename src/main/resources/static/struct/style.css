@@ -1,0 +1,19 @@
+.page-content {
+    height: 100%;
+}
+
+#Import {
+    display: flex;
+}
+
+.Import-divs {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
+    background-color: #ff9e2c;
+    align-items: center;
+}
+
+
+

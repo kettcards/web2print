@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" charset="UTF-8">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+    <link rel="stylesheet" href="style.css">
     <script src="../define.js"></script>
     <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.js" crossorigin="anonymous"></script>
@@ -34,13 +35,23 @@
     </div>
     <main class="mdl-layout__content">
         <div class="page-content">
-            <div id="Motive" style="display: none"></div>
+            <div id="Motive" style="display: none">
+                <div class="Import-divs" id="pdf-import">
+                    <p>PDF-Dokument mit Motiv per Drag and Drop in diese Fläche ziehen oder über Button auswählen</p>
+                    <input type="file" id="pdf-input" style="display: none">
+                    <button id="pdf-submit">Select a file</button>
+                </div>
+            </div>
             <div id="Seitenformat" style="display: none"></div>
-            <div id="Import" style="display: none">
-                <!-- TODO content goes here -->
-                <input type="file" id="input" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                       style="display: none">
-                <button id="submit">Select a file</button>
+            <div id="Import" style="display: inline">
+                <div class="Import-divs" id="xlsx-import">
+                    <p>Excelsheet per Drag and Drop in diese Fläche ziehen oder über Button auswählen</p>
+                    <input type="file" id="xlsx-input"
+                           accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                           style="display: none">
+                    <button id="xlsx-submit">Select a file</button>
+                </div>
+
             </div>
         </div>
 
