@@ -334,7 +334,9 @@ let $body = $('body').mousemove(function(e){
 const MMPerPx = (function(){
   const $resTester = $('<div style="height:100mm;width:100mm;display:none;"></div>')
   $body.append($resTester);
-  return { x: 100/$resTester.width(), y: 100/$resTester.height() };
+  const ret = { x: 100/$resTester.width(), y: 100/$resTester.height() };
+  $resTester.remove();
+  return ret;
 })();
 
 const FontAttributeMap = {};
