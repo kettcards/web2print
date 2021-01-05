@@ -109,7 +109,7 @@ $.get(web2print.links.apiUrl+'card/'+Parameters.card)
      };
    } else throw e;
  })
- .then(function(data) { //(lucas 04.01.20) mbe moce this 'check' into loadPage
+ .then(function(data) { //(lucas 04.01.20) mbe move this 'check' into loadPage
    return new Promise(function(resolve, reject){
      if(data) resolve(data);
      else     reject();
@@ -127,7 +127,8 @@ $.get(web2print.links.apiUrl+'card/'+Parameters.card)
 const Spawner = {
   TEXT: function(p){
     return $('<span class="text" contenteditable><span class="fontStyle">Ihr Text Hier!</span></span>')
-      .mousedown(hElMDown)
+      .mousedown(hTxtMDown)
+      .mouseup(hTxtMUp)
       .click(hElClick)
       .on('input', hElInput)
       .css(p);
@@ -144,9 +145,27 @@ const state = {
   dy: 0,
 };
 
-const hElMDown = function(e){
+const hTxtMDown = function(e){
   state.target = $(e.delegateTarget);
   state.addOnClick = undefined;
+};
+const hTxtMUp = function(e){
+  //(lucas 05.01.20) compat: 93.42%  destructuring ... might need to do this differently
+  const [nodes, _] = getNodesFromSelection();
+  const $nodes = $(nodes);
+  let fontFam = $nodes.eq(0).css('font-family');
+  let index;
+  for(let i = 1; i < $nodes.length; i++){
+    const nextFam = $nodes.eq(i).css('font-family');
+    if(fontFam !== nextFam){
+      index = -1;
+      break;
+    }
+  }
+  if(index === undefined)
+    index = FontNames.indexOf(fontFam);
+
+  $fontSelect[0].selectedIndex = index;
 };
 const hElClick = function(e){
   e.stopPropagation();
@@ -224,18 +243,18 @@ $(".fontTypeButton").click(function(){
   e.stopPropagation();
 });
 
-const makeNodesFromSelection = function() {
-  let selection = document.getSelection();
-  if(selection.isCollapsed || selection.rangeCount < 1)
-    return;
+const getNodesFromSelection = function() {
+  const selection = document.getSelection();
+  if(selection.rangeCount < 1)
+    return [[], undefined];
 
   let range = selection.getRangeAt(0);
   let _iter = document.createNodeIterator(
-    range.commonAncestorContainer, NodeFilter.SHOW_TEXT, {
-      acceptNode: function(n) {
-        return (n.nodeName === 'BR') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+      range.commonAncestorContainer, NodeFilter.SHOW_TEXT, {
+        acceptNode: function(n) {
+          return (n.nodeName === 'BR') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+        }
       }
-    }
   );
   let nodes = [];
   // (lucas) iterate over all _text_ nodes in the selection and save their parents (spans)
@@ -247,6 +266,13 @@ const makeNodesFromSelection = function() {
     if(ref === range.endContainer)
       break;
   }
+
+  return [nodes, range];
+}
+
+const makeNodesFromSelection = function() {
+  //(lucas 05.01.20) compat: 93.42%  destructuring ... might need to do this differently
+  const [nodes, range] = getNodesFromSelection();
 
   if(nodes.length === 1) {
     const node = nodes[0];
@@ -381,6 +407,7 @@ $('#submitBtn').click(function(){
             } break;
             case 'SPAN': {
               let attributes = 0;
+              //(lucas 05.01.20) compat: 93.42%  destructuring ... might need to do this differently
               for(const [k, v] of Object.entries(FontAttributeMap))
                 if ($iel.hasClass(k))
                   attributes |= v;
@@ -414,6 +441,7 @@ $('#submitBtn').click(function(){
 
 //font stuff
 const $fontSelect = $('#fontSelect').mouseup(function(e){e.stopPropagation();});
+let FontNames;
 
 $.get(web2print.links.apiUrl+'fonts')
  .catch(function() { //nomerge - debug
@@ -423,6 +451,7 @@ $.get(web2print.links.apiUrl+'fonts')
    alert('[fatal] failed to obtain data form fonts api');
  })
  .then(function(data) {
+   FontNames = data;
    let $options = new Array(data.length);
    for(let i = 0; i < data.length; i++) {
      const fName = data[i];
@@ -463,7 +492,7 @@ const beginLoadFont = function(name) {
     });
 };
 
-// (lucas 04.01.21) this might need to use another api, coverage is 93% but that has to mean nothing
+// (lucas 04.01.21) compat: this might need to use another api, coverage is 93% but that has to mean nothing
 const loadFont = function(font) {
   let attribs = {};
   let promises = new Array(font.faces.length);
