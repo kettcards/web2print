@@ -97,14 +97,15 @@ body {
   font-style: normal;
   font-weight: 400;
 }
-
 .fontStyle.b {
   font-weight: 600;
   font-weight: bold;
 }
-
 .fontStyle.i {
   font-style: italic;
+}
+.fontStyle.u {
+  text-decoration: underline;
 }
 
 #toolBox {
