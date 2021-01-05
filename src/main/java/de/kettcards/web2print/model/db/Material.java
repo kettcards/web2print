@@ -12,17 +12,17 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "material")
-public class Material implements Serializable {
+public class Material implements Serializable, VirtualId {
 
     @JsonIgnore
     @Id
     @Column(name = "id")
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @JsonBackReference
-    @OneToMany(mappedBy = "material")
-    private List<Card> card;
+    //@JsonBackReference
+    //@OneToMany(mappedBy = "material")
+    //private List<Card> card;
 
     @Column(name = "name")
     private String name;
@@ -30,11 +30,21 @@ public class Material implements Serializable {
     @Column(name = "textureSlug")
     private String textureSlug;
 
-    @Convert(converter = TilingConverter.class)
+    //@Convert(converter = TilingConverter.class)
     @Column(name = "tiling")
-    private Tiling tiling;
+    private String tiling;
 
-    enum Tiling {
+    @Override
+    public int getVirtualId() {
+        return id;
+    }
+
+    @Override
+    public int getVirtualHash() {
+        return name.hashCode();
+    }
+
+    public enum Tiling {
         STRETCH, REPEAT
     }
 

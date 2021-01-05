@@ -9,15 +9,24 @@ import java.io.Serializable;
 @Data
 @Entity
 @Table(name = "motive")
-public class Motive implements Serializable {
+public class Motive implements Serializable, VirtualId {
 
     @JsonIgnore
     @Id
     @Column(name = "id")
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "textureSlug")
     private String textureSlug;
 
+    @Override
+    public int getVirtualId() {
+        return id;
+    }
+
+    @Override
+    public int getVirtualHash() {
+        return id;
+    }
 }
