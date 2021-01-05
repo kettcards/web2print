@@ -11,6 +11,6 @@ public interface MotiveRepository extends PagingAndSortingRepository<Motive, Int
 
     List<Motive> findAllById(Integer name);
 
-    List<Motive> findAllByName(String name);
+    //List<Motive> findAllByName(String name);
 
 }

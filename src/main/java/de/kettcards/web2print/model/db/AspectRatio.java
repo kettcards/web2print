@@ -7,6 +7,7 @@ import lombok.Data;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 @Data
 @Entity
@@ -31,5 +32,10 @@ public class AspectRatio implements Serializable {
     @JsonBackReference
     @OneToMany(mappedBy = "material")
     private List<Card> aspectRatio;
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(width, height, name);
+    }
 
 }

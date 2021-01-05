@@ -1,9 +1,11 @@
 package de.kettcards.web2print.service;
 
+import de.kettcards.web2print.imports.XLSXImporter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -11,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -25,6 +27,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class StorageService {
 
     private Path baseDir;
+
+    @Autowired
+    private XLSXImporter importer;
 
     private ConcurrentHashMap<String, MetaFile> resources = new ConcurrentHashMap<>();
 
@@ -44,6 +49,7 @@ public class StorageService {
 
     /**
      * stores resource
+     *
      * @return resource name
      * @throws IOException
      */
@@ -52,12 +58,17 @@ public class StorageService {
         Files.copy(file.getInputStream(), baseDir.resolve(resourceName));
         MetaFile metaFile = new MetaFile(file.getName(), file.getContentType());
 
+        if (file.getContentType().equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+            importer.importXlsx(new FileInputStream(baseDir.resolve(resourceName).toFile()));
+        }
+
         resources.put(resourceName, metaFile);
         return resourceName;
     }
 
     /**
      * loads previously stores resource
+     *
      * @param resource
      * @return
      * @throws IOException
