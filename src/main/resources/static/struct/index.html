@@ -14,14 +14,14 @@
     <header class="mdl-layout__header">
         <div class="mdl-layout__header-row">
             <div class="mdl-layout-spacer"></div>
-            <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable mdl-textfield--floating-label mdl-textfield--align-right">
+            <!--div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable mdl-textfield--floating-label mdl-textfield--align-right">
                 <label class="mdl-button mdl-js-button mdl-button--icon" for="fixed-header-drawer-exp">
                     <i class="material-icons">search</i>
                 </label>
                 <div class="mdl-textfield__expandable-holder">
                     <input class="mdl-textfield__input" type="text" name="sample" id="fixed-header-drawer-exp">
                 </div>
-            </div>
+            </div-->
         </div>
     </header>
     <div class="mdl-layout__drawer">
@@ -34,8 +34,13 @@
     </div>
     <main class="mdl-layout__content">
         <div class="page-content">
-            <div id="content">
+            <div id="Motive" style="display: none"></div>
+            <div id="Seitenformat" style="display: none"></div>
+            <div id="Import" style="display: none">
                 <!-- TODO content goes here -->
+                <input type="file" id="input" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                       style="display: none">
+                <button id="submit">Select a file</button>
             </div>
         </div>
 
@@ -46,10 +51,12 @@
 
 </style>
 <script>
+    /*
     $(window).bind('hashchange', function () {
         $('#test').text(location.hash);
         $('.mdl-layout-title').text(location.hash);
     });
-
+    */
 </script>
+<script src="struct.js"></script>
 </html>
