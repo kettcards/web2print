@@ -1,6 +1,5 @@
 package de.kettcards.web2print.service;
 
-import de.kettcards.web2print.imports.XLSXImporter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Value;
@@ -29,7 +28,7 @@ public class StorageService {
     private Path baseDir;
 
     @Autowired
-    private XLSXImporter importer;
+    private ImportService importer;
 
     private ConcurrentHashMap<String, MetaFile> resources = new ConcurrentHashMap<>();
 
@@ -59,7 +58,7 @@ public class StorageService {
         MetaFile metaFile = new MetaFile(file.getName(), file.getContentType());
 
         if (file.getContentType().equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
-            importer.importXlsx(new FileInputStream(baseDir.resolve(resourceName).toFile()));
+            importer.importCards(new FileInputStream(baseDir.resolve(resourceName).toFile()));
         }
 
         resources.put(resourceName, metaFile);

@@ -3,12 +3,6 @@ const $container = $('div.container');
 const inputElement = document.getElementById("input");
 inputElement.addEventListener("change", handleFiles, false);
 
-fileSelect.addEventListener("click", function (e) {
-    if (fileElem) {
-        fileElem.click();
-    }
-}, false);
-
 function handleFiles() {
     const fileList = this.files;
 

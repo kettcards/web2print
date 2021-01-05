@@ -24,6 +24,7 @@ public class BackendController {
     @PostMapping("/resource")
     public ResponseEntity<String> saveResource(@RequestParam("file") MultipartFile file) {
         try {
+            System.out.println("trying to store");
             String resourcePath = storageService.store(file);
             return ResponseEntity.ok(resourcePath);
         } catch (IOException ex) {

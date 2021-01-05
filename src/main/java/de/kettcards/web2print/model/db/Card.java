@@ -14,7 +14,7 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "card")
-public class Card implements Serializable {
+public class Card implements Serializable, VirtualId {
 
     @JsonIgnore
     @Id
@@ -28,7 +28,7 @@ public class Card implements Serializable {
     @Column(name = "thumbSlug")
     private String thumbSlug;
 
-    //@Column(name = "printType") //TODO
+    //@Column(name = "printType") //TODO impl
     //private PrintType printType;
 
     @Column(name = "name")
@@ -44,7 +44,8 @@ public class Card implements Serializable {
     @JoinColumn(name = "material_id")
     private Material material;
 
-    @OneToMany(mappedBy = "cardId")
+    @ManyToMany
+    @JoinTable(name = "fold_map", joinColumns = { @JoinColumn(name = "card_id") }, inverseJoinColumns = { @JoinColumn(name = "fold_id") })
     private List<Fold> folds;
 
     @JsonProperty("geometry")
@@ -55,7 +56,18 @@ public class Card implements Serializable {
     @OneToMany(mappedBy = "card")
     private List<MotiveMap> motiveMaps;
 
-    enum Side {
+
+    @Override
+    public int getVirtualId() {
+        return id;
+    }
+
+    @Override
+    public int getVirtualHash() {
+        return orderId.hashCode();
+    }
+
+    public enum Side {
         FRONT, BACK
     }
 
@@ -63,12 +75,12 @@ public class Card implements Serializable {
 
         @Override
         public Integer convertToDatabaseColumn(Side attribute) {
-            return null;
+            return null; //TODO impl
         }
 
         @Override
         public Side convertToEntityAttribute(Integer dbData) {
-            return null;
+            return null; //TODO impl
         }
     }
 
