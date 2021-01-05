@@ -168,8 +168,11 @@ $(".alignmentBtn").click(function(){
   e.stopPropagation();
 });
 $(".fontTypeButton").click(function(){
-  $(makeNodesFromSelection()).addClass($(this).val());
-}).mouseup(function(e){  
+  const classToAdd = $(this).val();
+  const $nodes = $(makeNodesFromSelection());
+  const shouldRemove = $nodes.filter('.'+classToAdd).length === $nodes.length;
+  $nodes[shouldRemove ? 'removeClass' : 'addClass'](classToAdd);
+}).mouseup(function(e){
   e.stopPropagation();
 });
 
