@@ -1,3 +1,6 @@
+const make  = document.createElement.bind(document);
+const makeT = document.createTextNode.bind(document);
+
 const holder = $('#holder>.center');
 
 const toolBox = $('#toolBox');
@@ -158,13 +161,33 @@ const hElClick = function(e){
   }, target.offset()));  
 };
 const hElInput = function(e){
-  //need to detect if the user inserts a new line, since it needs to be promoted to maintain a flat structure
+  const box = e.delegateTarget;
+  const runs = box.childNodes;
+  //(lucas) if the user selects all (ctrl-a) and then starts typing the inner span is removed
+  //        this solution isn't very clean but it works
+  //(lucas 05.01.20) todo: would like to find a better way to do this
+  if(runs.length === 0){
+    const inner = make('span');
+    inner.classList.add('fontStyle');
+    box.appendChild(inner);
+    return;
+  } else if (runs.length === 1) {
+    switch (runs[0].nodeName) {
+      case 'BR': box.removeChild(runs[0]); return;
+      case '#text': {
+        const inner = make('span');
+        inner.classList.add('fontStyle');
+        inner.appendChild(box.removeChild(runs[0]));
+        box.appendChild(inner);
+      } return;
+    }
+  }
+  //(lucas) need to detect if the user inserts a new line, since it needs to be promoted to maintain a flat structure
   if(e.originalEvent.inputType === 'insertParagraph'){
-    const box = e.delegateTarget;
-    for(const run of box.childNodes){
+    for(const run of runs){
       const nodes = run.childNodes;
       if(nodes.length === 3) {
-        //cant guarantee that the middle node is br
+        //(lucas) cant guarantee that the middle node is br
         do {
           if(nodes[0].nodeName === 'BR') {
             box.insertBefore(run.removeChild(nodes[0]), run);
@@ -174,7 +197,7 @@ const hElInput = function(e){
             box.insertBefore(c, run);
           }
         } while(nodes.length > 1);
-        //if the last node is a ber promote it and delete the original run, else dont do anything
+        //(lucas) if the last node is a ber promote it and delete the original run, else dont do anything
         if(nodes[0].nodeName === 'BR') {
           box.insertBefore(run.removeChild(nodes[0]), run);
           box.removeChild(run);
@@ -237,13 +260,13 @@ const makeNodesFromSelection = function() {
     let slice = false;
     if(range.startOffset !== 0) {
       const w = node.cloneNode();
-      w.appendChild(document.createTextNode(txt.substr(0, range.startOffset)));
+      w.appendChild(makeT(txt.substr(0, range.startOffset)));
       parent.insertBefore(w, node);
       slice = true;
     }
     if(range.endOffset !== txt.length) {
       const w = node.cloneNode();
-      w.appendChild(document.createTextNode(txt.substr(range.endOffset)));
+      w.appendChild(makeT(txt.substr(range.endOffset)));
       parent.insertBefore(w, node.nextSibling);
       slice = true;
     }
@@ -259,7 +282,7 @@ const makeNodesFromSelection = function() {
       nodes.shift();
     } else if(range.startOffset !== 0) {
       const c = first.cloneNode();
-      c.appendChild(document.createTextNode(txt.substr(0, range.startOffset)));
+      c.appendChild(makeT(txt.substr(0, range.startOffset)));
       first.parentNode.insertBefore(c, first);
       first.childNodes[0].replaceWith(txt.substr(range.startOffset));
     }
@@ -270,7 +293,7 @@ const makeNodesFromSelection = function() {
       nodes.pop();
     } else if(range.endOffset !== txt.length) {
       const c = last.cloneNode();
-      c.appendChild(document.createTextNode(txt.substr(range.endOffset)));
+      c.appendChild(makeT(txt.substr(range.endOffset)));
       last.parentNode.insertBefore(c, last.nextSibling);
       last.childNodes[0].replaceWith(txt.substr(0, range.endOffset));
     }
