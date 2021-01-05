@@ -49,9 +49,6 @@ const loadPage = function(page){
   holder.append(newPage);
   //spawning
   newPage.click(function(e){
-    if(state.isEditing){
-      return;
-    }
     if(!state.addOnClick)
       return;
     const el = state.addOnClick({left: e.originalEvent.offsetX, top: e.originalEvent.offsetY});
@@ -143,14 +140,13 @@ const state = {
   addOnClick: undefined,
   target: undefined,
   dragging: false,
-  isEditing: false,
   dx: 0,
   dy: 0,
 };
 
 const hElMDown = function(e){
-  state.isEditing = true;
   state.target = $(e.delegateTarget);
+  state.addOnClick = undefined;
 };
 const hElClick = function(e){
   e.stopPropagation();
@@ -304,7 +300,6 @@ const makeNodesFromSelection = function() {
 //dragging
 $('#moveBtn').mousedown(function(){
   state.dragging = true;
-  state.isEditing = false;
 });
 
 let $body = $('body').mousemove(function(e){
