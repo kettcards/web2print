@@ -129,6 +129,7 @@ const Spawner = {
     return $('<span class="text" contenteditable><span class="fontStyle">Ihr Text Hier!</span></span>')
       .mousedown(hElMDown)
       .click(hElClick)
+      .on('input', hElInput)
       .css(p);
   },
   IMAGE: undefined,
@@ -155,6 +156,34 @@ const hElClick = function(e){
   toolBox.css(Object.assign({
     visibility: 'visible',
   }, target.offset()));  
+};
+const hElInput = function(e){
+  //need to detect if the user inserts a new line, since it needs to be promoted to maintain a flat structure
+  if(e.originalEvent.inputType === 'insertParagraph'){
+    const box = e.delegateTarget;
+    for(const run of box.childNodes){
+      const nodes = run.childNodes;
+      if(nodes.length === 3) {
+        //cant guarantee that the middle node is br
+        do {
+          if(nodes[0].nodeName === 'BR') {
+            box.insertBefore(run.removeChild(nodes[0]), run);
+          } else {
+            const c = run.cloneNode();
+            c.appendChild(run.removeChild(nodes[0]));
+            box.insertBefore(c, run);
+          }
+        } while(nodes.length > 1);
+        //if the last node is a ber promote it and delete the original run, else dont do anything
+        if(nodes[0].nodeName === 'BR') {
+          box.insertBefore(run.removeChild(nodes[0]), run);
+          box.removeChild(run);
+        }
+      } else if(nodes.length === 2) {
+        box.insertBefore(run.removeChild(nodes[0]), run);
+      }
+    }
+  }
 };
 
 $('.addElBtn').click(function(e){
