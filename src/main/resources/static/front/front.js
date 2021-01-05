@@ -146,12 +146,12 @@ const state = {
 
 const hElMDown = function(e){
   state.isEditing = true;
-  state.target = $(e.target);
+  state.target = $(e.delegateTarget);
 };
 const hElClick = function(e){
   e.stopPropagation();
 
-  const target = $(e.target);
+  const target = $(e.delegateTarget);
   toolBox.css(Object.assign({
     visibility: 'visible',
   }, target.offset()));  
