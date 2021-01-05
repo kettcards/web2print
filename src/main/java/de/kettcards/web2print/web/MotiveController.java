@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -45,7 +42,7 @@ public class MotiveController {
     }
 
     @GetMapping
-    public ResponseEntity<byte[]> getMotive(String motiveRequest) { //name of the image, motive files should be served static
+    public ResponseEntity<byte[]> getMotive(@RequestBody String motiveRequest) { //name of the image, motive files should be served static
         Path path = baseDir.resolve(motiveRequest);
         try {
             return ResponseEntity.ok(Files.readAllBytes(path));
@@ -57,8 +54,9 @@ public class MotiveController {
     //1. upload a pdf motive file over POST /resource
     //2. use this call to create images out of the pdf
     @PostMapping
-    public HttpEntity<List<MotiveResponse>> addMotive(MotiveRequest motiveRequest) {
+    public HttpEntity<List<MotiveResponse>> addMotive(@RequestBody MotiveRequest motiveRequest) {
         try {
+            System.out.println(motiveRequest);
             //TODO proper cleanup if something goes wrong
             Resource savedResource = storageService.load(motiveRequest.getResource());
             String front = motiveRequest.getOrderId() + "-front.png";
