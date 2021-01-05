@@ -72,43 +72,6 @@ const Parameters = (function(){
 })();
 
 $.get(web2print.links.apiUrl+'card/'+Parameters.card)
- .catch(function(e) {
-   if(Parameters.debug) { //nomerge - debug
-     return {
-       "orderId" : "grsubi071schwarz",
-       "thumbSlug" : "grsubi071schwarz.jpg",
-       "name" : "Test Grusskarte",
-       "aspectRatio" : {
-         "width" : 210,
-         "height" : 297,
-         "name" : "A4"
-       },
-       "material" : {
-         "name" : "Grau",
-         "textureSlug" : "grau.jpg",
-         "tiling" : "STRETCH"
-       },
-       "folds" : [ {
-         "cardId" : 1,
-         "x1" : 0,
-         "y1" : 0,
-         "x2" : 0,
-         "y2" : 0,
-         "angle" : 0
-       } ],
-       "geometry" : [ {
-         "cut" : 3,
-         "name" : "NonExistenCut",
-         "geometry" : "Imagine you have some nice shape data",
-         "side" : "FRONT"
-       } ],
-       "motive" : [ {
-         "textureSlug" : "grsubi071schwarz.jpg",
-         "side" : "FRONT"
-       } ]
-     };
-   } else throw e;
- })
  .then(function(data) { //(lucas 04.01.20) mbe move this 'check' into loadPage
    return new Promise(function(resolve, reject){
      if(data) resolve(data);
@@ -444,12 +407,6 @@ const $fontSelect = $('#fontSelect').mouseup(function(e){e.stopPropagation();});
 let FontNames;
 
 $.get(web2print.links.apiUrl+'fonts')
- .catch(function() { //nomerge - debug
-   if(Parameters.debug){
-     return ['no test font', 'test_font', 'test font 2'];
-   }
-   alert('[fatal] failed to obtain data form fonts api');
- })
  .then(function(data) {
    FontNames = data;
    let $options = new Array(data.length);
@@ -474,19 +431,7 @@ const applyFont = function() {
 
 const beginLoadFont = function(name) {
   return $.get(web2print.links.apiUrl+'font/'+name)
-    .catch(function(e){ //nomerge - debug
-      if(Parameters.debug && name === 'test_font') {
-        return {
-          name: 'test_font',
-          faces: [
-            { v: 0b000, fs: 'normal', fw: 400, s: 'OpenSans/OpenSans-Regular.ttf' },
-            { v: 0b001, fs: 'normal', fw: 'bold', s: 'OpenSans/OpenSans-Bold.ttf' },
-            { v: 0b010, fs: 'italic', fw: 400, s: 'OpenSans/OpenSans-Italic.ttf' },
-            { v: 0b011, fs: 'italic', fw: 'bold', s: 'OpenSans/OpenSans-BoldItalic.ttf' },
-          ]
-        }
-      } else throw e;
-    }).then(loadFont)
+    .then(loadFont)
     .catch(function(e) {
       alert('[error] could not load font: '+JSON.stringify(e));
     });
