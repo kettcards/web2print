@@ -72,16 +72,16 @@ public class CardFormatSheetRow implements VirtualId {
         fold.setAngle(45); //TODO make angle changeable
         switch (foldType) { //TODO check more dynamically
             case "links":
-                fold.setX1(width / 2);
+                fold.setX1(width);
                 fold.setY1(0);
-                fold.setX2(width / 2);
+                fold.setX2(width);
                 fold.setY2(height);
                 break;
             case "oben":
                 fold.setX1(0);
-                fold.setY1(height / 2);
+                fold.setY1(height);
                 fold.setX2(width);
-                fold.setY2(height / 2);
+                fold.setY2(height);
                 break;
             default:
                 return null;
