@@ -38,7 +38,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .cors().disable() //TODO enable cors
                 .authorizeRequests()
                 //specify resources that dont need authentication
-                .antMatchers(HttpMethod.GET,  "/define.js","/tileview/**", "/front/**").permitAll()
+                .antMatchers(HttpMethod.GET,  "/define.js","/tileview/**", "/front/**", "/fonts/**", "/textures/**").permitAll()
                 .antMatchers(HttpMethod.GET , "/api/**").permitAll()
                 //explicitly define protected resources, allows refined access control
                 .antMatchers("/api/**").hasRole(ADMIN.name())

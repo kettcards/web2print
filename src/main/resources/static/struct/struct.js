@@ -72,8 +72,83 @@ function handleFiles() {
         })
     }
 }
+var isNew = false;
+var selectedRatioId;
 
-$(window).bind("hashchange", function () {
+function showRatioDialogOnSelect(tr, isNew) {
+    return function() {
+        $('#dialog_input_name').value = "";
+        $('#dialog_input_width').value = "";
+        $('#dialog_input_height').value = "";
+        $('#dialog_title').val("Hinzufügen");
+
+        if (!isNew) {
+            $.get(web2print.links.apiUrl + "aspectRatio/" + tr).then(function (ratio) {
+                var nameBox = document.createElement('input');
+                var height = document.createElement('input');
+                var wight = document.createElement('input');
+                $('#dialog_input_name').val(ratio.name);
+                $('#dialog_input_name').parent().addClass('is-dirty')
+                $('#dialog_input_width').val(ratio.width);
+                $('#dialog_input_width').parent().addClass('is-dirty')
+                $('#dialog_input_height').val(ratio.height);
+                $('#dialog_input_height').parent().addClass('is-dirty')
+
+
+            });
+
+        }
+
+        dialog.showModal();
+
+    };
+}
+function removeRatio() {
+    console.log('removing id ' + selectedRatioId);
+    let req = jQuery.ajax({
+        url: web2print.links.apiUrl + "aspectRatio/" + selectedRatioId,
+        method: "DELETE",
+        processData: false,
+        contentType: false
+    });
+    renewRatios();
+    dialog.close();
+}
+function newRatio() {
+    var isNew = true;
+    showRatioDialogOnSelect(null, isNew);
+}
+
+function renewRatios() {
+    $.get(web2print.links.apiUrl + "aspectRatio").then(function (ratios) {
+        $('#ratio-tb-body').empty();
+        for (let ratio of ratios) {
+            let tr = document.createElement('tr');
+            let thname = document.createElement('td');
+            thname.class = "mdl-data-table__cell--non-numeric";
+            thname.innerText = ratio.name;
+            componentHandler.upgradeDom(thname);
+            let thwidht = document.createElement('td');
+            thwidht.innerText = ratio.width;
+            let thheight = document.createElement('td');
+            thheight.innerText = ratio.height;
+            let id = document.createElement('td');
+            id.style.display = "none";
+            id.innerText = id;
+            tr.append(thname);
+            tr.append(thwidht);
+            tr.append(thheight);
+            isNew = false;
+            selectedRatioId = ratio.id;
+            tr.onclick = showRatioDialogOnSelect(ratio.id);
+            componentHandler.upgradeDom(tr);
+            $('#ratio-tb').append(tr);
+        }
+
+    });
+}
+
+$(window).bind("hashchange", function () { //TODO onload hashchange is not working
     let Import = document.getElementById("Import");
     let Seitenformat = document.getElementById("Seitenformat");
     let Motive = document.getElementById("Motive");
@@ -88,6 +163,7 @@ $(window).bind("hashchange", function () {
             Import.style.display = "none";
             Seitenformat.style.display = "inline";
             Motive.style.display = "none";
+            renewRatios();
             break;
         case "#ov-motive":
             Import.style.display = "none";
@@ -95,4 +171,24 @@ $(window).bind("hashchange", function () {
             Motive.style.display = "inline";
             break;
     }
+});
+
+var dialogButton = document.querySelector('.dialog-button');
+var dialog = document.querySelector('#dialog');
+if (! dialog.showModal) {
+    dialogPolyfill.registerDialog(dialog);
+}
+dialogButton.addEventListener('click', function() {
+    dialog.showModal();
+    isNew = true;
+    console.log('showing dialog as new element');
+});
+dialog.querySelector('button:not([disabled])')
+    .addEventListener('click', function() {
+        dialog.close();
+    });
+
+
+$('#ov-format').on('click', function () {
+    renewRatios();
 });

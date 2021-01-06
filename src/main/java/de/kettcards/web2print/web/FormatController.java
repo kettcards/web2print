@@ -4,10 +4,7 @@ import de.kettcards.web2print.model.db.AspectRatio;
 import de.kettcards.web2print.repository.AspectRatioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("${web2print.links.api-path}")
@@ -21,9 +18,21 @@ public class FormatController {
         return ResponseEntity.ok(aspectRatioRepository.findAll());
     }
 
-    @PutMapping("/aspectRatio")
-    public void addRatio(AspectRatio aspectRatio) {
+    @GetMapping("/aspectRatio/{id}")
+    public ResponseEntity<AspectRatio> getRatios(@PathVariable Integer id) {
+        return ResponseEntity.ok(aspectRatioRepository.findById(id).orElseThrow());
+    }
+
+    @PostMapping("/aspectRatio")
+    public void addRatio(@RequestBody AspectRatio aspectRatio) {
         aspectRatioRepository.save(aspectRatio);
+    }
+
+    @DeleteMapping("/aspectRatio/{id}")
+    public void removeRatio(@PathVariable Integer id) {
+        AspectRatio aspectRatio = new AspectRatio();
+        aspectRatio.setId(id);
+        aspectRatioRepository.delete(aspectRatio);
     }
 
 

@@ -31,7 +31,7 @@ public class CardController {
         if (page < 0 || size < 1 || size > configuration.getPage().getMaxPageSize())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
-        return cardRepository.findAllProjectedBy(PageRequest.of(page, size), CardOverview.class);
+        return cardRepository.findAllProjectedBy(PageRequest.of(page, Integer.MAX_VALUE), CardOverview.class); //TODO quickfix for now
     }
 
     @GetMapping("/card/{card}")

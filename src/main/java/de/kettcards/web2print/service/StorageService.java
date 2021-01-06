@@ -57,9 +57,12 @@ public class StorageService {
         Files.copy(file.getInputStream(), baseDir.resolve(resourceName));
         MetaFile metaFile = new MetaFile(file.getName(), file.getContentType());
 
-        if (file.getContentType().equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
-            importer.importCards(new FileInputStream(baseDir.resolve(resourceName).toFile()));
-        }
+       // if (file.getContentType().equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+        importer.importCards(new FileInputStream(baseDir.resolve(resourceName).toFile()));
+        importer.importCards(new FileInputStream(baseDir.resolve(resourceName).toFile()));
+        //} else {
+        //    log.info("not a valid xlsx file"); //TODO broken now -_-
+        //}
 
         resources.put(resourceName, metaFile);
         return resourceName;

@@ -15,7 +15,6 @@ import java.util.Objects;
 @Table(name = "aspect_ratio")
 public class AspectRatio implements Serializable, VirtualId {
 
-    @JsonIgnore
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,9 +29,9 @@ public class AspectRatio implements Serializable, VirtualId {
     @Column(name = "name")
     private String name;
 
-    @JsonBackReference
-    @OneToMany(mappedBy = "material")
-    private List<Card> aspectRatio;
+    //@JsonBackReference
+    //@OneToMany(mappedBy = "material")
+    //private List<Card> aspectRatio;
 
     @Override
     public int getVirtualHash() {

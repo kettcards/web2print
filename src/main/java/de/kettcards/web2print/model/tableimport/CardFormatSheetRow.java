@@ -15,6 +15,8 @@ import java.util.Objects;
 @AllArgsConstructor
 public class CardFormatSheetRow implements VirtualId {
 
+    String nameExplanation;
+
     Integer formatType, height, width;
 
     String foldType;
@@ -26,7 +28,12 @@ public class CardFormatSheetRow implements VirtualId {
             int heightInMM = (int) cardFormatSheet.getRow(i).getCell(1).getNumericCellValue();
             int widthInMM = (int) cardFormatSheet.getRow(i).getCell(2).getNumericCellValue();
             String folded = cardFormatSheet.getRow(i).getCell(3).getStringCellValue();
-            data.add(new CardFormatSheetRow(formatTyp, heightInMM, widthInMM, folded));
+            String name = "";
+            if (cardFormatSheet.getRow(i).getCell(5) != null)
+                name = cardFormatSheet.getRow(i).getCell(5).getStringCellValue();
+            if (name == null)
+                name = "";
+            data.add(new CardFormatSheetRow(name, formatTyp, heightInMM, widthInMM, folded));
         }
         return data;
     }
@@ -43,7 +50,7 @@ public class CardFormatSheetRow implements VirtualId {
 
     public AspectRatio toAspectRatio() throws IllegalArgumentException {
         var ratio = new AspectRatio();
-        //ratio.setName(nameExplanation); //TODO add name with parser
+        ratio.setName(nameExplanation); //TODO add name with parser
         //Fold.Type type = Fold.Type.valueOf(foldType); //TODO check more dynamically
         switch (foldType) {
             case "links":
