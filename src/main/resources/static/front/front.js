@@ -10,7 +10,7 @@ const toolBox = $('#toolBox');
 * @param pageWidth die Breite einer Karte in mm
 * @param pageHeight die Hoehe einer Karte in mm
 * @param container 
-* @return tupel aus skalierter breite, hoehe
+* @return tripel aus skalierter breite, hoehe, faktor
 */
 function pageScale(container, pageWidth, pageHeight){
   let contentHeight = container.height();
@@ -25,7 +25,37 @@ function pageScale(container, pageWidth, pageHeight){
     shownheight = pageHeight * strech;
   }
   
-  return [shownwidth, shownheight];
+  return [shownwidth, shownheight, strech];
+}
+
+/*Funktion um die Faltlinie auf einer Karte anzuzeigen.
+  Die Faltung muss entweder horizontal oder vertikal sein
+  @param x1, y1 startpunkt der Falte
+  @param x2, y2 endpunkt der Falte
+  @param height hoehe der Karte
+  @param width breite der Karte
+  @param scale Skalierungsfaktor
+  @return Faltlinie
+ */
+function drawFold(x1, y1, x2, y2, height, width, scale){
+  if(x1 === x2){
+    //vFold
+    let vFold = $('<div class="vFold"></div>');
+    vFold.css(Object.assign({
+      left: x1*scale,
+      height: height,
+    }));
+    return vFold;
+  }
+  if(y1 === y2){
+    //hFold
+    let hFold = $('<div class="hFold"></div>');
+    hFold.css(Object.assign({
+      top: (y1*scale),
+      width: width,
+    }));
+    return hFold;
+  }
 }
 
 const bgStretchObjs = {
@@ -46,6 +76,10 @@ const loadPage = function(page){
     height: scale[1],
     'background-image': 'url("'+web2print.links.materialUrl+page.material.textureSlug+'")',
   }, bgStretchObjs[page.material.tiling]));
+
+  for(let fold of page.folds) {
+    newPage.append(drawFold(fold.x1, fold.y1, fold.x2, fold.y2, scale[1], scale[0], scale[2]));
+  }
   holder.append(newPage);
   //spawning
   newPage.click(function(e){

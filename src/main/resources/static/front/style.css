@@ -132,3 +132,15 @@ body {
   position: absolute;
   transform: translateX(-100%);
 }
+
+.hFold{
+  position: absolute;
+  background-color: deeppink;
+  height: 1px;
+}
+
+.vFold{
+  position: absolute;
+  background-color: deeppink;
+  width: 1px;
+}
