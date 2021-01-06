@@ -1,0 +1,11 @@
+{
+  "name" : "Cinzel",
+  "faces" : [
+    {
+      "v" : 1,
+      "fs" : "normal",
+      "fw" : 500,
+      "s" : "cinzel/static/Cinzel-Regular.ttf"
+    }
+  ]
+}
