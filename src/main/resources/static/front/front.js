@@ -212,8 +212,27 @@ const getNodesFromSelection = function() {
     return [[], undefined];
 
   let range = selection.getRangeAt(0);
+  const container = range.commonAncestorContainer;
+  //(lucas) this fixes a selection bug when selecting a whole line / the whole block of text
+  //        where the endContainer becomes the container itself
+  if($(range.startContainer).hasClass('text')){
+    let el = container.childNodes[0];
+    while (el.nodeName === 'BR' && el !== range.endContainer.parentNode)
+      el = el.nextSibling;
+    range.setStart(el.childNodes[0], 0);
+  }
+  if($(range.endContainer).hasClass('text')){
+    let el = container.childNodes[range.endOffset];
+    if (!el) {
+      el = container.childNodes[container.childNodes.length - 1];
+    }
+    while (el.nodeName === 'BR' && el !== range.startContainer.parentNode)
+      el = el.previousSibling;
+    const txtEl = el.childNodes[0];
+    range.setEnd(txtEl, txtEl.textContent.length);
+  }
   let _iter = document.createNodeIterator(
-      range.commonAncestorContainer, NodeFilter.SHOW_TEXT, {
+      container, NodeFilter.SHOW_TEXT, {
         acceptNode: function(n) {
           return (n.nodeName === 'BR') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
         }
