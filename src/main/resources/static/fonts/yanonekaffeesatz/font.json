@@ -1,0 +1,11 @@
+{
+  "name" : "YanoneKaffeesatz",
+  "faces" : [
+    {
+      "v" : 1,
+      "fs" : "normal",
+      "fw" : 500,
+      "s" : "yanonekaffeesatz/static/YanoneKaffeesatz-Regular.ttf"
+    }
+  ]
+}

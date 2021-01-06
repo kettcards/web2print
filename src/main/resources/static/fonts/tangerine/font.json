@@ -1,0 +1,11 @@
+{
+  "name" : "Tangerine",
+  "faces" : [
+    {
+      "v" : 1,
+      "fs" : "normal",
+      "fw" : 500,
+      "s" : "tangerine/Tangerine-Regular.ttf"
+    }
+  ]
+}

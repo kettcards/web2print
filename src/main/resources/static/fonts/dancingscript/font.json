@@ -1,0 +1,11 @@
+{
+  "name" : "DancingScript",
+  "faces" : [
+    {
+      "v" : 1,
+      "fs" : "normal",
+      "fw" : 500,
+      "s" : "dancingscript/static/DancingScript-Regular.ttf"
+    }
+  ]
+}

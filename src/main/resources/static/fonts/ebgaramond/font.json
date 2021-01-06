@@ -1,0 +1,11 @@
+{
+  "name" : "EBGaramond",
+  "faces" : [
+    {
+      "v" : 1,
+      "fs" : "normal",
+      "fw" : 500,
+      "s" : "ebgaramond/static/EBGaramond-Regular.ttf"
+    }
+  ]
+}

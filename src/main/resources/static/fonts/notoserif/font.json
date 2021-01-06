@@ -1,0 +1,11 @@
+{
+  "name" : "NotoSerif",
+  "faces" : [
+    {
+      "v" : 1,
+      "fs" : "normal",
+      "fw" : 500,
+      "s" : "notoserif/NotoSerif-Regular.ttf"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name" : "KaushanScript",
+  "faces" : [
+    {
+      "v" : 1,
+      "fs" : "normal",
+      "fw" : 500,
+      "s" : "kaushanscript/KaushanScript-Regular.ttf"
+    }
+  ]
+}

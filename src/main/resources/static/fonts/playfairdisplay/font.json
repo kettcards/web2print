@@ -1,0 +1,11 @@
+{
+  "name" : "PlayfairDisplay",
+  "faces" : [
+    {
+      "v" : 1,
+      "fs" : "normal",
+      "fw" : 500,
+      "s" : "playfairdisplay/static/PlayfairDisplay-Regular.ttf"
+    }
+  ]
+}

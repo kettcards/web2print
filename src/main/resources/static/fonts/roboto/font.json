@@ -1,0 +1,11 @@
+{
+  "name" : "Roboto",
+  "faces" : [
+    {
+      "v" : 1,
+      "fs" : "normal",
+      "fw" : 500,
+      "s" : "roboto/static/Roboto-Regular.ttf"
+    }
+  ]
+}

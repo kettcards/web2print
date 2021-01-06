@@ -1,0 +1,11 @@
+{
+  "name" : "JosefinSlab",
+  "faces" : [
+    {
+      "v" : 1,
+      "fs" : "normal",
+      "fw" : 500,
+      "s" : "josefinslab/static/JosefinSlab-Regular.ttf"
+    }
+  ]
+}
