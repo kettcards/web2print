@@ -1,217 +1,320 @@
 package de.kettcards.web2print.pdfGen;
 
-import javassist.expr.Instanceof;
+import de.kettcards.web2print.model.db.CardFormat;
+import de.kettcards.web2print.pdfGen.cardData.*;
 import lombok.Value;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
+import org.apache.pdfbox.pdmodel.*;
+import org.json.JSONObject;
 
-import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
+import java.util.HashMap;
+import java.util.ListIterator;
+import java.util.function.Function;
 
 public class PDFGenerator {
-    // (lucas) not complete/final
-    @Value
-    public static class CardData {
-        private final int version;
+    public static final HashMap<String, Font.Provider> FontStore = new HashMap<>(11);
 
-        private final float pageWidth;
-        private final float pageHeight;
+    /**
+     * @param dimensionProvider a provider that can obtain the dimensions of a card by their id
+     */
+    public static PDDocument GenerateFromJSON(JSONObject jRoot, Function<String, CardFormat> dimensionProvider) throws IOException, ParseException {
+        var doc = new Document();
 
-        private final List<TextBox> textBoxes;
+        var ratio = dimensionProvider.apply(jRoot.getString("card"));
+        var cardData = new CardData(jRoot.getInt("v"), ratio.getWidth(), ratio.getHeight());
 
-        public CardData(int version, float pageWidth, float pageHeight){
-            if(version != 0)
-                throw new IllegalArgumentException("version must be 0 but is "+version);
-            this.version = version;
-            this.pageWidth = pageWidth;
-            this.pageHeight = pageHeight;
-            textBoxes = new ArrayList<>();
-        }
+        for (var oBox : jRoot.getJSONArray("texts")) {
+            var jBox = (JSONObject) oBox;
+            var box = new TextBoxData(
+                    jBox.getFloat("x"), jBox.getFloat("y"),
+                    jBox.getFloat("w"), jBox.getFloat("h"),
+                    jBox.getString("a").charAt(0)
+            );
 
-        public PDRectangle getPageBounds() {
-            return new PDRectangle(mm2pt(pageWidth), mm2pt(pageHeight));
-        }
-    }
-    // (lucas) not complete/final
-    @Value
-    public static class TextBox {
-        private final float x, y, w, h;
-        private final char alignment;
-        private final List<ITextRun> textRuns;
-
-        public TextBox(float x, float y, float w, float h, char alignment) {
-            this.x = x;
-            this.y = y;
-            this.w = w;
-            this.h = h;
-            this.alignment = alignment;
-            textRuns = new ArrayList<>();
-        }
-
-        public void applyTo(PDPageContentStream content) throws IOException {
-            content.newLineAtOffset(mm2pt(x), mm2pt(y));
-            // (lucas) do something with box related attributes here (alignment etc)
-
-        }
-    }
-    @Value
-    public static class TextRun implements ITextRun {
-        private final Font font;
-        private final float fontSize;
-        private final EnumSet<FontStyle> attributes;
-        private final String text;
-
-        public TextRun(Font font, float fontSize, EnumSet<FontStyle> attributes, String text) {
-            this.font = font;
-            this.fontSize = fontSize;
-            this.attributes = attributes;
-            this.text = text;
-        }
-
-        public void applyTo(PDPageContentStream content) throws IOException {
-            content.setFont(font.Resolve(attributes), fontSize);
-            content.setLeading(fontSize);
-            content.showText(text);
-            // (lucas) todo: draw a line for underlined text
-
-        }
-    }
-
-    public static class CustomTextRun implements ITextRun{
-        private CustomFont customFont;
-        private final float fontSize;
-        private final EnumSet<FontStyle> attributes;
-        private final String text;
-
-        public CustomTextRun(CustomFont customFont, float fontSize, EnumSet<FontStyle> attributes, String text) {
-            this.customFont = customFont;
-            this.fontSize = fontSize;
-            this.attributes = attributes;
-            this.text = text;
-        }
-
-        public void applyTo(PDPageContentStream content, PDDocument doc) throws IOException{
-            content.setFont(PDType0Font.load(doc, customFont.Resolve(attributes)), fontSize);
-            content.setLeading(fontSize);
-            content.showText(text);
-        }
-
-        @Override
-        public void applyTo(PDPageContentStream content) throws IOException {
-
-        }
-    }
-
-    @Value
-    public static class Font {
-        private final PDFont _default;
-        private final PDFont bold;
-        private final PDFont italic;
-        private final PDFont bold_Italic;
-
-        public Font(PDFont _default, PDFont bold, PDFont italic, PDFont bold_italic) {
-            this._default = _default;
-            this.bold = bold;
-            this.italic = italic;
-            bold_Italic = bold_italic;
-        }
-
-        public PDFont Resolve(EnumSet<FontStyle> style) {
-          if(style.contains(FontStyle.BOLD)){
-            if(style.contains(FontStyle.ITALIC)){
-              return bold_Italic;
-            } else {
-              return bold;
-            }
-          } else if(style.contains(FontStyle.ITALIC)) {
-            return italic;
-          } else {
-            return _default;
-          }
-        }
-    }
-
-    @Value
-    public static class CustomFont {
-        private File custom;
-        private File custom_bold;
-        private File custom_bold_italic;
-        private File custom_italic;
-
-
-        public CustomFont(File custom, File custom_bold, File custom_italic, File custom_bold_italic){
-            this.custom = custom;
-            this.custom_bold = custom_bold;
-            this.custom_italic = custom_italic;
-            this.custom_bold_italic = custom_bold_italic;
-        }
-
-        public File Resolve(EnumSet<FontStyle> style) throws IOException {
-            if(style.contains(FontStyle.BOLD)){
-                if(style.contains(FontStyle.ITALIC)){
-                    return custom_bold_italic;
+            for (var oRun : jBox.getJSONArray("r")) {
+                TextRunData run;
+                if (oRun.getClass() == String.class) {
+                    if (!oRun.equals("br"))
+                        throw new ParseException("if a text run array contains a raw string it must be 'br' but it was '" + oRun + "'", -1);
+                    else
+                        run = TextRunData.LineBreak;
                 } else {
-                    return custom_bold;
+                    var jRun = (JSONObject) oRun;
+                    var fontName = jRun.getString("f");
+                    if (!FontStore.containsKey(fontName))
+                        throw new RuntimeException("the font '" + fontName + "' was not added to the FontStore before using it in Generate");
+                    var docFonts = doc.getLoadedFonts();
+                    if (!docFonts.containsKey(fontName))
+                        doc.addFont(FontStore.get(fontName));
+                    run = new TextRunData(
+                            docFonts.get(fontName),
+                            jRun.getFloat("s"),
+                            FontStyle.getSet(jRun.getInt("a")),
+                            jRun.getString("t")
+                    );
                 }
-            } else if(style.contains(FontStyle.ITALIC)) {
-                return custom_italic;
-            } else {
-                return custom_italic;
+
+                box.getTextRuns().add(run);
             }
+
+            cardData.getTextBoxes().add(box);
         }
+
+        ApplyTo(doc.getDocument(), cardData);
+
+        return doc.getDocument();
     }
 
-    public static final ITextRun lineBreak = PDPageContentStream::newLine;
+    public static void ApplyTo(PDDocument doc, CardData data) throws IOException {
 
-    public interface ITextRun {
-        void applyTo(PDPageContentStream content) throws IOException;
-    }
-
-    public static PDDocument Generate(CardData data) throws IOException {
-        PDDocument doc = new PDDocument();
+        var lineList = new ArrayList<LineData>();
 
         var page = new PDPage(data.getPageBounds());
         doc.addPage(page);
 
         var content = new PDPageContentStream(doc, page);
-        content.beginText();
-        for(var box : data.textBoxes) {
-            box.applyTo(content);
-            for(var run : box.textRuns) {
-                run.applyTo(content);
-                if (run instanceof CustomTextRun){
-                    ((CustomTextRun) run).applyTo(content,doc);
-                }
+
+        for (var box : data.getTextBoxes()) {
+            switch (box.getAlignment()) {
+                case 'l':
+                    textBoxLeft(content, box, lineList);
+                    break;
+                case 'r':
+                    textBoxRight(content, box, lineList);
+                    break;
+                case 'c':
+                    textBoxCenter(content, box, lineList);
+                    break;
+                case 'j':
+                    textBoxJustify(content, box, lineList);
+                    break;
+                default:
+                    continue;
             }
         }
-        content.endText();
         content.close();
+    }
 
-        return doc;
+    private static void textBoxLeft(PDPageContentStream content, TextBoxData box, ArrayList<LineData> lineList) throws IOException {
+        float cursorX, cursorY;
+        content.beginText();
+        cursorX = box.getOffX();
+        cursorY = box.getOffY();
+        box.applyTo(content);
+        var runsIter = box.getTextRuns().listIterator();
+        while (runsIter.hasNext()) {
+            TextRunData run = runsIter.next();
+            if (run == TextRunData.LineBreak) {
+                cursorX = box.getOffX();
+                cursorY = getCursorY(content, box, cursorY, runsIter);
+            } else {
+                var font = run.getFont().resolve(run.getAttributes());
+                content.setFont(font, run.getFontSize());
+                content.showText(run.getText());
+
+                var runWidth = run.getFontSize() * font.getStringWidth(run.getText()) / 1000;
+                if (run.getAttributes().contains(FontStyle.UNDERLINE)) {
+                    lineList.add(new LineData(cursorX, cursorY - 1.75f, runWidth));
+                }
+                cursorX += runWidth;
+            }
+        }
+        line(content, lineList);
+    }
+
+    private static void textBoxRight(PDPageContentStream content, TextBoxData box, ArrayList<LineData> lineList) throws IOException {
+        float cursorX, cursorY;
+        content.beginText();
+        cursorX = box.getW();
+        cursorY = box.getOffY();
+        box.applyTo(content);
+        var runsIter = box.getTextRuns().listIterator();
+        while (runsIter.hasNext()) {
+            TextRunData run = runsIter.next();
+            if (run == TextRunData.LineBreak) {
+                cursorX = box.getW();
+                cursorY = getCursorY(content, box, cursorY, runsIter);
+            } else {
+                var font = run.getFont().resolve(run.getAttributes());
+                var runWidth = run.getFontSize() * font.getStringWidth(run.getText()) / 1000;
+                content.setFont(font, run.getFontSize());
+                content.newLineAtOffset(-runWidth, 0);
+                content.showText(run.getText());
+                content.newLineAtOffset(runWidth, 0);
+
+                if (run.getAttributes().contains(FontStyle.UNDERLINE)) {
+                    lineList.add(new LineData(cursorX - runWidth, cursorY - 1.75f, runWidth));
+                }
+                cursorX += runWidth;
+            }
+        }
+        line(content, lineList);
+    }
+
+    private static void textBoxCenter(PDPageContentStream content, TextBoxData box, ArrayList<LineData> lineList) throws IOException {
+        float cursorX, cursorY;
+        content.beginText();
+        cursorX = box.getW() / 2;
+        cursorY = box.getOffY();
+        box.applyTo(content);
+        var runsIter = box.getTextRuns().listIterator();
+        while (runsIter.hasNext()) {
+            TextRunData run = runsIter.next();
+            if (run == TextRunData.LineBreak) {
+                cursorX = box.getW() / 2;
+                cursorY = getCursorY(content, box, cursorY, runsIter);
+            } else {
+                var font = run.getFont().resolve(run.getAttributes());
+                var runWidth = run.getFontSize() * font.getStringWidth(run.getText()) / 1000;
+                content.setFont(font, run.getFontSize());
+                content.newLineAtOffset(-(runWidth / 2), 0);
+                content.showText(run.getText());
+                content.newLineAtOffset((runWidth / 2), 0);
+
+                if (run.getAttributes().contains(FontStyle.UNDERLINE)) {
+                    lineList.add(new LineData(cursorX - (runWidth / 2), cursorY - 1.75f, runWidth));
+                }
+                cursorX += runWidth;
+            }
+        }
+        line(content, lineList);
+    }
+
+    private static void textBoxJustify(PDPageContentStream content, TextBoxData box, ArrayList<LineData> lineList) throws IOException {
+        float cursorX, cursorY, wordSpacing = 0, free = box.getW();
+        long spaceCount = 0;
+        String line = "";
+        content.beginText();
+        cursorX = box.getOffX();
+        cursorY = box.getOffY();
+        box.applyTo(content);
+        var runsIter = box.getTextRuns().listIterator();
+        TextRunData current = null, next = null;
+        while (runsIter.hasNext()) {
+            if(current == null){
+                current = runsIter.next();
+            }else{
+                current = next;
+            }
+            if (current == TextRunData.LineBreak) {
+                cursorX = box.getOffX();
+                cursorY = getCursorY(content, box, cursorY, runsIter);
+                free = box.getW();
+                spaceCount = 0;
+                next = runsIter.next();
+            } else {
+                var font = current.getFont().resolve(current.getAttributes());
+                var runWidth = current.getFontSize() * font.getStringWidth(current.getText()) / 1000;
+                free -= runWidth;
+                spaceCount += current.getText().chars().filter(ch -> ch == ' ').count();
+                line = line + current.getText();
+
+                next = runsIter.next();
+
+                if (!runsIter.hasNext() || next == TextRunData.LineBreak) {
+                    if (free > 0) {
+                        wordSpacing = free / spaceCount;
+                    }
+                    content.setFont(font, current.getFontSize());
+                    System.out.println("länge"+ line.length());
+                    if (line.length() >= 40) {
+                        content.setWordSpacing(wordSpacing);
+                    }
+                    content.showText(line);
+
+                    line = "";
+                }
+
+                if (current.getAttributes().contains(FontStyle.UNDERLINE)) {
+                    lineList.add(new LineData(cursorX, cursorY - 1.75f, runWidth));
+                }
+                cursorX += runWidth;
+            }
+        }
+        line(content, lineList);
+    }
+
+    private static void line(PDPageContentStream content, ArrayList<LineData> lineList) throws IOException {
+        content.endText();
+
+        if (lineList.size() > 0) {
+            content.setLineWidth(1);
+            for (var line : lineList) {
+                content.moveTo(line.getX(), line.getY());
+                content.lineTo(line.getX() + line.getW(), line.getY());
+                content.stroke();
+            }
+            lineList.clear();
+        }
+    }
+
+    private static float getCursorY(PDPageContentStream content, TextBoxData box, float cursorY, ListIterator<TextRunData> runsIter) throws IOException {
+        float largestFontSize = 0;
+        var lineIter = box.getTextRuns().listIterator(runsIter.nextIndex());
+        TextRunData nxt;
+        while (lineIter.hasNext() && (nxt = lineIter.next()) != TextRunData.LineBreak) {
+            if (nxt.getFontSize() > largestFontSize) {
+                largestFontSize = nxt.getFontSize();
+            }
+        }
+        cursorY -= largestFontSize;
+
+        if (largestFontSize > 0) {
+            content.setLeading(largestFontSize);
+            content.newLine();
+            //dont need to set the font back, itll get set back with the next run
+        }
+        return cursorY;
+    }
+
+
+    @Value
+    private static class LineData {
+        float x;
+        float y;
+        float w;
+
+        public LineData(float x, float y, float w) {
+            this.x = x;
+            this.y = y;
+            this.w = w;
+        }
+    }
+
+    @Value
+    private static class Document {
+        PDDocument document;
+        HashMap<String, Font> loadedFonts;
+
+        public Document() {
+            document = new PDDocument();
+            loadedFonts = new HashMap<>(5);
+        }
+
+        public void addFont(Font.Provider provider) throws IOException {
+            getLoadedFonts().put(provider.getName(), provider.load(getDocument()));
+        }
     }
 
     /**
      * converts mm to pt
+     *
      * @param value in mm
      * @return value in pt
      */
-    public static float mm2pt(float value){
+    public static float mm2pt(float value) {
         return value / 25.4f * 72.0f;
     }
 
     /**
      * converts pt to mm
+     *
      * @param value in pt
      * @return value in mm
      */
-    public static float pt2mm(float value){
+    public static float pt2mm(float value) {
         return value * 25.4f / 72.0f;
     }
 }

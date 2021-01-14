@@ -1,5 +1,7 @@
 package de.kettcards.web2print.pdfGen;
 
+import java.util.EnumSet;
+
 public enum FontStyle {
     NONE      (0),
     BOLD      (1 << 0),
@@ -10,5 +12,15 @@ public enum FontStyle {
 
     FontStyle(int value) {
         Value = value;
+    }
+
+    public static EnumSet<FontStyle> getSet(int combined) {
+        EnumSet<FontStyle> ret = EnumSet.noneOf(FontStyle.class);
+        for(var style : values()) {
+            if((style.Value & combined) != 0)
+                ret.add(style);
+        }
+
+        return ret;
     }
 }

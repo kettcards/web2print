@@ -45,6 +45,7 @@ dependencies {
 	runtimeOnly group: 'org.webjars.bower', name: 'jquery', version: '3.5.1'
 
 	implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.22'
+	implementation group: 'org.json', name: 'json', version: '20201115'
 
 	implementation group: 'org.apache.poi', name: 'poi', version: '4.1.2'
 	implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
