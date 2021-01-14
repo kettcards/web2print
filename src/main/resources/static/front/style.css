@@ -115,8 +115,8 @@ body {
   white-space: nowrap;
 }
 
-#toolBox select {
-  width: 100%;
+#toolbox #fontSizeSelect {
+  max-width: 50px;
 }
 
 #toolBox button {

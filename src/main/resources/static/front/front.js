@@ -1,5 +1,7 @@
 const make  = document.createElement.bind(document);
 const makeT = document.createTextNode.bind(document);
+const stopPropagation = function(e){e.stopPropagation();};
+const falsify = function() {return false;};
 
 const holder = $('#holder>.center');
 
@@ -69,6 +71,8 @@ const bgStretchObjs = {
 
 let $pages;
 const loadPage = function(page){
+  console.log(page);
+
   let scale = pageScale(holder.parent(), page.cardFormat.width, page.cardFormat.height);
   const newPage = $('<div class="page"></div>');
   newPage.css(Object.assign({
@@ -81,7 +85,7 @@ const loadPage = function(page){
     newPage.append(drawFold(fold.x1, fold.y1, fold.x2, fold.y2, scale[1], scale[0], scale[2]));
   }
   holder.append(newPage);
-  //spawning
+  //spawning new elements
   newPage.click(function(e){
     if(!state.addOnClick)
       return;
@@ -128,6 +132,11 @@ const Spawner = {
       .mouseup(hTxtMUp)
       .click(hElClick)
       .on('input', hElInput)
+        // (lucas 09.01.21)
+        // this is a quick fix to disable the glitchy behaviour when dragging selected text.
+        // unfortunately this also produces quite the rough experience when a user actually wants do use drag n drop
+      .on("dragstart", falsify)
+      .on("drop", falsify)
       .css(p);
   },
   IMAGE: undefined,
@@ -147,22 +156,27 @@ const hTxtMDown = function(e){
   state.addOnClick = undefined;
 };
 const hTxtMUp = function(e){
-  //(lucas 05.01.20) compat: 93.42%  destructuring ... might need to do this differently
+  //(lucas 05.01.20)
+  // compat: 93.42%  destructuring ... might need to do this differently
   const [nodes, _] = getNodesFromSelection();
   const $nodes = $(nodes);
   let fontFam = $nodes.eq(0).css('font-family');
+  let fontSize = +$nodes.eq(0).css('font-size').slice(0, -2);
   let index;
   for(let i = 1; i < $nodes.length; i++){
-    const nextFam = $nodes.eq(i).css('font-family');
+    const nextFam  = $nodes.eq(i).css('font-family');
+    const nextSize = +$nodes.eq(i).css('font-size').slice(0, -2);
     if(fontFam !== nextFam){
       index = -1;
-      break;
+    }
+    if(nextSize < fontSize) {
+      fontSize = nextSize;
     }
   }
-  if(index === undefined)
-    index = FontNames.indexOf(fontFam);
 
-  $fontSelect[0].selectedIndex = index;
+  $fontSelect[0].selectedIndex = index || FontNames.indexOf(fontFam);
+
+  $fontSizeSelect.val(fontSize);
 };
 const hElClick = function(e){
   e.stopPropagation();
@@ -175,9 +189,11 @@ const hElClick = function(e){
 const hElInput = function(e){
   const box = e.delegateTarget;
   const runs = box.childNodes;
-  //(lucas) if the user selects all (ctrl-a) and then starts typing the inner span is removed
-  //        this solution isn't very clean but it works
-  //(lucas 05.01.20) todo: would like to find a better way to do this
+  // (lucas)
+  // if the user selects all (ctrl-a) and then starts typing the inner span is removed
+  // this solution isn't very clean but it works
+  // (lucas 05.01.20)
+  // todo: would like to find a better way to do this
   if(runs.length === 0){
     const inner = make('span');
     inner.classList.add('fontStyle');
@@ -228,9 +244,7 @@ $('.addElBtn').click(function(e){
 //changing text alignment
 $(".alignmentBtn").click(function(){
   state.target.css('text-align', $(this).val());
-}).mouseup(function(e){  
-  e.stopPropagation();
-});
+}).mouseup(stopPropagation);
 $(".fontTypeButton").click(function(){
   const classToAdd = $(this).val();
   const $nodes = $(makeNodesFromSelection());
@@ -245,25 +259,45 @@ const getNodesFromSelection = function() {
   if(selection.rangeCount < 1)
     return [[], undefined];
 
+  //(lucas 09.01.21)
+  // todo: loop over all ranges to support multi select,
+  //       this then also needs to be respected while saving / restoring the selection
   let range = selection.getRangeAt(0);
   const container = range.commonAncestorContainer;
+  let start = range.startContainer;
+  let end = range.endContainer;
+  const $start = $(start);
   //(lucas) this fixes a selection bug when selecting a whole line / the whole block of text
-  //        where the endContainer becomes the container itself
-  if($(range.startContainer).hasClass('text')){
+  //        where the endContainer becomes the parent of the container itself
+  if($start.hasClass('text')){
     let el = container.childNodes[0];
-    while (el.nodeName === 'BR' && el !== range.endContainer.parentNode)
+    while (el.nodeName === 'BR' && el !== end.parentNode)
       el = el.nextSibling;
-    range.setStart(el.childNodes[0], 0);
+    start = el.childNodes[0];
+    range.setStart(start, 0);
+  } else if($start.hasClass('fontStyle')) {
+    start = start.childNodes[0];
+    range.setStart(start, range.startOffset);
+  } else if(range.startOffset === start.textContent.length) {
+    start = start.parentNode.nextSibling.childNodes[0];
+    range.setStart(start, 0);
   }
-  if($(range.endContainer).hasClass('text')){
+  const $end = $(end);
+  if($end.hasClass('text')){
     let el = container.childNodes[range.endOffset];
     if (!el) {
       el = container.childNodes[container.childNodes.length - 1];
     }
-    while (el.nodeName === 'BR' && el !== range.startContainer.parentNode)
+    while (el.nodeName === 'BR' && el !== start.parentNode)
       el = el.previousSibling;
-    const txtEl = el.childNodes[0];
-    range.setEnd(txtEl, txtEl.textContent.length);
+    end = el.childNodes[0];
+    range.setEnd(end, end.textContent.length);
+  } else if($end.hasClass('fontStyle')) {
+    end = end.childNodes[0];
+    range.setEnd(end, range.endOffset);
+  } else if (range.endOffset === 0) {
+    end = end.parentNode.previousSibling.childNodes[0];
+    range.setEnd(end, end.textContent.length);
   }
   let _iter = document.createNodeIterator(
       container, NodeFilter.SHOW_TEXT, {
@@ -276,10 +310,10 @@ const getNodesFromSelection = function() {
   // (lucas) iterate over all _text_ nodes in the selection and save their parents (spans)
   while(_iter.nextNode()) {
     let ref = _iter.referenceNode;
-    if(nodes.length < 1 && ref !== range.startContainer)
+    if(nodes.length < 1 && ref !== start)
       continue;
     nodes.push(ref.parentNode);
-    if(ref === range.endContainer)
+    if(ref === end)
       break;
   }
 
@@ -287,7 +321,8 @@ const getNodesFromSelection = function() {
 }
 
 const makeNodesFromSelection = function() {
-  //(lucas 05.01.20) compat: 93.42%  destructuring ... might need to do this differently
+  // (lucas 05.01.20)
+  // compat: 93.42%  destructuring ... might need to do this differently
   const [nodes, range] = getNodesFromSelection();
 
   if(nodes.length === 1) {
@@ -312,7 +347,6 @@ const makeNodesFromSelection = function() {
     if(slice) {
       node.childNodes[0].replaceWith(txt.substr(range.startOffset, range.endOffset - range.startOffset));
     }
-
   } else if (nodes.length > 1) {
     const first = nodes[0];
     let txt = first.textContent;
@@ -336,6 +370,16 @@ const makeNodesFromSelection = function() {
       last.childNodes[0].replaceWith(txt.substr(0, range.endOffset));
     }
   }
+
+  //(lucas) restore selection after creating new nodes
+  const selection = document.getSelection();
+  let newRange = new Range();
+  newRange.setStart(nodes[0].childNodes[0], 0);
+  let lastNode = nodes[nodes.length - 1].childNodes[0];
+  newRange.setEnd(lastNode, lastNode.textContent.length);
+  selection.removeAllRanges();
+  selection.addRange(newRange);
+
   return nodes;
 };
 
@@ -490,7 +534,8 @@ const beginLoadFont = function(name) {
     });
 };
 
-// (lucas 04.01.21) compat: this might need to use another api, coverage is 93% but that has to mean nothing
+// (lucas 04.01.21)
+// compat: this might need to use another api, coverage is 93% but that has to mean nothing
 const loadFont = function(font) {
   let attribs = {};
   let promises = new Array(font.faces.length);
@@ -501,7 +546,7 @@ const loadFont = function(font) {
       weight: face.fw
     })
     .load()
-    .then(function(f){ //(lucas) cant call .then(document.fonts.add) for some reason
+    .then(function(f){
       document.fonts.add(f);
       attribs[face.v] = face.n;
     })
@@ -513,3 +558,18 @@ const loadFont = function(font) {
     FontAttributeMap[font.name] = attribs;
   });
 };
+
+const $fontSizeSelect = $('#fontSizeSelect')
+.mousedown(function(e){
+  const s = document.getSelection();
+  if(s.rangeCount === 1)
+    state.range = s.getRangeAt(0).cloneRange();
+})
+.mouseup(stopPropagation)
+.change(function(e) {
+  //restore selection
+  const selection = document.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(state.range);
+  $(makeNodesFromSelection()).css('font-size', e.target.value+'px');
+});
