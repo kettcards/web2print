@@ -1,6 +1,6 @@
 package de.kettcards.web2print.model.tableimport;
 
-import de.kettcards.web2print.model.db.AspectRatio;
+import de.kettcards.web2print.model.db.CardFormat;
 import de.kettcards.web2print.model.db.Fold;
 import de.kettcards.web2print.model.db.VirtualId;
 import lombok.AllArgsConstructor;
@@ -48,8 +48,8 @@ public class CardFormatSheetRow implements VirtualId {
         return Objects.hash(height, width,foldType);
     }
 
-    public AspectRatio toAspectRatio() throws IllegalArgumentException {
-        var ratio = new AspectRatio();
+    public CardFormat toCardFormat() throws IllegalArgumentException {
+        var ratio = new CardFormat();
         ratio.setName(nameExplanation); //TODO add name with parser
         //Fold.Type type = Fold.Type.valueOf(foldType); //TODO check more dynamically
         switch (foldType) {
@@ -67,8 +67,9 @@ public class CardFormatSheetRow implements VirtualId {
         return ratio;
     }
 
-    public Fold toFold() throws IllegalArgumentException {
+    public Fold toFold(CardFormat format) throws IllegalArgumentException {
         var fold = new Fold();
+        fold.setCardFormat(format);
         fold.setAngle(45); //TODO make angle changeable
         switch (foldType) { //TODO check more dynamically
             case "links":

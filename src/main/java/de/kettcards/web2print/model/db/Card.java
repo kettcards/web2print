@@ -36,17 +36,13 @@ public class Card implements Serializable, VirtualId {
 
     @JsonManagedReference
     @ManyToOne
-    @JoinColumn(name = "aspectRatio_id")
-    private AspectRatio aspectRatio;
+    @JoinColumn(name = "cardFormat_id")
+    private CardFormat cardFormat;
 
     @JsonManagedReference
     @ManyToOne
     @JoinColumn(name = "material_id")
     private Material material;
-
-    @ManyToMany
-    @JoinTable(name = "fold_map", joinColumns = { @JoinColumn(name = "card_id") }, inverseJoinColumns = { @JoinColumn(name = "fold_id") })
-    private List<Fold> folds;
 
     @JsonProperty("geometry")
     @OneToMany(mappedBy = "card")

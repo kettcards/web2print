@@ -30,7 +30,7 @@ public class FontController {
     public void init() throws IOException {
         PathMatchingResourcePatternResolver pathMatchingResourcePatternResolver = new PathMatchingResourcePatternResolver();
         Resource[] resources = pathMatchingResourcePatternResolver.getResources("classpath:/static/fonts/**");
-        System.out.println(Arrays.toString(resources));
+        log.debug(Arrays.toString(resources));
         for (Resource resource : resources) {
             String filename = resource.getFilename();
             if (filename == null) {
@@ -53,14 +53,14 @@ public class FontController {
     public ResponseEntity<List<String>> getFonts() {
         var fonts = new ArrayList<String>();
         fonts.addAll(fontPackageMap.keySet());
-        System.out.println(fonts);
+        log.debug(fonts.toString());
         return ResponseEntity.ok(fonts);
     }
 
     @GetMapping("/font/{fontId}")
     public ResponseEntity<FontPackage> getFonts(@PathVariable("fontId") String fontId) {
         FontPackage fontPackage = fontPackageMap.get(fontId);
-        System.out.println(fontPackage);
+        log.debug(fontPackage.toString());
         return ResponseEntity.ok(fontPackage);
     }
 

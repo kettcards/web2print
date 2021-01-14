@@ -69,7 +69,7 @@ const bgStretchObjs = {
 
 let $pages;
 const loadPage = function(page){
-  let scale = pageScale(holder.parent(), page.aspectRatio.width, page.aspectRatio.height);
+  let scale = pageScale(holder.parent(), page.cardFormat.width, page.cardFormat.height);
   const newPage = $('<div class="page"></div>');
   newPage.css(Object.assign({
     width: scale[0],
@@ -77,7 +77,7 @@ const loadPage = function(page){
     'background-image': 'url("'+web2print.links.materialUrl+page.material.textureSlug+'")',
   }, bgStretchObjs[page.material.tiling]));
 
-  for(let fold of page.folds) {
+  for(let fold of page.cardFormat.folds) {
     newPage.append(drawFold(fold.x1, fold.y1, fold.x2, fold.y2, scale[1], scale[0], scale[2]));
   }
   holder.append(newPage);

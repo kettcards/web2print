@@ -1,7 +1,7 @@
 package de.kettcards.web2print.web;
 
-import de.kettcards.web2print.model.db.AspectRatio;
-import de.kettcards.web2print.repository.AspectRatioRepository;
+import de.kettcards.web2print.model.db.CardFormat;
+import de.kettcards.web2print.repository.CardFormatRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,28 +11,28 @@ import org.springframework.web.bind.annotation.*;
 public class FormatController {
 
     @Autowired
-    private AspectRatioRepository aspectRatioRepository;
+    private CardFormatRepository cardFormatRepository;
 
     @GetMapping("/aspectRatio")
-    public ResponseEntity<Iterable<AspectRatio>> getRatio() {
-        return ResponseEntity.ok(aspectRatioRepository.findAll());
+    public ResponseEntity<Iterable<CardFormat>> getRatio() {
+        return ResponseEntity.ok(cardFormatRepository.findAll());
     }
 
     @GetMapping("/aspectRatio/{id}")
-    public ResponseEntity<AspectRatio> getRatios(@PathVariable Integer id) {
-        return ResponseEntity.ok(aspectRatioRepository.findById(id).orElseThrow());
+    public ResponseEntity<CardFormat> getRatios(@PathVariable Integer id) {
+        return ResponseEntity.ok(cardFormatRepository.findById(id).orElseThrow());
     }
 
     @PostMapping("/aspectRatio")
-    public void addRatio(@RequestBody AspectRatio aspectRatio) {
-        aspectRatioRepository.save(aspectRatio);
+    public void addRatio(@RequestBody CardFormat cardFormat) {
+        cardFormatRepository.save(cardFormat);
     }
 
     @DeleteMapping("/aspectRatio/{id}")
     public void removeRatio(@PathVariable Integer id) {
-        AspectRatio aspectRatio = new AspectRatio();
-        aspectRatio.setId(id);
-        aspectRatioRepository.delete(aspectRatio);
+        CardFormat cardFormat = new CardFormat();
+        cardFormat.setId(id);
+        cardFormatRepository.delete(cardFormat);
     }
 
 

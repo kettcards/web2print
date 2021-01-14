@@ -53,14 +53,13 @@ public class CardOverviewSheetRow implements VirtualId {
         return orderId.hashCode();
     }
 
-    public Card toCard(Material material, AspectRatio aspectRatio, List<Fold> folds) {
+    public Card toCard(Material material, CardFormat cardFormat) {
         Card card = new Card();
         card.setOrderId(orderId);
         card.setThumbSlug(thumbnailUrl.substring(thumbnailUrl.lastIndexOf("/") + 1)); //TODO impl properly
         card.setName(title);
-        card.setAspectRatio(aspectRatio);
+        card.setCardFormat(cardFormat);
         card.setMaterial(material);
-        card.setFolds(folds);
         return card;
     }
 

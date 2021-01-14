@@ -5,7 +5,7 @@ import de.kettcards.web2print.model.projectons.CardOverview;
 import de.kettcards.web2print.model.tableimport.CardFormatSheetRow;
 import de.kettcards.web2print.model.tableimport.CardOverviewSheetRow;
 import de.kettcards.web2print.model.tableimport.MaterialSheetRow;
-import de.kettcards.web2print.repository.AspectRatioRepository;
+import de.kettcards.web2print.repository.CardFormatRepository;
 import de.kettcards.web2print.repository.CardRepository;
 import de.kettcards.web2print.repository.FoldRepository;
 import de.kettcards.web2print.repository.MaterialRepository;
@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -34,7 +35,7 @@ public class ImportService {
     private MaterialRepository materialRepository;
 
     @Autowired
-    private AspectRatioRepository aspectRatioRepository;
+    private CardFormatRepository cardFormatRepository;
 
     @Autowired
     private FoldRepository foldRepository;
@@ -46,15 +47,27 @@ public class ImportService {
         List<CardFormatSheetRow> formatRows = CardFormatSheetRow.parseRows(workBook.getSheet("Kartenformate"));
         List<CardOverviewSheetRow> cardOverviewRows = CardOverviewSheetRow.parseRows(workBook.getSheet("Kartenübersicht"));
 
-        Map<Integer, Fold> foldVirtualMapper = buildVirtualMap(foldRepository, formatRows, CardFormatSheetRow::toFold);
-        var aspectRatioVirtualMapper = buildVirtualMap(aspectRatioRepository, formatRows, CardFormatSheetRow::toAspectRatio);
+        //filters out non-supported types, TODO: entweder in ner Config-File oder im Verwaltungswerkzeug änderbar machen
+        formatRows = formatRows.stream().filter(cardFSRow -> cardFSRow.getFoldType().equals("links") || cardFSRow.getFoldType().equals("oben"))
+                .collect(Collectors.toList());
+        List<Integer> allowedFormats = formatRows.stream().map(CardFormatSheetRow::getFormatType).collect(Collectors.toList());
+        cardOverviewRows = cardOverviewRows.stream().filter(row -> allowedFormats.contains(row.getCardFormat())).collect(Collectors.toList());
+
+
         var texturVirtualMapper = buildVirtualMap(materialRepository, textur, MaterialSheetRow::toMaterial);
+        var cardFormatVirtualMapper = buildVirtualMap(cardFormatRepository, formatRows, CardFormatSheetRow::toCardFormat);
+        buildVirtualMap(foldRepository, formatRows,
+                cardFSRow -> {
+                    int virtualId = cardFSRow.getVirtualId();
+                    return cardFSRow.toFold(cardFormatVirtualMapper.get(virtualId));
+                });
+
         //var cardVirtualMapper = buildVirtualMap(cardRepository, cardOverviewRows, CardOverviewSheetRow::toCard);
 
         //query db for all cards
         List<CardOverview> cardsInsideDb = cardRepository.findAllProjectedBy(CardOverview.class);
 
-        for (var sheetCard: cardOverviewRows) {
+        for (var sheetCard : cardOverviewRows) {
             //is card inside db
             try {
                 Card targetCard = null;
@@ -68,25 +81,22 @@ public class ImportService {
                 if (targetCard == null) { //new card
                     Integer formatId = sheetCard.getCardFormat();
                     Integer textureId = sheetCard.getTexture();
-                    AspectRatio aspectRatio = aspectRatioVirtualMapper.get(formatId);
+                    CardFormat cardFormat = cardFormatVirtualMapper.get(formatId);
                     Material material = texturVirtualMapper.get(textureId);
-                    Fold fold = foldVirtualMapper.get(sheetCard.getCardFormat());
-                    targetCard = sheetCard.toCard(material, aspectRatio, Collections.singletonList(fold)); //TODO multiple folds
-                    //fold.setCardId(targetCard.getId());
+                    targetCard = sheetCard.toCard(material, cardFormat);
                 } else { //overwrite existing card
                     Integer formatId = sheetCard.getCardFormat();
                     Integer textureId = sheetCard.getTexture();
-                    Fold fold = foldVirtualMapper.get(formatId);
-                    AspectRatio aspectRatio = aspectRatioVirtualMapper.get(formatId);
+                    CardFormat cardFormat = cardFormatVirtualMapper.get(formatId);
                     Material material = texturVirtualMapper.get(textureId);
                     var oldCardId = targetCard.getId();
-                    targetCard = sheetCard.toCard(material, aspectRatio, Collections.singletonList(fold)); //TODO multiple folds
+                    targetCard = sheetCard.toCard(material, cardFormat);
                     targetCard.setId(oldCardId);
 
                 }
 
                 //skips cards with illegal format
-                if (targetCard.getAspectRatio() == null)
+                if (targetCard.getCardFormat() == null)
                     invalidCard(targetCard);
 
                 //if (targetCard.getMaterial() == null)
@@ -97,7 +107,7 @@ public class ImportService {
                 //Fold fold = foldVirtualMapper.get(saveCard.getId());
                 //fold.setCardId(saveCard.getId());
                 //foldRepository.save(fold);
-            }catch (IllegalArgumentException ex) {
+            } catch (IllegalArgumentException ex) {
                 log.warn(ex.getMessage());
             }
 
@@ -136,21 +146,23 @@ public class ImportService {
 
             if (firstFormatElement != null) {
                 //element exists
-                log.info("raw element " + formatElement + " already exists under db id " + firstFormatElement.getVirtualId() + ", mapped under virtual map id: " + rawFormatElement.getVirtualId());
+                log.info("raw element " + formatElement + " already exists under db id " +
+                        firstFormatElement.getVirtualId() + ", mapped under virtual map id: " +
+                        rawFormatElement.getVirtualId());
                 ret.put(rawFormatElement.getVirtualId(), firstFormatElement);
             } else {
                 //aspect ratio is new
                 log.info("importing new element:" + formatElement);
                 //create new aspect ratio
                 U saveFormatElement = repository.save(formatElement);
-                log.info("created new element with db id" + saveFormatElement.getVirtualId() + ", mapped under virtual map id: " + formatElement.getVirtualId());
-                ret.put(formatElement.getVirtualId(), saveFormatElement);
+                log.info("created new element with db id" + saveFormatElement.getVirtualId() +
+                        ", mapped under virtual map id: " + rawFormatElement.getVirtualId());
+                ret.put(rawFormatElement.getVirtualId(), saveFormatElement);
             }
 
         }
         return ret;
     }
-
 
 
 }

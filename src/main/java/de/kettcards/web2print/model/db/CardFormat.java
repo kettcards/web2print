@@ -12,8 +12,8 @@ import java.util.Objects;
 
 @Data
 @Entity
-@Table(name = "aspect_ratio")
-public class AspectRatio implements Serializable, VirtualId {
+@Table(name = "card_format")
+public class CardFormat implements Serializable, VirtualId {
 
     @Id
     @Column(name = "id")
@@ -29,9 +29,8 @@ public class AspectRatio implements Serializable, VirtualId {
     @Column(name = "name")
     private String name;
 
-    //@JsonBackReference
-    //@OneToMany(mappedBy = "material")
-    //private List<Card> aspectRatio;
+    @OneToMany(mappedBy = "id")
+    private List<Fold> folds;
 
     @Override
     public int getVirtualHash() {
@@ -42,4 +41,13 @@ public class AspectRatio implements Serializable, VirtualId {
     public int getVirtualId() {
         return id;
     }
+
+
+    //custom to String because lombok toString causes recursion problem
+    @Override
+    public String toString() {
+        return "CardFormat = [ id = " + id + " width = " + width + " height = " +
+                height + " name = " + name + " ]";
+    }
+
 }

@@ -1,6 +1,7 @@
 package de.kettcards.web2print.model.db;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -33,6 +34,10 @@ public class Fold implements Serializable, VirtualId {
     @Column(name = "angle")
     private Integer angle;
 
+    @JsonIgnore
+    @ManyToOne
+    private CardFormat cardFormat;
+
     @Override
     public int getVirtualId() {
         return id;
@@ -40,7 +45,7 @@ public class Fold implements Serializable, VirtualId {
 
     @Override
     public int getVirtualHash() {
-        return Objects.hash(x1, y1, x2, x2, angle);
+        return Objects.hash(x1, y1, x2, x2, angle, cardFormat);
     }
 
     //known types //TODO unused, incomplete implementation
@@ -69,6 +74,13 @@ public class Fold implements Serializable, VirtualId {
                     throw new IllegalArgumentException(value);
             }
         }
+    }
+
+    //custom to String because lombok toString causes recursion problem
+    @Override
+    public String toString() {
+        return "Fold = [ id = " + id + " x1 = " + x1 + " x2 = " + x2 + " y1 = " + y1 + " y2 = " + y2 + " angle = "
+                + angle + " ]";
     }
 
 }
