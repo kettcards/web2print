@@ -9,6 +9,8 @@ public class WebResourceConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/motives/**").addResourceLocations("file:motives/");
+        registry.addResourceHandler("/textures/**").addResourceLocations("file:textures/");
         registry.addResourceHandler("/**").addResourceLocations("classpath:/static/");
         registry.addResourceHandler("/lib/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
     }

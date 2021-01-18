@@ -51,35 +51,4 @@ public class MotiveController {
         }
     }
 
-    //1. upload a pdf motive file over POST /resource
-    //2. use this call to create images out of the pdf
-    @PostMapping
-    public HttpEntity<List<MotiveResponse>> addMotive(@RequestBody MotiveRequest motiveRequest) {
-        try {
-            System.out.println(motiveRequest);
-            //TODO proper cleanup if something goes wrong
-            Resource savedResource = storageService.load(motiveRequest.getResource());
-            String front = motiveRequest.getOrderId() + "-front.png";
-            String back = motiveRequest.getOrderId() + "-back.png";
-            motiveScaleService.saveAndScaleImage(savedResource.getInputStream(), baseDir.resolve(front), baseDir.resolve(back));
-            var list = new ArrayList<MotiveResponse>();
-            if (Files.exists(baseDir.resolve(front))) {
-                Motive frontMotive = new Motive();
-                frontMotive.setTextureSlug(front);
-                Motive savedMotive = motiveRepository.save(frontMotive);
-                list.add(new MotiveResponse(motiveRequest.getOrderId(), Card.Side.FRONT, savedMotive.getTextureSlug()));
-            }
-            if (Files.exists(baseDir.resolve(back))) {
-                Motive backMotive = new Motive();
-                backMotive.setTextureSlug(back);
-                Motive savedMotive = motiveRepository.save(backMotive);
-                list.add(new MotiveResponse(motiveRequest.getOrderId(), Card.Side.BACK, savedMotive.getTextureSlug()));
-            }
-            return ResponseEntity.ok(list);
-        } catch (IOException ex) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
-
 }

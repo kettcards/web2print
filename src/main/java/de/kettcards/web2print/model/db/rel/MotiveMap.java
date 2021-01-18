@@ -31,6 +31,12 @@ public class MotiveMap implements Serializable {
     @Column(name = "side")
     private String side;
 
+    //Overwritten because of StackOverflowError
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+
     @Data
     @Embeddable
     public static class MotiveMapId implements Serializable {

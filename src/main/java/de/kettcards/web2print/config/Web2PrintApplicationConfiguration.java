@@ -39,6 +39,9 @@ public class Web2PrintApplicationConfiguration {
         @JsonView(Include.Public.class)
         private String fontUrl;
 
+        @JsonView(Include.Public.class)
+        private String motiveUrl;
+
     }
 
     @Data

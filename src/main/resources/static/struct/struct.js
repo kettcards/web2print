@@ -50,12 +50,12 @@ inputXlsxElement.addEventListener("change", handleFiles, false);
 
 function handleFiles() {
     let fileList = this.files;
-    let fd = new FormData();
     if (fileList === undefined) {
         fileList = dragAndDropFiles;
     }
-    for (let listEl of fileList) {
-        fd.append("file", fileList[0]);
+    for (const listEl of fileList) {
+        let fd = new FormData();
+        fd.append("file", listEl);
         let req = jQuery.ajax({
             url: web2print.links.apiUrl + "backend/resource",
             method: "POST",
@@ -68,15 +68,15 @@ function handleFiles() {
             console.log(response)
         }, function (xhr) {
             console.error('failed to fetch xhr', xhr)
-            console.error('failed to fetch xhr', xhr)
         })
     }
 }
+
 var isNew = false;
 var selectedRatioId;
 
 function showRatioDialogOnSelect(tr, isNew) {
-    return function() {
+    return function () {
         $('#dialog_input_name').value = "";
         $('#dialog_input_width').value = "";
         $('#dialog_input_height').value = "";
@@ -103,6 +103,7 @@ function showRatioDialogOnSelect(tr, isNew) {
 
     };
 }
+
 function removeRatio() {
     console.log('removing id ' + selectedRatioId);
     let req = jQuery.ajax({
@@ -114,6 +115,7 @@ function removeRatio() {
     renewRatios();
     dialog.close();
 }
+
 function newRatio() {
     var isNew = true;
     showRatioDialogOnSelect(null, isNew);
@@ -124,6 +126,8 @@ function renewRatios() {
         $('#ratio-tb-body').empty();
         for (let ratio of ratios) {
             let tr = document.createElement('tr');
+            let thid = document.createElement('td');
+            thid.innerText = ratio.id;
             let thname = document.createElement('td');
             thname.class = "mdl-data-table__cell--non-numeric";
             thname.innerText = ratio.name;
@@ -135,6 +139,7 @@ function renewRatios() {
             let id = document.createElement('td');
             id.style.display = "none";
             id.innerText = id;
+            tr.append(thid);
             tr.append(thname);
             tr.append(thwidht);
             tr.append(thheight);
@@ -175,16 +180,16 @@ $(window).bind("hashchange", function () { //TODO onload hashchange is not worki
 
 var dialogButton = document.querySelector('.dialog-button');
 var dialog = document.querySelector('#dialog');
-if (! dialog.showModal) {
+if (!dialog.showModal) {
     dialogPolyfill.registerDialog(dialog);
 }
-dialogButton.addEventListener('click', function() {
+dialogButton.addEventListener('click', function () {
     dialog.showModal();
     isNew = true;
     console.log('showing dialog as new element');
 });
 dialog.querySelector('button:not([disabled])')
-    .addEventListener('click', function() {
+    .addEventListener('click', function () {
         dialog.close();
     });
 

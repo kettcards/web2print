@@ -12,6 +12,8 @@ public interface MotiveRepository extends JpaRepository<Motive, Integer> {
 
     List<Motive> findAllById(Integer name);
 
-    //List<Motive> findAllByName(String name);
+    boolean existsMotiveByTextureSlug(String textureSlug);
+
+    Motive findByTextureSlug(String textureSlug);
 
 }

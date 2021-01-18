@@ -12,5 +12,7 @@ public interface MaterialRepository extends JpaRepository<Material, Integer> {
 
     Material findMaterialById(Integer id);
 
+    Material findMaterialByName(String name);
+
     List<Material> findAll();
 }

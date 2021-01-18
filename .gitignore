@@ -115,3 +115,5 @@ gradle-app.setting
 
 src/main/resources/application-*Dev.properties
 /test_output/*
+/textures/*
+/motives/*

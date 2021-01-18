@@ -45,7 +45,7 @@ public class MotiveScaleService {
             }
             ImageIO.write(bufferedImage, "png", out.toFile());
         }
-
+        document.close();
     }
 
 }

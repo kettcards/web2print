@@ -1,8 +1,5 @@
 package de.kettcards.web2print.model.db;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import de.kettcards.web2print.service.ImportService;
 import lombok.Data;
 
 import javax.persistence.*;
