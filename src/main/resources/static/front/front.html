@@ -24,15 +24,45 @@
             <button onclick="debugger;"> test </button>
           </div>
         </div>
-        <div id="holder">
-          <div class="center"></div>
+        <div id="page-container">
+          <template id="page-template"><div class="page">
+              <img class="motive-layer" alt="">
+              <div class="elements-layer" onclick="hElementsLayerClick(event, this);"></div>
+              <div class="folds-layer"></div>
+            </div></template>
+          <div class="center">
+            <div id="perspective-anchor">
+              <div id="transform-anchor">
+                <ul class="ruler top"></ul>
+                <ul class="ruler left"></ul>
+                <div id="inner"></div>
+                <div id="outer"></div>
+              </div>
+            </div>
+          </div>
+          <div class="nav-btn left">
+            <div class="nav-btn-inner"></div>
+          </div>
+          <div class="nav-btn right">
+            <div class="nav-btn-inner"></div>
+          </div>
+        </div>
+        <div id="nav-dots-container">
+          <span></span>
+          <ul></ul>
         </div>
       </div>
       <div id="right-container">
+        <div id="preview-container">
+          <img alt="A preview Render of the printed Card" />
+        </div>
+        <div id="render-styles-container">
+          <template id="render-style-btn-tmpl"><button class="render-select" onclick="hRenderStyleChanged(+this.dataset['style-index']);"></button></template>
+        </div>
         <button id="submitBtn">Submit</button>
       </div>
     </div>
-    <div id="toolBox" style="visibility: hidden;">
+    <menu id="toolBox" style="visibility: collapse;">
       <div>
         <select id="fontSelect"></select><!--
      --><input type="number" id="fontSizeSelect" min="0" value="99">
@@ -48,7 +78,7 @@
      --><button class="alignmentBtn" value="center">C</button><!--
      --><button class="alignmentBtn" value="right">R</button>
       </div>      
-    </div>
+    </menu>
     <script src="./front.js" type="text/javascript"></script>
   </body>
 </html>

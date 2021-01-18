@@ -6,7 +6,6 @@ body {
 body {
   box-sizing: border-box;
   margin: 0;
-  padding: 8px;
 }
 
 #horizontal-wrapper {
@@ -20,6 +19,7 @@ body {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  overflow: hidden;
 }
 
 #right-container {
@@ -27,6 +27,24 @@ body {
   max-width: 300px;
   background-color: gray;
   position: relative;
+}
+
+#preview-container {
+  position: relative;
+  width: 100%;
+  max-width: 512px;
+}
+#preview-container::after {
+  content: "";
+  display: block;
+  padding-bottom: 100%;
+}
+#preview-container>img {
+  position: absolute;
+  width: 100%;
+}
+#preview-container>img::before {
+  position: absolute;
 }
 
 #submitBtn {
@@ -50,7 +68,7 @@ body {
   margin-top: 10px;
   border: solid black 1px;
 }
-.toolbar-row:before {
+.toolbar-row::before {
   content: attr(data-name);
   position: absolute;
   top: -10px;
@@ -58,9 +76,42 @@ body {
   background-color: lightgray;
 }
 
-#holder {
+#page-container {
   position: relative;
   flex-grow: 1;
+}
+
+.nav-btn {
+  width: 50px;
+  height: 50px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.nav-btn.left {
+  left: 0;
+}
+.nav-btn.right {
+  right: 0;
+}
+
+.nav-btn-inner {
+  transform-origin: center;
+  transform: scale(1, 1);
+  transition: transform 0.25s;
+  height: 100%;
+  background-image: url("./arrow.png");
+  background-size: contain;
+  background-repeat: round;
+}
+.left>.nav-btn-inner{
+  transform: scaleX(-1);
+}
+.left>.nav-btn-inner:hover {
+  transform: scale(-2, 2);
+}
+.right>.nav-btn-inner:hover {
+  transform: scale(2, 2);
 }
 
 .center {
@@ -72,6 +123,111 @@ body {
   top: 50%;  
 }
 
+#perspective-anchor {
+  perspective: 1000px;
+  perspective-origin: center bottom;
+}
+
+#transform-anchor {
+  transition: transform 1s;
+  transform-style: preserve-3d;
+}
+
+.ruler {
+  background-color: #a7a7b9;
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+.ruler::before,
+.ruler::after {
+  content: '';
+  position: absolute;
+  background-color: #a7a7b9;
+}
+.ruler.top {
+  width: 100%;
+  height: 50px;
+  top: -60px;
+}
+.ruler.top::before {
+  content: 'CM';
+  height: 100%;
+  box-sizing: border-box;
+  padding-top: 15px;
+  text-align: center;
+  width: 60px;
+  left: -60px;
+}
+.ruler.top::after {
+  height: 100%;
+  width: 5mm;
+  right: -5mm;
+}
+.ruler>li {
+  position: absolute;
+  display: inline-block;
+}
+.ruler.top>li {
+  bottom: 0;
+  border-right: 1px solid black;
+  height: 10px;
+}
+.ruler>li:nth-child(2n+1)::after {
+  content: attr(data-val);
+  position: absolute;
+}
+.ruler.top>li:nth-child(2n+1) {
+  height: 20px;
+}
+.ruler.top>li:nth-child(2n+1)::after {
+  bottom: 0;
+  transform: translate(-50%, -21px);
+}
+.ruler.left {
+  height: 100%;
+  width: 50px;
+  left: -60px;
+}
+.ruler.left::before,
+.ruler.left::after {
+  width: 100%;
+  height: 5mm;
+}
+.ruler.left::before {
+  top: -5mm;
+}
+.ruler.left::after {
+  bottom: -5mm;
+}
+.ruler.left>li {
+  right: 0;
+  border-bottom: 1px solid black;
+  width: 10px;
+}
+.ruler.left>li:nth-child(2n+1) {
+  width: 20px;
+  translate(-21px, -9px);
+}
+.ruler.left>li:nth-child(2n+1)::after {
+  right: 0;
+  transform: translate(-22px, -9px);
+}
+
+#inner {
+  transform: translateZ(1px);
+}
+#outer {
+  transform: translateZ(-1px);
+  position: absolute;
+  top: 0;
+}
+#outer .elements-layer,
+#outer .motive-layer {
+  transform: rotateY(180deg);
+}
+
 .page {
   background-color: white;
   width: 400px;
@@ -79,8 +235,17 @@ body {
   box-shadow: 0 0 4px;
   position: relative;
   display: inline-block;
-  margin: 5px;
   overflow: hidden;
+}
+.page>* {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+.page>.folds-layer {
+  pointer-events: none;
 }
 
 .text {
@@ -108,8 +273,36 @@ body {
   text-decoration: underline;
 }
 
+#nav-dots-container {
+  text-align: center;
+}
+#nav-dots-container span {
+  font-size: large;
+}
+#nav-dots-container ul {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  list-style-type: none;
+  margin: 20px 0;
+  padding: 0;
+}
+#nav-dots-container li {
+  border: 1px solid black;
+  border-radius: 9999px;
+  height: 12px;
+  width: 12px;
+  margin: 0 5px;
+  transition: background-color 0.25s;
+}
+#nav-dots-container li.active {
+  background-color: #8c8585;
+}
+
 #toolBox {
   position: absolute;
+  padding: 0;
+  margin: 0;
   transform: translateY(-100%);
   background-color: #8c8585;
   white-space: nowrap;
@@ -136,6 +329,7 @@ body {
 .hFold{
   position: absolute;
   background-color: deeppink;
+  width: 100%;
   height: 1px;
 }
 
@@ -143,4 +337,5 @@ body {
   position: absolute;
   background-color: deeppink;
   width: 1px;
+  height: 100%;
 }

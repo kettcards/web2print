@@ -1,62 +1,30 @@
+'use strict';
+
 const make  = document.createElement.bind(document);
 const makeT = document.createTextNode.bind(document);
+const get = document.getElementById.bind(document);
 const stopPropagation = function(e){e.stopPropagation();};
-const falsify = function() {return false;};
+const falsify = function() {return false;}
+// (lucas) the remainder function in js does not work like the mathematical modulo,
+//         this function does.
+const mod = function(a, n) {return ((a % n) + n) % n;}
 
-const holder = $('#holder>.center');
+const $toolBox = $('#toolBox');
 
-const toolBox = $('#toolBox');
-
-/*Funktion um eine Seite einer Karte auf die noch groesst moegliche skalierung 
-* zu bringen.
-* @param pageWidth die Breite einer Karte in mm
-* @param pageHeight die Hoehe einer Karte in mm
-* @param container 
-* @return tripel aus skalierter breite, hoehe, faktor
-*/
-function pageScale(container, pageWidth, pageHeight){
-  let contentHeight = container.height();
-  let contentWidth = container.width();
-  let strech = Math.floor(contentHeight/pageHeight);
-  let shownheight = pageHeight * strech; 
-  let shownwidth = pageWidth * strech; 
-
-  while(shownheight >= contentHeight || shownwidth >= contentWidth){ //falls eine Seite nicht in das Fensterpasst
-    strech = strech - 1;                                             //wird der Streckungsfaktor verringert
-    shownwidth = pageWidth * strech;
-    shownheight = pageHeight * strech;
-  }
-  
-  return [shownwidth, shownheight, strech];
-}
-
-/*Funktion um die Faltlinie auf einer Karte anzuzeigen.
-  Die Faltung muss entweder horizontal oder vertikal sein
-  @param x1, y1 startpunkt der Falte
-  @param x2, y2 endpunkt der Falte
-  @param height hoehe der Karte
-  @param width breite der Karte
-  @param scale Skalierungsfaktor
-  @return Faltlinie
- */
-function drawFold(x1, y1, x2, y2, height, width, scale){
-  if(x1 === x2){
+const createFold = function(fold){
+  if(fold.x1 === fold.x2){
     //vFold
     let vFold = $('<div class="vFold"></div>');
-    vFold.css(Object.assign({
-      left: x1*scale,
-      height: height,
-    }));
+    vFold.css('left', fold.x1+'mm');
     return vFold;
-  }
-  if(y1 === y2){
+  } else
+  if(fold.y1 === fold.y2){
     //hFold
     let hFold = $('<div class="hFold"></div>');
-    hFold.css(Object.assign({
-      top: (y1*scale),
-      width: width,
-    }));
+    hFold.css('top', fold.y1+'mm');
     return hFold;
+  } else {
+    throw new Error("can't display diagonal folds for now");
   }
 }
 
@@ -69,36 +37,83 @@ const bgStretchObjs = {
   //todo: add more tiling modes, should work just fine - the fallback is just no special background styling, page dimensions are still correct
 };
 
-let $pages;
-const loadPage = function(page){
-  console.log(page);
-
-  let scale = pageScale(holder.parent(), page.cardFormat.width, page.cardFormat.height);
-  const newPage = $('<div class="page"></div>');
-  newPage.css(Object.assign({
-    width: scale[0],
-    height: scale[1],
-    'background-image': 'url("'+web2print.links.materialUrl+page.material.textureSlug+'")',
-  }, bgStretchObjs[page.material.tiling]));
-
-  for(let fold of page.cardFormat.folds) {
-    newPage.append(drawFold(fold.x1, fold.y1, fold.x2, fold.y2, scale[1], scale[0], scale[2]));
+const EditorTransform = {
+  $transformAnchor: $('#transform-anchor'),
+  scale: 1,
+  translate: { x: 0, y: 0 },
+  rotate: 0,
+  apply: function() {
+    // (lucas) cant use the proper matrix solution because the browser gets confused with the rotation direction :(
+    this.$transformAnchor.css('transform', 'scale('+this.scale+', '+this.scale+') translate('+this.translate.x+'px,'+this.translate.y+'px) rotateY('+this.rotate+'deg)');
   }
-  holder.append(newPage);
-  //spawning new elements
-  newPage.click(function(e){
-    if(!state.addOnClick)
-      return;
-    const el = state.addOnClick({left: e.originalEvent.offsetX, top: e.originalEvent.offsetY});
-    $(e.originalEvent.originalTarget || e.originalEvent.srcElement).append(el);
-    state.addOnClick = undefined;
-  });
+};
 
-  $pages = newPage;
+let $pages;
+// [call once]
+const loadCard = function(card){
+  console.log(card);
+
+  document.querySelector('#preview-container>img').src
+      = web2print.links.thumbnailUrl+card.thumbSlug;
+
+  const width = card.cardFormat.width;
+  const height = card.cardFormat.height;
+  const $pageContainer = $("#page-container");
+  // 55 additional pixels for the rulers
+  EditorTransform.scale = Math.min(
+      $pageContainer.width() * MMPerPx.x / (width + 55),
+      $pageContainer.height() * MMPerPx.x / (height + 55)
+  ) * 0.9;
+  EditorTransform.apply();
+
+  const pageFrag = get('page-template').content.cloneNode(true);
+  const $newPage = $(pageFrag.childNodes[0]);
+  $newPage.css(Object.assign({
+    width: width+'mm',
+    height: height+'mm',
+    'background-image': 'url("'+web2print.links.materialUrl+card.material.textureSlug+'")',
+  }, bgStretchObjs[card.material.tiling]));
+
+  for(let fold of card.cardFormat.folds) {
+    $newPage.find('.folds-layer').append(createFold(fold));
+  }
+
+  let mFront, mBack;
+  for(const motive of card.motive) {
+    switch(motive.side) {
+      case 'FRONT': mFront = motive.textureSlug; break;
+      case 'BACK':  mBack  = motive.textureSlug; break;
+      default: throw new Error("unknown motive side '"+motive.side+"'");
+    }
+  }
+
+  const outerFrag = pageFrag.cloneNode(true);
+  $(pageFrag.childNodes[0]).find('.motive-layer')[0].src = mFront;
+  $('#inner').append(pageFrag);
+  $(outerFrag.childNodes[0]).find('.motive-layer')[0].src = mBack;
+  $('#outer').append(outerFrag);
+
+  //sadly the stepping needs to be done in js because the cumulative error of stacking css is noticeable
+  const $topRuler  = $('.ruler.top');
+  for(let i = 0; i < width; i+=5)
+    $topRuler.append($(make('li')).css('left', i+'mm').attr('data-val', i/10));
+  const $leftRuler = $('.ruler.left');
+  for(let i = 0; i < height; i+=5)
+    $leftRuler.append($(make('li')).css('top', i+'mm').attr('data-val', i/10));
+
+  $pages = pageFrag;
+};
+//spawning new elements
+const hElementsLayerClick = function(e, target) {
+  if(!state.addOnClick)
+    return;
+  const el = state.addOnClick({left: e.offsetX, top: e.offsetY});
+  $(target).append(el);
+  state.addOnClick = undefined;
 };
 
 const Parameters = (function(){
-  let ret = {}, url = window.location.search;
+  const ret = {}, url = window.location.search;
   if(url){
     let split = url.substr(1).split('&'), subSplit;
     for(let s of split){
@@ -116,7 +131,7 @@ $.get(web2print.links.apiUrl+'card/'+Parameters.card)
      else     reject();
    })
  })
- .then(loadPage)
+ .then(loadCard)
  .catch(function(){
 
    alert(Parameters.card
@@ -181,10 +196,10 @@ const hTxtMUp = function(e){
 const hElClick = function(e){
   e.stopPropagation();
 
-  const target = $(e.delegateTarget);
-  toolBox.css(Object.assign({
-    visibility: 'visible',
-  }, target.offset()));  
+  const $target = $(e.delegateTarget);
+  $toolBox.css(Object.assign({
+    visibility: 'visible'
+  }, $target.offset()));
 };
 const hElInput = function(e){
   const box = e.delegateTarget;
@@ -394,12 +409,17 @@ let $body = $('body').mousemove(function(e){
   state.dx += e.originalEvent.movementX;
   state.dy += e.originalEvent.movementY;
   
-  state.target.css('transform', 'translate('+state.dx+'px, '+state.dy+'px)');
-  toolBox.css('transform', 'translate('+state.dx+'px, calc(-100% + '+state.dy+'px))');
+  state.target.css('transform', 'translate('+state.dx/EditorTransform.scale+'px, '+state.dy/EditorTransform.scale+'px)');
+  $toolBox.css('transform', 'translate('+state.dx+'px, calc(-100% + '+state.dy+'px))');
 }).mouseup(function(){
   if(state.dragging){
     if(state.dx !== 0 || state.dy !== 0){
-      toolBox.add(state.target).css({
+      state.target.css({
+        left: '+='+state.dx/EditorTransform.scale,
+        top: '+='+state.dy/EditorTransform.scale,
+        transform: '',
+      });
+      $toolBox.css({
         left: '+='+state.dx,
         top: '+='+state.dy,
         transform: '',
@@ -409,7 +429,7 @@ let $body = $('body').mousemove(function(e){
     }
     state.dragging = false;
   } else 
-    toolBox.css('visibility', 'hidden');
+    $toolBox.css('visibility', 'collapse');
 });
 
 const MMPerPx = (function(){
@@ -573,3 +593,78 @@ const $fontSizeSelect = $('#fontSizeSelect')
   selection.addRange(state.range);
   $(makeNodesFromSelection()).css('font-size', e.target.value+'px');
 });
+
+// changing pages
+$('.right>.nav-btn-inner').click(function() {
+  EditorTransform.rotate += 180;
+  EditorTransform.apply();
+  hPageSwitch(+1);
+});
+$('.left>.nav-btn-inner').click(function() {
+  EditorTransform.rotate -= 180;
+  EditorTransform.apply();
+  hPageSwitch(-1);
+});
+
+//changing render style
+const RenderStyles = [{
+  name: 'Simple',
+  pageGen: function(card) {
+
+  },
+  pageLabels: [
+    'Inside',
+    'Outside'
+  ],
+  initialDotIndex: 0
+}];
+
+const rsBtnTmpl   = get('render-style-btn-tmpl');
+const rsContainer = get('render-styles-container');
+const $navDotsUl  = $('#nav-dots-container>ul');
+const $pageLabel  = $('#nav-dots-container>span');
+for(let i = 0; i < RenderStyles.length; i++) {
+  const renderStyle = RenderStyles[i];
+  const frag = rsBtnTmpl.content.cloneNode(true);
+  $(frag.childNodes[0]).text(renderStyle.name).data('style-index', i);
+  rsContainer.appendChild(frag);
+}
+
+const renderStyleState = {
+  style:           undefined,
+  currentDotIndex: undefined,
+  dots:            undefined,
+  getActiveDot: function() {
+    return this.dots[this.currentDotIndex];
+  },
+  getActiveLabel: function() {
+    return this.style.pageLabels[this.currentDotIndex];
+  }
+};
+const hRenderStyleChanged = function(index) {
+  renderStyleState.style = RenderStyles[index];
+  renderStyleState.currentDotIndex = renderStyleState.style.initialDotIndex;
+  renderStyleState.dots = new Array(renderStyleState.style.pageLabels.length);
+
+  const range = document.createRange();
+  range.selectNodeContents($navDotsUl[0]);
+  range.deleteContents();
+  for(let i = 0; i < renderStyleState.dots.length; i++) {
+    const $el = $(make('li'));
+    if(i === renderStyleState.currentDotIndex) {
+      $el.addClass('active');
+      $pageLabel.text(renderStyleState.getActiveLabel());
+    }
+    renderStyleState.dots[i] = $el;
+    $navDotsUl.append($el);
+  }
+};
+hRenderStyleChanged(0);
+
+const hPageSwitch = function(direction) {
+  renderStyleState.getActiveDot().removeClass('active');
+  renderStyleState.currentDotIndex = mod(renderStyleState.currentDotIndex + direction, renderStyleState.dots.length);
+  renderStyleState.getActiveDot().addClass('active');
+  $pageLabel.text(renderStyleState.getActiveLabel());
+};
+
