@@ -40,6 +40,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 //specify resources that dont need authentication
                 .antMatchers(HttpMethod.GET,  "/define.js","/tileview/**", "/front/**", "/fonts/**", "/textures/**").permitAll()
                 .antMatchers(HttpMethod.GET , "/api/**").permitAll()
+                .antMatchers(HttpMethod.POST , "/api/pdf/**").permitAll()
+                .antMatchers(HttpMethod.POST , "/api/save/**").permitAll()
                 //explicitly define protected resources, allows refined access control
                 .antMatchers("/api/**").hasRole(ADMIN.name())
                 //everything else also needs authentication

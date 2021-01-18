@@ -1,73 +1,80 @@
 package de.kettcards.web2print.pdfGen;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import de.kettcards.web2print.model.db.CardFormat;
+import de.kettcards.web2print.model.fonts.Font;
+import de.kettcards.web2print.model.fonts.FontStyle;
 import de.kettcards.web2print.pdfGen.cardData.*;
+import de.kettcards.web2print.service.FontService;
 import lombok.Value;
 import org.apache.pdfbox.pdmodel.*;
-import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.ListIterator;
+import java.util.*;
 import java.util.function.Function;
 
+@Component
 public class PDFGenerator {
-    public static final HashMap<String, Font.Provider> FontStore = new HashMap<>(11);
+    @Autowired
+    private FontService fontService;
 
     /**
      * @param dimensionProvider a provider that can obtain the dimensions of a card by their id
      */
-    public static PDDocument GenerateFromJSON(JSONObject jRoot, Function<String, CardFormat> dimensionProvider) throws IOException, ParseException {
+    public PDDocument generateFromJSON(JsonNode jRoot, Function<String, CardFormat> dimensionProvider) throws IOException, ParseException {
         var doc = new Document();
 
-        var ratio = dimensionProvider.apply(jRoot.getString("card"));
-        var cardData = new CardData(jRoot.getInt("v"), ratio.getWidth(), ratio.getHeight());
+        var format = dimensionProvider.apply(jRoot.get("card").textValue());
+        var cardData = new CardData(jRoot.get("v").textValue(), format.getWidth(), format.getHeight());
 
-        for (var oBox : jRoot.getJSONArray("texts")) {
-            var jBox = (JSONObject) oBox;
+        parseElements(jRoot.get("innerEls"), cardData.getInnerElements(), doc);
+        parseElements(jRoot.get("outerEls"), cardData.getOuterElements(), doc);
+
+        applyTo(doc.getDocument(), cardData);
+
+        return doc.getDocument();
+    }
+    private void parseElements(JsonNode source, List<TextBoxData> target, Document doc) throws ParseException, IOException {
+        for (var jBox : source) {
             var box = new TextBoxData(
-                    jBox.getFloat("x"), jBox.getFloat("y"),
-                    jBox.getFloat("w"), jBox.getFloat("h"),
-                    jBox.getString("a").charAt(0)
+                jBox.get("x").floatValue(), jBox.get("y").floatValue(),
+                jBox.get("w").floatValue(), jBox.get("h").floatValue(),
+                jBox.get("a").textValue().charAt(0)
             );
 
-            for (var oRun : jBox.getJSONArray("r")) {
+            for (var jRun : jBox.get("r")) {
                 TextRunData run;
-                if (oRun.getClass() == String.class) {
-                    if (!oRun.equals("br"))
-                        throw new ParseException("if a text run array contains a raw string it must be 'br' but it was '" + oRun + "'", -1);
+                if (jRun.isTextual()) {
+                    if (!jRun.textValue().equals("br"))
+                        throw new ParseException("if a text run array contains a raw string it must be 'br' but it was '"+jRun.textValue()+"'", -1);
                     else
                         run = TextRunData.LineBreak;
                 } else {
-                    var jRun = (JSONObject) oRun;
-                    var fontName = jRun.getString("f");
-                    if (!FontStore.containsKey(fontName))
-                        throw new RuntimeException("the font '" + fontName + "' was not added to the FontStore before using it in Generate");
+                    var fontName = jRun.get("f").textValue();
+                    if (!fontService.has(fontName))
+                        throw new RuntimeException("the font '"+fontName+"' was not added to the FontStore before using it in Generate");
                     var docFonts = doc.getLoadedFonts();
                     if (!docFonts.containsKey(fontName))
-                        doc.addFont(FontStore.get(fontName));
+                        doc.addFont(fontService.getProvider(fontName));
                     run = new TextRunData(
-                            docFonts.get(fontName),
-                            jRun.getFloat("s"),
-                            FontStyle.getSet(jRun.getInt("a")),
-                            jRun.getString("t")
+                        docFonts.get(fontName),
+                        jRun.get("s").floatValue(),
+                        FontStyle.getSet(jRun.get("a").intValue()),
+                        jRun.get("t").textValue()
                     );
                 }
 
                 box.getTextRuns().add(run);
             }
 
-            cardData.getTextBoxes().add(box);
+            target.add(box);
         }
-
-        ApplyTo(doc.getDocument(), cardData);
-
-        return doc.getDocument();
     }
 
-    public static void ApplyTo(PDDocument doc, CardData data) throws IOException {
+    public void applyTo(PDDocument doc, CardData data) throws IOException {
 
         var lineList = new ArrayList<LineData>();
 
@@ -76,7 +83,7 @@ public class PDFGenerator {
 
         var content = new PDPageContentStream(doc, page);
 
-        for (var box : data.getTextBoxes()) {
+        for (var box : data.getInnerElements()) {
             switch (box.getAlignment()) {
                 case 'l':
                     textBoxLeft(content, box, lineList);
