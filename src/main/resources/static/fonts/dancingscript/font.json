@@ -2,7 +2,7 @@
   "name" : "DancingScript",
   "faces" : [
     {
-      "v" : 1,
+      "v" : 0,
       "fs" : "normal",
       "fw" : 500,
       "s" : "dancingscript/static/DancingScript-Regular.ttf"

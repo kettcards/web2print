@@ -48,7 +48,10 @@ const EditorTransform = {
   }
 };
 
-let $pages;
+const pages = {
+  $outerPages: undefined,
+  $innerPages: undefined
+};
 // [call once]
 const loadCard = function(card){
   console.log(card);
@@ -89,9 +92,9 @@ const loadCard = function(card){
 
   const outerFrag = pageFrag.cloneNode(true);
   $(pageFrag.childNodes[0]).find('.motive-layer')[0].src = mFront;
-  $('#inner').append(pageFrag);
+  pages.$innerPages = $('#inner').append(pageFrag).children();
   $(outerFrag.childNodes[0]).find('.motive-layer')[0].src = mBack;
-  $('#outer').append(outerFrag);
+  pages.$outerPages = $('#outer').append(outerFrag).children();
 
   //sadly the stepping needs to be done in js because the cumulative error of stacking css is noticeable
   const $topRuler  = $('.ruler.top');
@@ -100,8 +103,6 @@ const loadCard = function(card){
   const $leftRuler = $('.ruler.left');
   for(let i = 0; i < height; i+=5)
     $leftRuler.append($(make('li')).css('top', i+'mm').attr('data-val', i/10));
-
-  $pages = pageFrag;
 };
 //spawning new elements
 const hElementsLayerClick = function(e, target) {
@@ -152,7 +153,7 @@ const Spawner = {
         // unfortunately this also produces quite the rough experience when a user actually wants do use drag n drop
       .on("dragstart", falsify)
       .on("drop", falsify)
-      .css(p);
+      .css(Object.assign({ 'font-family': defaultFont }, p));
   },
   IMAGE: undefined,
   GEOM: undefined,
@@ -440,23 +441,43 @@ const MMPerPx = (function(){
   return ret;
 })();
 
+const FontStyleValues = {
+  b: 0b001,
+  i: 0b010,
+  u: 0b100
+};
 const FontAttributeMap = {};
+let defaultFont;
 
 //serialize data
 $('#submitBtn').click(function(){
   let data = {
-    v: '0.1',
+    v: '0.2',
     card: Parameters.card,
-    texts: []
+    outerEls: [],
+    innerEls: []
   };
 
-  let $children = $pages.children();
-  for(let i = 0; i < $children.length; i++) {
-    let $el = $children.eq(i);
-    let offs = $el.position();
-    let bounds = {
-      x: offs.left * MMPerPx.x,
-      y: (offs.top + $el.height()) * MMPerPx.y,
+  serializeSide(pages.$outerPages.find('.elements-layer').children(), data.outerEls);
+  serializeSide(pages.$innerPages.find('.elements-layer').children(), data.innerEls);
+
+  console.log("sending", data);
+  const _export = true;
+  $.post(web2print.links.apiUrl+'save/'+(Parameters.sId || '')+'?export='+_export, 'data='+btoa(JSON.stringify(data)))
+    .then(function() {
+      alert('Sent data!');
+    }).catch(function(e){
+      alert('Send failed: \n'+JSON.stringify(e));
+    });
+});
+
+const serializeSide = function($els, target) {
+  for(let i = 0; i < $els.length; i++) {
+    const $el  = $els.eq(i);
+    const pos = $el.position();
+    const bounds = {
+      x: pos.left * MMPerPx.x,
+      y: ($el.parent().height() - (pos.top + $el.height())) * MMPerPx.y,
       w: $el.width() * MMPerPx.x,
       h: $el.height() * MMPerPx.y
     };
@@ -470,41 +491,34 @@ $('#submitBtn').click(function(){
           default:        align = 'l';
         }
         let box = Object.assign({
+          t: "t",
           a: align,
           r: []
         }, bounds);
-        let $innerChildren = $el.contents();
+        let $innerChildren = $el.children();
         for (let j = 0; j < $innerChildren.length; j++) {
           let $iel = $innerChildren.eq(j);
           switch ($iel[0].nodeName) {
-            case '#text': {
-              box.r.push({
-                f: $el.css('font-family'),
-                s: $el.css('font-size'),
-                a: 0,
-                t: $iel.text()
-              });
-            } break;
             case 'SPAN': {
               let attributes = 0;
               //(lucas 05.01.20) compat: 93.42%  destructuring ... might need to do this differently
-              for(const [k, v] of Object.entries(FontAttributeMap))
-                if ($iel.hasClass(k))
+              for(const [c, v] of Object.entries(FontStyleValues))
+                if ($iel.hasClass(c))
                   attributes |= v;
               box.r.push({
                 f: $iel.css('font-family'),
-                s: $iel.css('font-size'),
+                s: +$iel.css('font-size').slice(0,-2),
                 a: attributes,
                 t: $iel.text()
               });
             } break;
             case 'BR':
               box.r.push('br');
-            break;
+              break;
             default: console.warn('cannot serialize element', $iel[0]);
           }
         }
-        data.texts.push(box);
+        target.push(box);
       } break;
       /* (lucas 02.01.20) deferred todo: add handling for images here
       case 'IMG':{
@@ -514,10 +528,7 @@ $('#submitBtn').click(function(){
       default: console.warn('cannot serialize element', $el[0]);
     }
   }
-
-  console.log(data);
-  //(lucas) todo: send data
-});
+};
 
 //font stuff
 const $fontSelect = $('#fontSelect').mouseup(function(e){e.stopPropagation();});
@@ -532,7 +543,11 @@ $.get(web2print.links.apiUrl+'fonts')
      $options[i] = $('<option value="'+fName+'">'+fName+'</option>');
    }
    $fontSelect.append($options);
-   $fontSelect.change(applyFont)
+   $fontSelect.change(applyFont);
+
+   //(lucas 18.01.21) todo: be more elegant about this, mbe explicitly spec it ?
+   defaultFont = data[0];
+   beginLoadFont(defaultFont);
  }).catch(function(e) {
   alert('[fatal] something went wrong loading fonts: '+JSON.stringify(e));
  });
@@ -568,7 +583,8 @@ const loadFont = function(font) {
     .load()
     .then(function(f){
       document.fonts.add(f);
-      attribs[face.v] = face.n;
+      //todo dont just use b = bold, set the fontweights explicitly
+      attribs[face.v] = face.fw;
     })
     .catch(function(e) {
       alert('[error] could not load font: '+JSON.stringify(e));

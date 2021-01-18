@@ -8,8 +8,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Configuration
-@EnableWebMvc
-@EnableJpaRepositories
 @ConfigurationPropertiesScan
 @SpringBootApplication
 public class Web2printApplication {

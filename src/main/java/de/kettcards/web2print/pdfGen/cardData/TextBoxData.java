@@ -16,8 +16,11 @@ public class TextBoxData {
     private final List<TextRunData> textRuns;
     private float offX = 0, offY = 0;
 
-
     public TextBoxData(float x, float y, float w, float h, char alignment) {
+        this(x, y, w, h, alignment, new ArrayList<>());
+    }
+
+    public TextBoxData(float x, float y, float w, float h, char alignment, List<TextRunData> textRuns) {
         this.x = x;
         this.y = y;
         offX = mm2pt(x);
@@ -25,7 +28,7 @@ public class TextBoxData {
         this.w = w;
         this.h = h;
         this.alignment = alignment;
-        textRuns = new ArrayList<>();
+        this.textRuns = textRuns;
     }
 
     public void applyTo(PDPageContentStream content) throws IOException {
