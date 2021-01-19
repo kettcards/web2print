@@ -52,7 +52,7 @@ public class TextureImportService {
             return "500";
         }
 
-        //save texture path in database if possible
+        //save texture in database if possible
         Material material = materialRepository.findMaterialByName(name);
         if (material == null) {
             log.warn("file [ " + name + " ] given doesn't have a corresponding database entry");

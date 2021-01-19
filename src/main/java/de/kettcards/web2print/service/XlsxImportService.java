@@ -1,14 +1,12 @@
 package de.kettcards.web2print.service;
 
 import de.kettcards.web2print.model.db.*;
+import de.kettcards.web2print.model.db.rel.MotiveMap;
 import de.kettcards.web2print.model.projectons.CardOverview;
 import de.kettcards.web2print.model.tableimport.CardFormatSheetRow;
 import de.kettcards.web2print.model.tableimport.CardOverviewSheetRow;
 import de.kettcards.web2print.model.tableimport.MaterialSheetRow;
-import de.kettcards.web2print.repository.CardFormatRepository;
-import de.kettcards.web2print.repository.CardRepository;
-import de.kettcards.web2print.repository.FoldRepository;
-import de.kettcards.web2print.repository.MaterialRepository;
+import de.kettcards.web2print.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +37,12 @@ public class XlsxImportService {
 
     @Autowired
     private FoldRepository foldRepository;
+
+    @Autowired
+    private MotiveMapRepository motiveMapRepository;
+
+    @Autowired
+    private MotiveRepository motiveRepository;
 
     public void importCards(InputStream xlsxFile) throws IOException {
         XSSFWorkbook workBook = new XSSFWorkbook(xlsxFile);
@@ -104,9 +108,34 @@ public class XlsxImportService {
 
                 log.debug("saving card: " + targetCard);
                 Card saveCard = cardRepository.save(targetCard);
-                //Fold fold = foldVirtualMapper.get(saveCard.getId());
-                //fold.setCardId(saveCard.getId());
-                //foldRepository.save(fold);
+
+                String frontSlug = targetCard.getOrderId() + "-front.png";
+                if (motiveRepository.existsMotiveByTextureSlug(frontSlug)) {
+                    Motive motive = motiveRepository.findByTextureSlug(frontSlug);
+                    MotiveMap map = new MotiveMap();
+                    map.setCard(targetCard);
+                    map.setSide("FRONT");
+                    map.setMotive(motive);
+                    MotiveMap.MotiveMapId mapId = new MotiveMap.MotiveMapId();
+                    mapId.setCard(targetCard.getId());
+                    mapId.setMotive(motive.getId());
+                    map.setMotiveMapId(mapId);
+                    motiveMapRepository.save(map);
+                }
+
+                String backSlug = targetCard.getOrderId() + "-back.png";
+                if (motiveRepository.existsMotiveByTextureSlug(backSlug)) {
+                    Motive motive = motiveRepository.findByTextureSlug(backSlug);
+                    MotiveMap map = new MotiveMap();
+                    map.setCard(targetCard);
+                    map.setSide("BACK");
+                    map.setMotive(motive);
+                    MotiveMap.MotiveMapId mapId = new MotiveMap.MotiveMapId();
+                    mapId.setCard(targetCard.getId());
+                    mapId.setMotive(motive.getId());
+                    map.setMotiveMapId(mapId);
+                    motiveMapRepository.save(map);
+                }
             } catch (IllegalArgumentException ex) {
                 log.warn(ex.getMessage());
             }
