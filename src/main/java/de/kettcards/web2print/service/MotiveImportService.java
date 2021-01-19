@@ -47,65 +47,63 @@ public class MotiveImportService {
             //TODO make configurable
             Files.createDirectories(folder);
 
+            Card card = cardRepository.findCardByOrderId(name);
+            boolean hasCard = true;
+            if (card == null) {
+                log.warn("couldn't map " + name + " to a card because there is no database entry for it");
+                hasCard = false;
+            }
+
             String frontName = name + "-front" + ".png";
             String backName = name + "-back" + ".png";
             Path filePathFront = folder.resolve(frontName);
             Path filePathBack = folder.resolve(backName);
             motiveScaleService.saveAndScaleImage(file, filePathFront, filePathBack);
-
-
             if (Files.exists(filePathFront)) {
                 Motive frontMotive = new Motive();
                 frontMotive.setTextureSlug(frontName);
 
-
                 Motive motive;
                 if (motiveRepository.existsMotiveByTextureSlug(frontName)) {
-                    motive = motiveRepository.findByTextureSlug(backName);
+                    motive = motiveRepository.findByTextureSlug(frontName);
                 } else {
                     motive = motiveRepository.save(frontMotive);
                 }
 
-                Card card = cardRepository.findCardByOrderId(name);
-                if (card == null) {
-                    log.warn("failed to import motive for " + name + " in to the database because the corresponding Card doesn't have an database entry");
-                    return "500";
+                if (hasCard) {
+                    MotiveMap map = new MotiveMap();
+                    map.setMotive(motive);
+                    map.setSide("FRONT");
+                    map.setCard(card);
+                    MotiveMap.MotiveMapId mapId = new MotiveMap.MotiveMapId();
+                    mapId.setMotive(motive.getId());
+                    mapId.setCard(card.getId());
+                    map.setMotiveMapId(mapId);
+                    motiveMapRepository.save(map);
                 }
-                MotiveMap map = new MotiveMap();
-                map.setMotive(motive);
-                map.setSide("FRONT");
-                map.setCard(card);
-                MotiveMap.MotiveMapId mapId = new MotiveMap.MotiveMapId();
-                mapId.setMotive(motive.getId());
-                mapId.setCard(card.getId());
-                map.setMotiveMapId(mapId);
-                motiveMapRepository.save(map);
             }
             if (Files.exists(filePathBack)) {
                 Motive backMotive = new Motive();
                 backMotive.setTextureSlug(backName);
 
                 Motive motive;
-                if (motiveRepository.existsMotiveByTextureSlug(frontName)) {
+                if (motiveRepository.existsMotiveByTextureSlug(backName)) {
                     motive = motiveRepository.findByTextureSlug(backName);
                 } else {
                     motive = motiveRepository.save(backMotive);
                 }
 
-                Card card = cardRepository.findCardByOrderId(name);
-                if (card == null) {
-                    log.warn("failed to import motive for " + name + " in to the database because the corresponding Card doesn't have an database entry");
-                    return "500";
+                if (hasCard) {
+                    MotiveMap map = new MotiveMap();
+                    map.setMotive(motive);
+                    map.setSide("BACK");
+                    map.setCard(card);
+                    MotiveMap.MotiveMapId mapId = new MotiveMap.MotiveMapId();
+                    mapId.setMotive(motive.getId());
+                    mapId.setCard(card.getId());
+                    map.setMotiveMapId(mapId);
+                    motiveMapRepository.save(map);
                 }
-                MotiveMap map = new MotiveMap();
-                map.setMotive(motive);
-                map.setSide("BACK");
-                map.setCard(card);
-                MotiveMap.MotiveMapId mapId = new MotiveMap.MotiveMapId();
-                mapId.setMotive(motive.getId());
-                mapId.setCard(card.getId());
-                map.setMotiveMapId(mapId);
-                motiveMapRepository.save(map);
             }
 
 
