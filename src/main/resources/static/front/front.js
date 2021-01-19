@@ -91,9 +91,9 @@ const loadCard = function(card){
   }
 
   const outerFrag = pageFrag.cloneNode(true);
-  $(pageFrag.childNodes[0]).find('.motive-layer')[0].src = mFront;
+  $(pageFrag.childNodes[0]).find('.motive-layer')[0].src  = web2print.links.motiveUrl+mBack;
   pages.$innerPages = $('#inner').append(pageFrag).children();
-  $(outerFrag.childNodes[0]).find('.motive-layer')[0].src = mBack;
+  $(outerFrag.childNodes[0]).find('.motive-layer')[0].src = web2print.links.motiveUrl+mFront;
   pages.$outerPages = $('#outer').append(outerFrag).children();
 
   //sadly the stepping needs to be done in js because the cumulative error of stacking css is noticeable
