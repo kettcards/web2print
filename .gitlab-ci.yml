@@ -27,6 +27,7 @@ build:
 test:
   stage: test
   script: gradle check
+  allow_failure: true
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: pull
@@ -38,6 +39,7 @@ bootJar:
   stage: deploy
   script: gradle bootJar
   artifacts:
+    expire_in: 5 mins
     paths:
       - build/libs/*.jar
   cache:
