@@ -54,7 +54,7 @@ const pages = {
 };
 // [call once]
 const loadCard = function(card){
-  console.log(card);
+  console.log('loading', card);
 
   document.querySelector('#preview-container>img').src
       = web2print.links.thumbnailUrl+card.thumbSlug;
@@ -147,6 +147,7 @@ const Spawner = {
       .mousedown(hTxtMDown)
       .mouseup(hTxtMUp)
       .click(hElClick)
+      .on('paste', hElPaste)
       .on('input', hElInput)
         // (lucas 09.01.21)
         // this is a quick fix to disable the glitchy behaviour when dragging selected text.
@@ -174,11 +175,12 @@ const hTxtMDown = function(e){
 const hTxtMUp = function(e){
   //(lucas 05.01.20)
   // compat: 93.42%  destructuring ... might need to do this differently
-  const [nodes, _] = getNodesFromSelection();
-  const $nodes = $(nodes);
-  let fontFam = $nodes.eq(0).css('font-family');
-  let fontSize = +$nodes.eq(0).css('font-size').slice(0, -2);
+  const [nodes, range] = getNodesFromSelection();
+  const $initialTarget = $(range.startContainer).parent();
+  let fontFam = $initialTarget.css('font-family');
+  let fontSize = +$initialTarget.css('font-size').slice(0, -2);
   let index;
+  const $nodes = $(nodes);
   for(let i = 1; i < $nodes.length; i++){
     const nextFam  = $nodes.eq(i).css('font-family');
     const nextSize = +$nodes.eq(i).css('font-size').slice(0, -2);
@@ -202,6 +204,32 @@ const hElClick = function(e){
     visibility: 'visible'
   }, $target.offset()));
 };
+const hElPaste = async function(e) {
+  e.preventDefault();
+  const ev = e.originalEvent;
+  // (lucas 21.01.21)
+  // this could be the beforeinput event, but sadly you have to explicitly allow it in the config under firefox
+  const data = ev.clipboardData.getData('text/html');
+  let frag   = document.createRange().createContextualFragment(data);
+  //prepare the fragment to only contain the actual fragment
+  const innerTextFrag = frag.querySelector('.text');
+  if(innerTextFrag) {
+    frag = innerTextFrag;
+  }
+
+  const nodes = makeNodesFromSelection();
+  if(nodes.length > 0) {
+    const box = e.delegateTarget;
+    const spawnTarget = nodes[nodes.length - 1].nextSibling;
+    for(const run of nodes)
+      box.removeChild(run);
+    for(const run of frag.childNodes) {
+      console.log('inserting', run, run.textContent);
+      box.insertBefore(run, spawnTarget);
+    }
+  }
+};
+
 const hElInput = function(e){
   const box = e.delegateTarget;
   const runs = box.childNodes;
@@ -279,6 +307,9 @@ const getNodesFromSelection = function() {
   // todo: loop over all ranges to support multi select,
   //       this then also needs to be respected while saving / restoring the selection
   let range = selection.getRangeAt(0);
+  if(range.collapsed)
+    return[[], range];
+
   const container = range.commonAncestorContainer;
   let start = range.startContainer;
   let end = range.endContainer;
@@ -295,7 +326,8 @@ const getNodesFromSelection = function() {
     start = start.childNodes[0];
     range.setStart(start, range.startOffset);
   } else if(range.startOffset === start.textContent.length) {
-    start = start.parentNode.nextSibling.childNodes[0];
+    const next = start.parentNode.nextSibling;
+    start = next.nodeName === 'BR' ? next : next.childNodes[0];
     range.setStart(start, 0);
   }
   const $end = $(end);
