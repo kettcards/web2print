@@ -1,6 +1,16 @@
 'use strict';
 
-const make  = document.createElement.bind(document);
+const make = function(spec, child) {
+  const s = spec.split('.');
+  const e = document.createElement(s[0]);
+  if(s.length > 1){
+    s.shift();
+    e.classList.add(s);
+  }
+  if(child)
+    e.appendChild(child);
+  return e;
+}
 const makeT = document.createTextNode.bind(document);
 const get = document.getElementById.bind(document);
 const stopPropagation = function(e){e.stopPropagation();};
@@ -172,24 +182,98 @@ const hTxtMDown = function(e){
   state.target = $(e.delegateTarget);
   state.addOnClick = undefined;
 };
+
+class RangeWrapper {
+  range;
+  start;
+  end;
+
+  constructor(range) {
+    this.start = range.startContainer.nodeName === 'BR' ? range.startContainer : range.startContainer.parentNode;
+    this.end   = range.endContainer.nodeName === 'BR' ? range.endContainer : range.endContainer.parentNode;
+    this.range = range;
+  }
+
+  setStart(newStart, offset) {
+    if(offset) {
+      this.range.setStart(newStart.childNodes[0], offset);
+    } else {
+      if(newStart.nodeName === 'BR')
+        this.range.setStartBefore(newStart);
+      else
+        this.range.setStart(newStart.childNodes[0], 0);
+    }
+    this.start = newStart;
+  }
+  setEnd(newEnd) {
+    if(newEnd.nodeName === 'BR')
+      this.range.setEndAfter(newEnd);
+    else
+      this.range.setEnd(newEnd.childNodes[0], newEnd.textContent.length);
+    this.end = newEnd;
+  }
+
+  iterateSpans() {
+    const arr = [];
+    for(let n = this.start;; n = n.nextSibling) {
+      if(n.nodeName === 'SPAN')
+        arr.push(n);
+      if(n === this.end)
+        break;
+    }
+    return arr;
+  }
+  iterate() {
+    const arr = [];
+    for(let n = this.start;; n = n.nextSibling) {
+      arr.push(n);
+      if(n === this.end)
+        break;
+    }
+    return arr;
+  }
+}
+
 const hTxtMUp = function(e){
-  //(lucas 05.01.20)
-  // compat: 93.42%  destructuring ... might need to do this differently
-  const [nodes, range] = getNodesFromSelection();
-  const $initialTarget = $(range.startContainer).parent();
-  let fontFam = $initialTarget.css('font-family');
-  let fontSize = +$initialTarget.css('font-size').slice(0, -2);
+  const rangeW = getNodesFromSelection();
+  let $initialSource;
+  if(rangeW.start.nodeName === 'BR') {
+    let curr = rangeW.start;
+    while(curr = curr.previousSibling) {
+      if(curr.nodeName !== 'BR')
+        break;
+    }
+    if(curr) {
+      $initialSource = $(curr);
+    } else {
+      curr = rangeW.start;
+      while(curr = curr.nextSibling) {
+        if(curr.nodeName !== 'BR')
+          break;
+      }
+      if(curr) {
+        $initialSource = $(curr);
+      } else
+        throw new Error("HOW DID WE GET HERE?");
+    }
+  } else {
+    $initialSource = $(rangeW.start);
+  }
+
+  let fontFam  =  $initialSource.css('font-family');
+  let fontSize = +$initialSource.css('font-size').slice(0, -2);
   let index;
-  const $nodes = $(nodes);
-  for(let i = 1; i < $nodes.length; i++){
-    const nextFam  = $nodes.eq(i).css('font-family');
-    const nextSize = +$nodes.eq(i).css('font-size').slice(0, -2);
+  for(let n = rangeW.start;; n = n.nextSibling){
+    const nextFam  =  $(n).css('font-family');
+    const nextSize = +$(n).css('font-size').slice(0, -2);
     if(fontFam !== nextFam){
       index = -1;
     }
     if(nextSize < fontSize) {
       fontSize = nextSize;
     }
+    if(n === rangeW.end)
+      break;
   }
 
   $fontSelect[0].selectedIndex = index || FontNames.indexOf(fontFam);
@@ -209,24 +293,45 @@ const hElPaste = async function(e) {
   const ev = e.originalEvent;
   // (lucas 21.01.21)
   // this could be the beforeinput event, but sadly you have to explicitly allow it in the config under firefox
-  const data = ev.clipboardData.getData('text/html');
-  let frag   = document.createRange().createContextualFragment(data);
-  //prepare the fragment to only contain the actual fragment
-  const innerTextFrag = frag.querySelector('.text');
-  if(innerTextFrag) {
-    frag = innerTextFrag;
-  }
 
-  const nodes = makeNodesFromSelection();
-  if(nodes.length > 0) {
-    const box = e.delegateTarget;
-    const spawnTarget = nodes[nodes.length - 1].nextSibling;
-    for(const run of nodes)
-      box.removeChild(run);
-    for(const run of frag.childNodes) {
-      console.log('inserting', run, run.textContent);
-      box.insertBefore(run, spawnTarget);
+  // try html first
+  let data = ev.clipboardData.getData('text/html');
+  if(data.length > 0) {
+    let frag = document.createRange().createContextualFragment(data);
+    //prepare the fragment to only contain the actual fragment
+    const innerTextFrag = frag.querySelector('.text');
+    if(innerTextFrag) {
+      frag = innerTextFrag;
     }
+
+    const rangeW = makeNodesFromSelection();
+    const insertTarget = rangeW.end.nextSibling;
+    rangeW.range.deleteContents();
+    for(const run of frag.childNodes) {
+      if(run.nodeName === 'BR' || (run.nodeName === 'SPAN' && $(run).hasClass('fontStyle')))
+        insertTarget.parentNode.insertBefore(run, insertTarget);
+      else if(run.nodeName === '#text' && run.textContent.length > 0) {
+        insertTarget.parentNode.insertBefore(make('span.fontStyle', run), insertTarget);
+      } else
+        console.log('skipping insertion of', run);
+    }
+  } else {
+    //if we cant get html we try for text
+    data = ev.clipboardData.getData('text');
+    if(data.length > 0) {
+      const rangeW = makeNodesFromSelection();
+      const insertTarget = rangeW.end.nextSibling;
+      rangeW.range.deleteContents();
+      const box = insertTarget.parentNode;
+
+      const lines = data.split("\n");
+      box.insertBefore(make('span.fontStyle', lines[0]), insertTarget);
+      for(let i = 1; i < lines.length; i++) {
+        box.insertBefore(make('br'), insertTarget);
+        box.insertBefore(make('span.fontStyle', lines[i]), insertTarget);
+      }
+    } else
+      console.log('cant paste that', ev.clipboardData.types);
   }
 };
 
@@ -239,18 +344,13 @@ const hElInput = function(e){
   // (lucas 05.01.20)
   // todo: would like to find a better way to do this
   if(runs.length === 0){
-    const inner = make('span');
-    inner.classList.add('fontStyle');
-    box.appendChild(inner);
+    box.appendChild(make('span.fontStyle'));
     return;
   } else if (runs.length === 1) {
     switch (runs[0].nodeName) {
       case 'BR': box.removeChild(runs[0]); return;
       case '#text': {
-        const inner = make('span');
-        inner.classList.add('fontStyle');
-        inner.appendChild(box.removeChild(runs[0]));
-        box.appendChild(inner);
+        box.appendChild(make('span.fontStyle', box.removeChild(runs[0])));
       } return;
     }
   }
@@ -269,7 +369,7 @@ const hElInput = function(e){
             box.insertBefore(c, run);
           }
         } while(nodes.length > 1);
-        //(lucas) if the last node is a ber promote it and delete the original run, else dont do anything
+        //(lucas) if the last node is a br promote it and delete the original run, else dont do anything
         if(nodes[0].nodeName === 'BR') {
           box.insertBefore(run.removeChild(nodes[0]), run);
           box.removeChild(run);
@@ -291,7 +391,7 @@ $(".alignmentBtn").click(function(){
 }).mouseup(stopPropagation);
 $(".fontTypeButton").click(function(){
   const classToAdd = $(this).val();
-  const $nodes = $(makeNodesFromSelection());
+  const $nodes = $(makeNodesFromSelection().iterateSpans());
   const shouldRemove = $nodes.filter('.'+classToAdd).length === $nodes.length;
   $nodes[shouldRemove ? 'removeClass' : 'addClass'](classToAdd);
 }).mouseup(function(e){
@@ -301,134 +401,117 @@ $(".fontTypeButton").click(function(){
 const getNodesFromSelection = function() {
   const selection = document.getSelection();
   if(selection.rangeCount < 1)
-    return [[], undefined];
+    return new RangeWrapper();
 
-  //(lucas 09.01.21)
+  // (lucas 09.01.21)
   // todo: loop over all ranges to support multi select,
   //       this then also needs to be respected while saving / restoring the selection
-  let range = selection.getRangeAt(0);
-  if(range.collapsed)
-    return[[], range];
+  const range = selection.getRangeAt(0).cloneRange();
+  const rangeW = new RangeWrapper(range);
 
-  const container = range.commonAncestorContainer;
-  let start = range.startContainer;
-  let end = range.endContainer;
-  const $start = $(start);
-  //(lucas) this fixes a selection bug when selecting a whole line / the whole block of text
-  //        where the endContainer becomes the parent of the container itself
-  if($start.hasClass('text')){
-    let el = container.childNodes[0];
-    while (el.nodeName === 'BR' && el !== end.parentNode)
-      el = el.nextSibling;
-    start = el.childNodes[0];
-    range.setStart(start, 0);
-  } else if($start.hasClass('fontStyle')) {
-    start = start.childNodes[0];
-    range.setStart(start, range.startOffset);
-  } else if(range.startOffset === start.textContent.length) {
-    const next = start.parentNode.nextSibling;
-    start = next.nodeName === 'BR' ? next : next.childNodes[0];
-    range.setStart(start, 0);
-  }
-  const $end = $(end);
-  if($end.hasClass('text')){
-    let el = container.childNodes[range.endOffset];
-    if (!el) {
-      el = container.childNodes[container.childNodes.length - 1];
+  if(range.collapsed) {
+    if(range.startContainer.nodeName === 'SPAN' && $(range.startContainer).hasClass('text')) {
+      rangeW.setStart(range.startContainer.childNodes[range.startOffset]);
+      rangeW.setEnd(range.endContainer.childNodes[range.endOffset]);
     }
-    while (el.nodeName === 'BR' && el !== start.parentNode)
-      el = el.previousSibling;
-    end = el.childNodes[0];
-    range.setEnd(end, end.textContent.length);
-  } else if($end.hasClass('fontStyle')) {
-    end = end.childNodes[0];
-    range.setEnd(end, range.endOffset);
-  } else if (range.endOffset === 0) {
-    end = end.parentNode.previousSibling.childNodes[0];
-    range.setEnd(end, end.textContent.length);
-  }
-  let _iter = document.createNodeIterator(
-      container, NodeFilter.SHOW_TEXT, {
-        acceptNode: function(n) {
-          return (n.nodeName === 'BR') ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
-        }
-      }
-  );
-  let nodes = [];
-  // (lucas) iterate over all _text_ nodes in the selection and save their parents (spans)
-  while(_iter.nextNode()) {
-    let ref = _iter.referenceNode;
-    if(nodes.length < 1 && ref !== start)
-      continue;
-    nodes.push(ref.parentNode);
-    if(ref === end)
-      break;
+    return rangeW;
   }
 
-  return [nodes, range];
+  // (lucas)
+  // this section tries to unify behaviour of the selection.
+  // the problem arises from the fact that depending on the specific position selected
+  // and even how it was selected doc.getSelection() returns different values
+  const $start = $(range.startContainer);
+  if($start.hasClass('text')){
+    const newStart = range.startContainer.childNodes[range.startOffset];
+    rangeW.setStart(newStart);
+  } else if($start.hasClass('fontStyle')) {
+    rangeW.setStart(range.startContainer, range.startOffset);
+  } else if(range.startOffset === range.startContainer.textContent.length && range.startContainer.nodeName === '#text') {
+    const next = range.startContainer.parentNode.nextSibling;
+    rangeW.setStart(next);
+  }
+  const $end = $(range.endContainer);
+  if($end.hasClass('text')){
+    const children = range.endContainer.childNodes;
+    const el = children[range.endOffset];
+    rangeW.setEnd(el || children[children.length - 1]);
+  } else if($end.hasClass('fontStyle')) {
+    rangeW.setEnd(range.endContainer, range.endOffset);
+  } else if (range.endOffset === 0 && range.endContainer.nodeName === '#text') {
+    const prev = range.endContainer.parentNode.previousSibling;
+    rangeW.setEnd(prev);
+  }
+
+  console.log('get returned', rangeW.iterate());
+  return rangeW;
 }
 
 const makeNodesFromSelection = function() {
-  // (lucas 05.01.20)
-  // compat: 93.42%  destructuring ... might need to do this differently
-  const [nodes, range] = getNodesFromSelection();
+  const rangeW = getNodesFromSelection();
+  let modified = false;
 
-  if(nodes.length === 1) {
-    const node = nodes[0];
+  if(rangeW.start.nodeName !== 'BR' && rangeW.start === rangeW.end) {
+    const node = rangeW.start;
 
-    const txt = node.textContent;
-    const parent = node.parentNode;
-    let slice = false;
-    if(range.startOffset !== 0) {
+    let txt = node.textContent;
+    const startOffs = rangeW.range.startOffset;
+    const endOffs   = rangeW.range.endOffset;
+    if(startOffs !== 0) {
       const w = node.cloneNode();
-      w.appendChild(makeT(txt.substr(0, range.startOffset)));
-      parent.insertBefore(w, node);
-      slice = true;
+      w.appendChild(makeT(txt.substr(0, startOffs)));
+      node.parentNode.insertBefore(w, node);
+      modified = true;
     }
-    if(range.endOffset !== txt.length) {
+    if(endOffs !== txt.length) {
       const w = node.cloneNode();
-      w.appendChild(makeT(txt.substr(range.endOffset)));
-      parent.insertBefore(w, node.nextSibling);
-      slice = true;
+      w.appendChild(makeT(txt.substr(endOffs)));
+      node.parentNode.insertBefore(w, node.nextSibling);
+      modified = true;
     }
 
-    if(slice) {
-      node.childNodes[0].replaceWith(txt.substr(range.startOffset, range.endOffset - range.startOffset));
+    if(modified) {
+      node.childNodes[0].replaceWith(txt.substr(startOffs, endOffs - startOffs));
+      rangeW.setStart(node);
+      rangeW.setEnd(node);
     }
-  } else if (nodes.length > 1) {
-    const first = nodes[0];
-    let txt = first.textContent;
-    if(range.startOffset === txt.length){
-      nodes.shift();
-    } else if(range.startOffset !== 0) {
-      const c = first.cloneNode();
-      c.appendChild(makeT(txt.substr(0, range.startOffset)));
-      first.parentNode.insertBefore(c, first);
-      first.childNodes[0].replaceWith(txt.substr(range.startOffset));
+  } else {
+    const first = rangeW.start;
+    if(first.nodeName !== 'BR') {
+      const txt = first.textContent;
+      if (rangeW.range.startOffset !== 0) {
+        const c = first.cloneNode();
+        c.appendChild(makeT(txt.substr(0, rangeW.range.startOffset)));
+        first.parentNode.insertBefore(c, first);
+        first.childNodes[0].replaceWith(txt.substr(rangeW.range.startOffset));
+        rangeW.setStart(first);
+        modified = true;
+      }
     }
 
-    const last = nodes[nodes.length - 1];
-    txt = last.textContent;
-    if(range.endOffset === 0){
-      nodes.pop();
-    } else if(range.endOffset !== txt.length) {
-      const c = last.cloneNode();
-      c.appendChild(makeT(txt.substr(range.endOffset)));
-      last.parentNode.insertBefore(c, last.nextSibling);
-      last.childNodes[0].replaceWith(txt.substr(0, range.endOffset));
+    const last = rangeW.end;
+    if(last.nodeName !== 'BR') {
+      const txt = last.textContent;
+      if (rangeW.range.endOffset !== txt.length) {
+        const c = last.cloneNode();
+        c.appendChild(makeT(txt.substr(rangeW.range.endOffset)));
+        last.parentNode.insertBefore(c, last.nextSibling);
+        last.childNodes[0].replaceWith(txt.substr(0, rangeW.range.endOffset));
+        rangeW.setEnd(last);
+        modified = true;
+      }
     }
   }
 
   //(lucas) restore selection after creating new nodes
-  const selection = document.getSelection();
-  let newRange = new Range();
-  newRange.setStart(nodes[0].childNodes[0], 0);
-  let lastNode = nodes[nodes.length - 1].childNodes[0];
-  newRange.setEnd(lastNode, lastNode.textContent.length);
-  selection.removeAllRanges();
-  selection.addRange(newRange);
+  if(modified) {
+    const selection = document.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(rangeW.range);
+  }
 
-  return nodes;
+  console.log('make returned', rangeW.iterate());
+  return rangeW;
 };
 
 //dragging
@@ -585,7 +668,7 @@ $.get(web2print.links.apiUrl+'fonts')
  });
 
 const applyFont = function() {
-  const nodes = makeNodesFromSelection();
+  const nodes = makeNodesFromSelection().iterateSpans();
   const fName = $fontSelect.val();
   (!FontAttributeMap[fName] ? beginLoadFont(fName) : Promise.resolve())
   .then(function() {
@@ -639,7 +722,7 @@ const $fontSizeSelect = $('#fontSizeSelect')
   const selection = document.getSelection();
   selection.removeAllRanges();
   selection.addRange(state.range);
-  $(makeNodesFromSelection()).css('font-size', e.target.value+'px');
+  $(makeNodesFromSelection().iterateSpans()).css('font-size', e.target.value+'px');
 });
 
 // changing pages
