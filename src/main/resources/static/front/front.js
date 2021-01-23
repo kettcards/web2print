@@ -12,12 +12,15 @@ const make = function(spec, child) {
   return e;
 }
 const makeT = document.createTextNode.bind(document);
+const makeR = document.createRange.bind(document);
 const get = document.getElementById.bind(document);
+const getSel = document.getSelection.bind(document);
 const stopPropagation = function(e){e.stopPropagation();};
-const falsify = function() {return false;}
+const falsify = function() {return false;};
 // (lucas) the remainder function in js does not work like the mathematical modulo,
 //         this function does.
-const mod = function(a, n) {return ((a % n) + n) % n;}
+const mod = function(a, n) {return ((a % n) + n) % n;};
+Node.prototype.isA = function(n) {return this.nodeName === n;};
 
 const $toolBox = $('#toolBox');
 
@@ -157,8 +160,10 @@ const Spawner = {
       .mousedown(hTxtMDown)
       .mouseup(hTxtMUp)
       .click(hElClick)
-      .on('paste', hElPaste)
-      .on('input', hElInput)
+      .on('paste',   hElPaste)
+      .on('keydown', hElKeyDown)
+      .on('keyup',   hElKeyUp)
+      //.on('input', hElInput)
         // (lucas 09.01.21)
         // this is a quick fix to disable the glitchy behaviour when dragging selected text.
         // unfortunately this also produces quite the rough experience when a user actually wants do use drag n drop
@@ -189,8 +194,8 @@ class RangeWrapper {
   end;
 
   constructor(range) {
-    this.start = range.startContainer.nodeName === 'BR' ? range.startContainer : range.startContainer.parentNode;
-    this.end   = range.endContainer.nodeName === 'BR' ? range.endContainer : range.endContainer.parentNode;
+    this.start = range.startContainer.isA('BR') ? range.startContainer : range.startContainer.parentNode;
+    this.end   = range.endContainer.isA('BR') ? range.endContainer : range.endContainer.parentNode;
     this.range = range;
   }
 
@@ -198,7 +203,7 @@ class RangeWrapper {
     if(offset) {
       this.range.setStart(newStart.childNodes[0], offset);
     } else {
-      if(newStart.nodeName === 'BR')
+      if(newStart.isA('BR'))
         this.range.setStartBefore(newStart);
       else
         this.range.setStart(newStart.childNodes[0], 0);
@@ -206,7 +211,7 @@ class RangeWrapper {
     this.start = newStart;
   }
   setEnd(newEnd) {
-    if(newEnd.nodeName === 'BR')
+    if(newEnd.isA('BR'))
       this.range.setEndAfter(newEnd);
     else
       this.range.setEnd(newEnd.childNodes[0], newEnd.textContent.length);
@@ -216,7 +221,7 @@ class RangeWrapper {
   iterateSpans() {
     const arr = [];
     for(let n = this.start;; n = n.nextSibling) {
-      if(n.nodeName === 'SPAN')
+      if(n.isA('SPAN'))
         arr.push(n);
       if(n === this.end)
         break;
@@ -234,13 +239,13 @@ class RangeWrapper {
   }
 }
 
-const hTxtMUp = function(e){
+const hTxtMUp = function(){
   const rangeW = getNodesFromSelection();
   let $initialSource;
-  if(rangeW.start.nodeName === 'BR') {
+  if(rangeW.start.isA('BR')) {
     let curr = rangeW.start;
     while(curr = curr.previousSibling) {
-      if(curr.nodeName !== 'BR')
+      if(!curr.isA('BR'))
         break;
     }
     if(curr) {
@@ -248,7 +253,7 @@ const hTxtMUp = function(e){
     } else {
       curr = rangeW.start;
       while(curr = curr.nextSibling) {
-        if(curr.nodeName !== 'BR')
+        if(!curr.isA('BR'))
           break;
       }
       if(curr) {
@@ -294,92 +299,163 @@ const hElPaste = async function(e) {
   // (lucas 21.01.21)
   // this could be the beforeinput event, but sadly you have to explicitly allow it in the config under firefox
 
-  // try html first
-  let data = ev.clipboardData.getData('text/html');
+  // (lucas) dont bother with trying to get teh html, its just not worth the hassle of converting the structure
+  //         firefox doesnt give you a proper fragment, it generates tags around the fragment.
+  //         I could extract the comment tags and go from there, but ist just not worth it.
+  const data = ev.clipboardData.getData('text');
   if(data.length > 0) {
-    let frag = document.createRange().createContextualFragment(data);
-    //prepare the fragment to only contain the actual fragment
-    const innerTextFrag = frag.querySelector('.text');
-    if(innerTextFrag) {
-      frag = innerTextFrag;
-    }
-
     const rangeW = makeNodesFromSelection();
     const insertTarget = rangeW.end.nextSibling;
+    let styleSource = rangeW.start.previousSibling;
+    if(styleSource && styleSource.isA('BR'))
+      styleSource = styleSource.previousSibling;
+    if(!styleSource || styleSource.isA('BR')) {
+      styleSource = insertTarget;
+      if(styleSource && styleSource.isA('BR')) {
+        styleSource = styleSource.nextSibling;
+        if(!styleSource || styleSource.isA('BR'))
+          styleSource = undefined;
+      }
+    }
+    const genFn = styleSource ? function(child) {
+      const el = styleSource.cloneNode();
+      el.appendChild(child);
+      return el;
+    } : function(child) {
+      return make('span.fontStyle', child);
+    };
     rangeW.range.deleteContents();
-    for(const run of frag.childNodes) {
-      if(run.nodeName === 'BR' || (run.nodeName === 'SPAN' && $(run).hasClass('fontStyle')))
-        insertTarget.parentNode.insertBefore(run, insertTarget);
-      else if(run.nodeName === '#text' && run.textContent.length > 0) {
-        insertTarget.parentNode.insertBefore(make('span.fontStyle', run), insertTarget);
-      } else
-        console.log('skipping insertion of', run);
-    }
-  } else {
-    //if we cant get html we try for text
-    data = ev.clipboardData.getData('text');
-    if(data.length > 0) {
-      const rangeW = makeNodesFromSelection();
-      const insertTarget = rangeW.end.nextSibling;
-      rangeW.range.deleteContents();
-      const box = insertTarget.parentNode;
+    const box = insertTarget.parentNode;
 
-      const lines = data.split("\n");
-      box.insertBefore(make('span.fontStyle', lines[0]), insertTarget);
-      for(let i = 1; i < lines.length; i++) {
-        box.insertBefore(make('br'), insertTarget);
-        box.insertBefore(make('span.fontStyle', lines[i]), insertTarget);
-      }
-    } else
-      console.log('cant paste that', ev.clipboardData.types);
-  }
+    const lines = data.split("\n");
+    box.insertBefore(genFn(makeT(lines[0])), insertTarget);
+    for(let i = 1; i < lines.length; i++) {
+      box.insertBefore(make('br'), insertTarget);
+      box.insertBefore(genFn(makeT(lines[i])), insertTarget);
+    }
+
+    const newRange = makeR();
+    newRange.setEndBefore(insertTarget);
+    newRange.collapse();
+    const selection = getSel();
+    selection.removeAllRanges();
+    selection.addRange(newRange);
+  } else
+    console.log('cant paste that', ev.clipboardData.types);
 };
 
-const hElInput = function(e){
-  const box = e.delegateTarget;
-  const runs = box.childNodes;
-  // (lucas)
-  // if the user selects all (ctrl-a) and then starts typing the inner span is removed
-  // this solution isn't very clean but it works
-  // (lucas 05.01.20)
-  // todo: would like to find a better way to do this
-  if(runs.length === 0){
-    box.appendChild(make('span.fontStyle'));
-    return;
-  } else if (runs.length === 1) {
-    switch (runs[0].nodeName) {
-      case 'BR': box.removeChild(runs[0]); return;
-      case '#text': {
-        box.appendChild(make('span.fontStyle', box.removeChild(runs[0])));
-      } return;
-    }
-  }
-  //(lucas) need to detect if the user inserts a new line, since it needs to be promoted to maintain a flat structure
-  if(e.originalEvent.inputType === 'insertParagraph'){
-    for(const run of runs){
-      const nodes = run.childNodes;
-      if(nodes.length === 3) {
-        //(lucas) cant guarantee that the middle node is br
-        do {
-          if(nodes[0].nodeName === 'BR') {
-            box.insertBefore(run.removeChild(nodes[0]), run);
-          } else {
-            const c = run.cloneNode();
-            c.appendChild(run.removeChild(nodes[0]));
-            box.insertBefore(c, run);
+const hElKeyDown = function(e) {
+  const ev = e.originalEvent;
+  const key = ev.keyCode;
+
+  const selection = getSel();
+  const range = selection.getRangeAt(0);
+  console.log(ev.key, range);
+
+    // arrow keys               // shift/caps | strg | alt
+  if((key < 37 || e.keyCode > 40) && (key < 16 || key > 18)
+    // img up/down  pos1/end       //caps      //osright     //ctxmen
+    && (key < 33 || key > 36) && key !== 20 && key !== 91 && key !== 93) {
+    if($(range.startContainer).is('span.text') && $(range.endContainer).is('span.text')) {
+      const box = e.delegateTarget;
+
+      // (lucas)
+      // if the user selects all (ctrl-a) and then starts typing the inner span is removed
+      // we would overwrite the whole textbox, but this removes the inner span - so we dont
+      if (range.startOffset === 0 && range.endOffset === range.endContainer.childNodes.length) {
+        let save;
+        for (const c of box.childNodes)
+          if (c.isA('SPAN')) {
+            save = c.cloneNode();
+            break;
           }
-        } while(nodes.length > 1);
-        //(lucas) if the last node is a br promote it and delete the original run, else dont do anything
-        if(nodes[0].nodeName === 'BR') {
-          box.insertBefore(run.removeChild(nodes[0]), run);
-          box.removeChild(run);
+        if (!save)
+          save = make('span.fontStyle');
+        const txt = makeT('');
+        save.appendChild(txt);
+
+        const remRange = makeR();
+        remRange.selectNodeContents(box);
+        remRange.deleteContents();
+
+        box.appendChild(save);
+        const selRange = makeR();
+        selRange.setEndAfter(txt);
+        selRange.collapse();
+        selection.removeAllRanges();
+        selection.addRange(selRange);
+
+        if (key === 8 || key === 46) {//backspace / del
+          e.preventDefault();
         }
-      } else if(nodes.length === 2) {
-        box.insertBefore(run.removeChild(nodes[0]), run);
+      } else if(key === 13) {
+        e.preventDefault();
+        if(range.collapsed) {
+          const br = make('BR');
+          box.insertBefore(br, box.childNodes[range.startOffset]);
+
+          const newCursor = makeR();
+          newCursor.setEndAfter(br);
+          newCursor.collapse();
+          selection.removeAllRanges();
+          selection.addRange(newCursor);
+        } else {
+          console.error('not implemented 1');
+        }
+      } else {
+        if (key !== 8 && key !== 46) {
+          const insertTarget = box.childNodes[range.endOffset];
+          range.deleteContents();
+          const txt = makeT('');
+          box.insertBefore(make('span.fontStyle', txt), insertTarget);
+          range.setEndAfter(txt);
+          range.collapse();
+        }
+      }
+    } else if (key === 13) {
+      //just prevent it in all cases
+      e.preventDefault();
+      const box = e.delegateTarget;
+      if(range.startContainer.isA('#text') && range.endContainer.isA('#text')) {
+        if(range.collapsed) {
+          const span = range.startContainer.parentNode;
+          const offs = range.startOffset;
+          if(offs === 0) {
+            box.insertBefore(make('BR'), span);
+          } else if(offs === range.startContainer.textContent.length) {
+            const br = make('BR');
+            const insertTarget = span.nextSibling;
+            box.insertBefore(br, insertTarget);
+
+            const newCursor = makeR();
+
+            // if the br is the last element it gets ignored, this is however not the expected behaviour of en editor
+            if(!insertTarget) {
+              box.insertBefore(make('BR'), insertTarget);
+            }
+            newCursor.setEndAfter(br);
+            newCursor.collapse();
+            selection.removeAllRanges();
+            selection.addRange(newCursor);
+          }
+        } else {
+          const rangeW = makeNodesFromSelection();
+          const insertTarget = rangeW.end.nextSibling;
+          rangeW.range.deleteContents();
+          box.insertBefore(make('BR'), insertTarget);
+        }
       }
     }
   }
 };
+const hElKeyUp = function(e) {
+  const ev = e.originalEvent;
+  const key = ev.keyCode;
+
+  if((key >= 37 && key <= 40) || (key >= 33 && key <= 36)) {
+    hTxtMUp();
+  }
+}
 
 $('.addElBtn').click(function(e){
   state.addOnClick = Spawner[$(e.target).data('enum')];
@@ -399,7 +475,7 @@ $(".fontTypeButton").click(function(){
 });
 
 const getNodesFromSelection = function() {
-  const selection = document.getSelection();
+  const selection = getSel();
   if(selection.rangeCount < 1)
     return new RangeWrapper();
 
@@ -410,7 +486,7 @@ const getNodesFromSelection = function() {
   const rangeW = new RangeWrapper(range);
 
   if(range.collapsed) {
-    if(range.startContainer.nodeName === 'SPAN' && $(range.startContainer).hasClass('text')) {
+    if(range.startContainer.isA('SPAN') && $(range.startContainer).hasClass('text')) {
       rangeW.setStart(range.startContainer.childNodes[range.startOffset]);
       rangeW.setEnd(range.endContainer.childNodes[range.endOffset]);
     }
@@ -427,7 +503,7 @@ const getNodesFromSelection = function() {
     rangeW.setStart(newStart);
   } else if($start.hasClass('fontStyle')) {
     rangeW.setStart(range.startContainer, range.startOffset);
-  } else if(range.startOffset === range.startContainer.textContent.length && range.startContainer.nodeName === '#text') {
+  } else if(range.startOffset === range.startContainer.textContent.length && range.startContainer.isA('#text')) {
     const next = range.startContainer.parentNode.nextSibling;
     rangeW.setStart(next);
   }
@@ -438,7 +514,7 @@ const getNodesFromSelection = function() {
     rangeW.setEnd(el || children[children.length - 1]);
   } else if($end.hasClass('fontStyle')) {
     rangeW.setEnd(range.endContainer, range.endOffset);
-  } else if (range.endOffset === 0 && range.endContainer.nodeName === '#text') {
+  } else if (range.endOffset === 0 && range.endContainer.isA('#text')) {
     const prev = range.endContainer.parentNode.previousSibling;
     rangeW.setEnd(prev);
   }
@@ -451,7 +527,7 @@ const makeNodesFromSelection = function() {
   const rangeW = getNodesFromSelection();
   let modified = false;
 
-  if(rangeW.start.nodeName !== 'BR' && rangeW.start === rangeW.end) {
+  if(!rangeW.start.isA('BR') && rangeW.start === rangeW.end) {
     const node = rangeW.start;
 
     let txt = node.textContent;
@@ -477,7 +553,7 @@ const makeNodesFromSelection = function() {
     }
   } else {
     const first = rangeW.start;
-    if(first.nodeName !== 'BR') {
+    if(!first.isA('BR')) {
       const txt = first.textContent;
       if (rangeW.range.startOffset !== 0) {
         const c = first.cloneNode();
@@ -490,7 +566,7 @@ const makeNodesFromSelection = function() {
     }
 
     const last = rangeW.end;
-    if(last.nodeName !== 'BR') {
+    if(!last.isA('BR')) {
       const txt = last.textContent;
       if (rangeW.range.endOffset !== txt.length) {
         const c = last.cloneNode();
@@ -505,7 +581,7 @@ const makeNodesFromSelection = function() {
 
   //(lucas) restore selection after creating new nodes
   if(modified) {
-    const selection = document.getSelection();
+    const selection = getSel();
     selection.removeAllRanges();
     selection.addRange(rangeW.range);
   }
@@ -712,14 +788,14 @@ const loadFont = function(font) {
 
 const $fontSizeSelect = $('#fontSizeSelect')
 .mousedown(function(e){
-  const s = document.getSelection();
+  const s = getSel();
   if(s.rangeCount === 1)
     state.range = s.getRangeAt(0).cloneRange();
 })
 .mouseup(stopPropagation)
 .change(function(e) {
   //restore selection
-  const selection = document.getSelection();
+  const selection = getSel();
   selection.removeAllRanges();
   selection.addRange(state.range);
   $(makeNodesFromSelection().iterateSpans()).css('font-size', e.target.value+'px');
@@ -777,7 +853,7 @@ const hRenderStyleChanged = function(index) {
   renderStyleState.currentDotIndex = renderStyleState.style.initialDotIndex;
   renderStyleState.dots = new Array(renderStyleState.style.pageLabels.length);
 
-  const range = document.createRange();
+  const range = makeR();
   range.selectNodeContents($navDotsUl[0]);
   range.deleteContents();
   for(let i = 0; i < renderStyleState.dots.length; i++) {
