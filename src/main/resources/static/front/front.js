@@ -203,18 +203,12 @@ class RangeWrapper {
     if(offset) {
       this.range.setStart(newStart.childNodes[0], offset);
     } else {
-      if(newStart.isA('BR'))
-        this.range.setStartBefore(newStart);
-      else
-        this.range.setStart(newStart.childNodes[0], 0);
+      this.range.setStartBefore(newStart);
     }
     this.start = newStart;
   }
   setEnd(newEnd) {
-    if(newEnd.isA('BR'))
-      this.range.setEndAfter(newEnd);
-    else
-      this.range.setEnd(newEnd.childNodes[0], newEnd.textContent.length);
+    this.range.setEndAfter(newEnd);
     this.end = newEnd;
   }
 
@@ -295,7 +289,8 @@ const hElClick = function(e){
 };
 const hElPaste = async function(e) {
   e.preventDefault();
-  const ev = e.originalEvent;
+  const ev  = e.originalEvent;
+  const box = e.delegateTarget;
   // (lucas 21.01.21)
   // this could be the beforeinput event, but sadly you have to explicitly allow it in the config under firefox
 
@@ -325,7 +320,6 @@ const hElPaste = async function(e) {
       return make('span.fontStyle', child);
     };
     rangeW.range.deleteContents();
-    const box = insertTarget.parentNode;
 
     const lines = data.split("\n");
     box.insertBefore(genFn(makeT(lines[0])), insertTarget);
@@ -335,7 +329,10 @@ const hElPaste = async function(e) {
     }
 
     const newRange = makeR();
-    newRange.setEndBefore(insertTarget);
+    if(insertTarget)
+      newRange.setEndBefore(insertTarget);
+    else
+      newRange.setEndAfter(box.childNodes[box.childNodes.length - 1]);
     newRange.collapse();
     const selection = getSel();
     selection.removeAllRanges();
@@ -350,7 +347,13 @@ const hElKeyDown = function(e) {
 
   const selection = getSel();
   const range = selection.getRangeAt(0);
-  console.log(ev.key, range);
+
+  //strg+z
+  if(key === 90 && ev.ctrlKey){
+    // (lucas) since we do a lot of manual changes the default undo wont work at all and we have to just block it for now
+    e.preventDefault();
+    return;
+  }
 
     // arrow keys               // shift/caps | strg | alt
   if((key < 37 || e.keyCode > 40) && (key < 16 || key > 18)
@@ -422,6 +425,7 @@ const hElKeyDown = function(e) {
           const offs = range.startOffset;
           if(offs === 0) {
             box.insertBefore(make('BR'), span);
+            return;
           } else if(offs === range.startContainer.textContent.length) {
             const br = make('BR');
             const insertTarget = span.nextSibling;
@@ -429,7 +433,7 @@ const hElKeyDown = function(e) {
 
             const newCursor = makeR();
 
-            // if the br is the last element it gets ignored, this is however not the expected behaviour of en editor
+            // (lucas) if the br is the last element it gets ignored, this is however not the expected behaviour of en editor
             if(!insertTarget) {
               box.insertBefore(make('BR'), insertTarget);
             }
@@ -437,13 +441,14 @@ const hElKeyDown = function(e) {
             newCursor.collapse();
             selection.removeAllRanges();
             selection.addRange(newCursor);
+            return;
           }
-        } else {
-          const rangeW = makeNodesFromSelection();
-          const insertTarget = rangeW.end.nextSibling;
-          rangeW.range.deleteContents();
-          box.insertBefore(make('BR'), insertTarget);
         }
+
+        const rangeW = makeNodesFromSelection();
+        box.insertBefore(make('BR'), rangeW.start);
+        rangeW.range.setStartBefore(rangeW.start);
+        rangeW.range.deleteContents();
       }
     }
   }
@@ -519,75 +524,93 @@ const getNodesFromSelection = function() {
     rangeW.setEnd(prev);
   }
 
-  console.log('get returned', rangeW.iterate());
   return rangeW;
 }
-
 const makeNodesFromSelection = function() {
-  const rangeW = getNodesFromSelection();
-  let modified = false;
+  const selection = getSel();
+  const range = selection.getRangeAt(0);
 
-  if(!rangeW.start.isA('BR') && rangeW.start === rangeW.end) {
-    const node = rangeW.start;
+  let startEl;
+  let startOffs;
+  if(range.startContainer.isA('#text')) {
+    startEl   = range.startContainer.parentNode;
+    startOffs = range.startOffset;
+  } else if(range.startContainer.isA('SPAN')) {
+    if(range.startContainer.className === 'text') {
+      startEl   = range.startContainer.childNodes[range.startOffset];
+      startOffs = 0;
+    } else {
+      startEl   = range.startContainer;
+      startOffs = 0;
+    }
+  }
+  const box = startEl.parentNode;
 
-    let txt = node.textContent;
-    const startOffs = rangeW.range.startOffset;
-    const endOffs   = rangeW.range.endOffset;
-    if(startOffs !== 0) {
-      const w = node.cloneNode();
-      w.appendChild(makeT(txt.substr(0, startOffs)));
-      node.parentNode.insertBefore(w, node);
+  let endEl;
+  let endOffs;
+  if(range.endContainer.isA('#text')) {
+    endEl   = range.endContainer.parentNode;
+    endOffs = range.endOffset;
+  } else if(range.endContainer.isA('SPAN')) {
+    if(range.endContainer.className === 'text') {
+      endEl   = range.endContainer.childNodes[range.endOffset]
+        || range.endContainer.childNodes[range.endContainer.childNodes.length - 1];
+      endOffs = endEl.textContent.length;
+    } else {
+      endEl   = range.endContainer;
+      endOffs = endEl.textContent.length;
+    }
+  }
+
+  if(startEl.isA('SPAN') && startEl === endEl) {
+    let modified = false;
+    let text = startEl.textContent;
+    if(startOffs > 0) {
+      const w = startEl.cloneNode();
+      w.appendChild(makeT(text.substr(0, startOffs)));
+      box.insertBefore(w, startEl);
       modified = true;
     }
-    if(endOffs !== txt.length) {
-      const w = node.cloneNode();
-      w.appendChild(makeT(txt.substr(endOffs)));
-      node.parentNode.insertBefore(w, node.nextSibling);
+    if(endOffs < text.length) {
+      const w = startEl.cloneNode();
+      w.appendChild(makeT(text.substr(endOffs)));
+      box.insertBefore(w, startEl.nextSibling);
       modified = true;
     }
 
     if(modified) {
-      node.childNodes[0].replaceWith(txt.substr(startOffs, endOffs - startOffs));
-      rangeW.setStart(node);
-      rangeW.setEnd(node);
+      const txt = makeT(text.substr(startOffs, endOffs - startOffs));
+      startEl.childNodes[0].replaceWith(txt);
+      range.setStart(txt, 0);
+      range.setEnd(txt, txt.textContent.length);
     }
   } else {
-    const first = rangeW.start;
-    if(!first.isA('BR')) {
-      const txt = first.textContent;
-      if (rangeW.range.startOffset !== 0) {
-        const c = first.cloneNode();
-        c.appendChild(makeT(txt.substr(0, rangeW.range.startOffset)));
-        first.parentNode.insertBefore(c, first);
-        first.childNodes[0].replaceWith(txt.substr(rangeW.range.startOffset));
-        rangeW.setStart(first);
-        modified = true;
+    if(startEl.isA('SPAN')) {
+      const text = startEl.textContent;
+      if (startOffs > 0) {
+        const c = startEl.cloneNode();
+        c.appendChild(makeT(text.substr(0, startOffs)));
+        box.insertBefore(c, startEl);
+        const txt = makeT(text.substr(startOffs));;
+        startEl.childNodes[0].replaceWith(txt);
+        range.setStart(txt, 0);
       }
     }
 
-    const last = rangeW.end;
-    if(!last.isA('BR')) {
-      const txt = last.textContent;
-      if (rangeW.range.endOffset !== txt.length) {
-        const c = last.cloneNode();
-        c.appendChild(makeT(txt.substr(rangeW.range.endOffset)));
-        last.parentNode.insertBefore(c, last.nextSibling);
-        last.childNodes[0].replaceWith(txt.substr(0, rangeW.range.endOffset));
-        rangeW.setEnd(last);
-        modified = true;
+    if(endEl.isA('SPAN')) {
+      const text = endEl.textContent;
+      if (endOffs < text.length) {
+        const c = endEl.cloneNode();
+        c.appendChild(makeT(text.substr(endOffs)));
+        box.insertBefore(c, endEl.nextSibling);
+        const txt = makeT(text.substr(0, endOffs));
+        endEl.childNodes[0].replaceWith(txt);
+        range.setEnd(txt, txt.textContent.length);
       }
     }
   }
 
-  //(lucas) restore selection after creating new nodes
-  if(modified) {
-    const selection = getSel();
-    selection.removeAllRanges();
-    selection.addRange(rangeW.range);
-  }
-
-  console.log('make returned', rangeW.iterate());
-  return rangeW;
+  return new RangeWrapper(range.cloneRange());
 };
 
 //dragging
