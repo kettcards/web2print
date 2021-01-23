@@ -76,7 +76,7 @@ public class PDFGenerator {
 
     public void applyTo(PDDocument doc, CardData data) throws IOException {
 
-        var lineList = new ArrayList<LineData>();
+        //var lineList = new ArrayList<LineData>();
 
         var page = new PDPage(data.getPageBounds());
         doc.addPage(page);
@@ -86,16 +86,16 @@ public class PDFGenerator {
         for (var box : data.getInnerElements()) {
             switch (box.getAlignment()) {
                 case 'l':
-                    textBoxLeft(content, box, lineList);
+                    textBoxLeft(content, box);
                     break;
                 case 'r':
-                    textBoxRight(content, box, lineList);
+                    textBoxRight(content, box);
                     break;
                 case 'c':
-                    textBoxCenter(content, box, lineList);
+                    textBoxCenter(content, box);
                     break;
                 case 'j':
-                    textBoxJustify(content, box, lineList);
+                    textBoxJustify(content, box);
                     break;
                 default:
                     continue;
@@ -104,7 +104,7 @@ public class PDFGenerator {
         content.close();
     }
 
-    private static void textBoxLeft(PDPageContentStream content, TextBoxData box, ArrayList<LineData> lineList) throws IOException {
+    private static void textBoxLeft(PDPageContentStream content, TextBoxData box) throws IOException {
         float cursorX, cursorY;
         content.beginText();
         cursorX = box.getOffX();
@@ -122,16 +122,21 @@ public class PDFGenerator {
                 content.showText(run.getText());
 
                 var runWidth = run.getFontSize() * font.getStringWidth(run.getText()) / 1000;
+
+                /*
                 if (run.getAttributes().contains(FontStyle.UNDERLINE)) {
                     lineList.add(new LineData(cursorX, cursorY - 1.75f, runWidth));
                 }
+                */
+
                 cursorX += runWidth;
             }
         }
-        line(content, lineList);
+        content.endText();
+        //line(content, lineList);
     }
 
-    private static void textBoxRight(PDPageContentStream content, TextBoxData box, ArrayList<LineData> lineList) throws IOException {
+    private static void textBoxRight(PDPageContentStream content, TextBoxData box) throws IOException {
         float cursorX, cursorY;
         content.beginText();
         cursorX = box.getW();
@@ -151,16 +156,19 @@ public class PDFGenerator {
                 content.showText(run.getText());
                 content.newLineAtOffset(runWidth, 0);
 
+                /*
                 if (run.getAttributes().contains(FontStyle.UNDERLINE)) {
                     lineList.add(new LineData(cursorX - runWidth, cursorY - 1.75f, runWidth));
                 }
                 cursorX += runWidth;
+                 */
             }
         }
-        line(content, lineList);
+        content.endText();
+        //line(content, lineList);
     }
 
-    private static void textBoxCenter(PDPageContentStream content, TextBoxData box, ArrayList<LineData> lineList) throws IOException {
+    private static void textBoxCenter(PDPageContentStream content, TextBoxData box) throws IOException {
         float cursorX, cursorY;
         content.beginText();
         cursorX = box.getW() / 2;
@@ -180,16 +188,19 @@ public class PDFGenerator {
                 content.showText(run.getText());
                 content.newLineAtOffset((runWidth / 2), 0);
 
+                /*
                 if (run.getAttributes().contains(FontStyle.UNDERLINE)) {
                     lineList.add(new LineData(cursorX - (runWidth / 2), cursorY - 1.75f, runWidth));
                 }
                 cursorX += runWidth;
+                */
             }
         }
-        line(content, lineList);
+        content.endText();
+        //line(content, lineList);
     }
 
-    private static void textBoxJustify(PDPageContentStream content, TextBoxData box, ArrayList<LineData> lineList) throws IOException {
+    private static void textBoxJustify(PDPageContentStream content, TextBoxData box) throws IOException {
         float cursorX, cursorY, wordSpacing = 0, free = box.getW();
         long spaceCount = 0;
         String line = "";
@@ -234,15 +245,19 @@ public class PDFGenerator {
                     line = "";
                 }
 
+                /*
                 if (current.getAttributes().contains(FontStyle.UNDERLINE)) {
                     lineList.add(new LineData(cursorX, cursorY - 1.75f, runWidth));
                 }
+                */
+
                 cursorX += runWidth;
             }
         }
-        line(content, lineList);
+        content.endText();
+        //line(content, lineList);
     }
-
+    /*
     private static void line(PDPageContentStream content, ArrayList<LineData> lineList) throws IOException {
         content.endText();
 
@@ -256,7 +271,7 @@ public class PDFGenerator {
             lineList.clear();
         }
     }
-
+    */
     private static float getCursorY(PDPageContentStream content, TextBoxData box, float cursorY, ListIterator<TextRunData> runsIter) throws IOException {
         float largestFontSize = 0;
         var lineIter = box.getTextRuns().listIterator(runsIter.nextIndex());
@@ -276,7 +291,7 @@ public class PDFGenerator {
         return cursorY;
     }
 
-
+    /*
     @Value
     private static class LineData {
         float x;
@@ -289,6 +304,7 @@ public class PDFGenerator {
             this.w = w;
         }
     }
+    */
 
     @Value
     private static class Document {

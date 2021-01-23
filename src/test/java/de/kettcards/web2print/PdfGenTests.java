@@ -181,6 +181,7 @@ class PdfGenTests {
         doc.save(GetOutputFile());
     }
 
+    /*
     @Test
     void underline() throws IOException {
         var doc = new PDDocument();
@@ -205,9 +206,10 @@ class PdfGenTests {
         generator.applyTo(doc, data);
         doc.save(GetOutputFile());
     }
+    */
 
     @Test
-    void multiSizeAndUnderline() throws IOException{
+    void multiSize() throws IOException{
         var doc = new PDDocument();
         var data = MakeCardData(200,200);
         var box = new TextBoxData(5, data.getPageHeight() - 20, -1,-1, 'l');
