@@ -11,21 +11,21 @@ import java.util.List;
 import static de.kettcards.web2print.pdfGen.PDFGenerator.mm2pt;
 
 @Value
-public class CardData {
+public class CardData{
     public static final Version CURRENT_VERSION = new Version(0, 2);
 
     Version version;
     float pageWidth, pageHeight;
-    List<TextBoxData> innerElements;
-    List<TextBoxData> outerElements;
+    List<BoxData> innerElements;
+    List<BoxData> outerElements;
 
     public CardData(String versionString, float pageWidth, float pageHeight) throws ParseException {
         this(versionString, pageWidth, pageHeight, new ArrayList<>(), new ArrayList<>());
     }
-    public CardData(String versionString, float pageWidth, float pageHeight, List<TextBoxData> innerElements, List<TextBoxData> outerElements) throws ParseException {
+    public CardData(String versionString, float pageWidth, float pageHeight, List<BoxData> innerElements, List<BoxData> outerElements) throws ParseException {
         this(new Version(versionString), pageWidth, pageHeight, innerElements, outerElements);
     }
-    public CardData(Version version, float pageWidth, float pageHeight, List<TextBoxData> innerElements, List<TextBoxData> outerElements) {
+    public CardData(Version version, float pageWidth, float pageHeight, List<BoxData> innerElements, List<BoxData> outerElements) {
         if (!version.leq(CURRENT_VERSION))
             throw new IllegalArgumentException("version must be "+CURRENT_VERSION+" but is "+version);
         this.version       = version;

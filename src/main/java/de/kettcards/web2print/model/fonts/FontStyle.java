@@ -6,8 +6,8 @@ import java.util.EnumSet;
 public enum FontStyle {
     NONE      (0),
     BOLD      (1 << 0),
-    ITALIC    (1 << 1),
-    UNDERLINE (1 << 2);
+    ITALIC    (1 << 1);
+    //UNDERLINE (1 << 2)
 
     public final int Value;
 
@@ -38,9 +38,7 @@ public enum FontStyle {
                 case "italic":
                     ret.add(ITALIC);
                     break;
-                case "underline":
-                    ret.add(UNDERLINE);
-                    break;
+                //if Underline is needed please add case
             }
         }
         return ret;

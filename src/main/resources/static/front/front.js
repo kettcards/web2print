@@ -153,7 +153,10 @@ const Spawner = {
         // unfortunately this also produces quite the rough experience when a user actually wants do use drag n drop
       .on("dragstart", falsify)
       .on("drop", falsify)
-      .css(Object.assign({ 'font-family': defaultFont }, p));
+      .css(Object.assign({
+        'font-family': defaultFont,
+        'font-size': '16pt'
+      }, p));
   },
   IMAGE: undefined,
   GEOM: undefined,
@@ -192,7 +195,7 @@ const hTxtMUp = function(e){
 
   $fontSelect[0].selectedIndex = index || FontNames.indexOf(fontFam);
 
-  $fontSizeSelect.val(fontSize);
+  $fontSizeSelect.val(Math.round(fontSize / 96 * 72));
 };
 const hElClick = function(e){
   e.stopPropagation();
@@ -434,7 +437,7 @@ let $body = $('body').mousemove(function(e){
 });
 
 const MMPerPx = (function(){
-  const $resTester = $('<div style="height:100mm;width:100mm;display:none;"></div>')
+  const $resTester = $('<div style="height:100mm;width:100mm;visibility:collapse;"></div>')
   $body.append($resTester);
   const ret = { x: 100/$resTester.width(), y: 100/$resTester.height() };
   $resTester.remove();
@@ -474,10 +477,10 @@ $('#submitBtn').click(function(){
 const serializeSide = function($els, target) {
   for(let i = 0; i < $els.length; i++) {
     const $el  = $els.eq(i);
-    const pos = $el.position();
+    const el   = $el[0];
     const bounds = {
-      x: pos.left * MMPerPx.x,
-      y: ($el.parent().height() - (pos.top + $el.height())) * MMPerPx.y,
+      x: el.offsetLeft * MMPerPx.x,
+      y: ($el.parent().height() - (el.offsetTop + $el.height())) * MMPerPx.y,
       w: $el.width() * MMPerPx.x,
       h: $el.height() * MMPerPx.y
     };
@@ -507,7 +510,7 @@ const serializeSide = function($els, target) {
                   attributes |= v;
               box.r.push({
                 f: $iel.css('font-family'),
-                s: +$iel.css('font-size').slice(0,-2),
+                s: Math.round((+$iel.css('font-size').slice(0,-2)) / 96 * 72),
                 a: attributes,
                 t: $iel.text()
               });
@@ -607,7 +610,7 @@ const $fontSizeSelect = $('#fontSizeSelect')
   const selection = document.getSelection();
   selection.removeAllRanges();
   selection.addRange(state.range);
-  $(makeNodesFromSelection()).css('font-size', e.target.value+'px');
+  $(makeNodesFromSelection()).css('font-size', e.target.value+'pt');
 });
 
 // changing pages
