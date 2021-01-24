@@ -245,33 +245,35 @@ class RangeWrapper {
     }
     return arr;
   }
-}
 
-const hTxtMUp = function(){
-  const rangeW = new RangeWrapper(getSel().getRangeAt(0));
-  let $initialSource;
-  if(rangeW.startEl.isA('BR')) {
-    let curr = rangeW.startEl;
-    while(curr = curr.previousSibling) {
-      if(!curr.isA('BR'))
-        break;
-    }
-    if(curr) {
-      $initialSource = $(curr);
-    } else {
-      curr = rangeW.startEl;
+  findReference() {
+    if(this.startEl.isA('BR')) {
+      let curr = this.startEl;
+      while(curr = curr.previousSibling) {
+        if(!curr.isA('BR'))
+          break;
+      }
+      if(curr)
+        return curr;
+
+      curr = this.startEl;
       while(curr = curr.nextSibling) {
         if(!curr.isA('BR'))
           break;
       }
-      if(curr) {
-        $initialSource = $(curr);
-      } else
-        throw new Error("HOW DID WE GET HERE?");
+      if(curr)
+        return curr;
+
+      throw new Error("not implemented 22");
     }
-  } else {
-    $initialSource = $(rangeW.startEl);
+
+    return this.startEl;
   }
+}
+
+const hTxtMUp = function(){
+  const rangeW = new RangeWrapper(getSel().getRangeAt(0));
+  let $initialSource = $(rangeW.findReference());
 
   let fontFam  =  $initialSource.css('font-family');
   let fontSize = +$initialSource.css('font-size').slice(0, -2);
@@ -425,9 +427,13 @@ const hElKeyDown = function(e) {
       } else {
         if (key !== 8 && key !== 46) {
           const insertTarget = box.childNodes[range.endOffset];
-          range.deleteContents();
+          const styleSource = new RangeWrapper(range).findReference();
           const txt = makeT('');
-          box.insertBefore(make('span.fontStyle', txt), insertTarget);
+          const span = make('span.fontStyle', txt);
+          $(span).css($(styleSource).css(['font-family', 'font-size']));
+          range.deleteContents();
+          box.insertBefore(span, insertTarget);
+
           range.setEndAfter(txt);
           range.collapse();
         }
