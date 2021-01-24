@@ -190,43 +190,57 @@ const hTxtMDown = function(e){
 
 class RangeWrapper {
   range;
-  start;
-  end;
+  box;
+  startEl; startOffs;
+    endEl;   endOffs;
 
   constructor(range) {
-    this.start = range.startContainer.isA('BR') ? range.startContainer : range.startContainer.parentNode;
-    this.end   = range.endContainer.isA('BR') ? range.endContainer : range.endContainer.parentNode;
     this.range = range;
-  }
 
-  setStart(newStart, offset) {
-    if(offset) {
-      this.range.setStart(newStart.childNodes[0], offset);
-    } else {
-      this.range.setStartBefore(newStart);
+    if(range.startContainer.isA('#text')) {
+      this.startEl   = range.startContainer.parentNode;
+      this.startOffs = range.startOffset;
+    } else if(range.startContainer.isA('SPAN')) {
+      if(range.startContainer.className === 'text') {
+        this.startEl   = range.startContainer.childNodes[range.startOffset];
+        this.startOffs = 0;
+      } else {
+        this.startEl   = range.startContainer;
+        this.startOffs = 0;
+      }
     }
-    this.start = newStart;
-  }
-  setEnd(newEnd) {
-    this.range.setEndAfter(newEnd);
-    this.end = newEnd;
+    this.box = this.startEl.parentNode;
+
+    if(range.endContainer.isA('#text')) {
+      this.endEl   = range.endContainer.parentNode;
+      this.endOffs = range.endOffset;
+    } else if(range.endContainer.isA('SPAN')) {
+      if(range.endContainer.className === 'text') {
+        this.endEl   = range.endContainer.childNodes[range.endOffset]
+          || range.endContainer.childNodes[range.endContainer.childNodes.length - 1];
+        this.endOffs = this.endEl.textContent.length;
+      } else {
+        this.endEl   = range.endContainer;
+        this.endOffs = this.endEl.textContent.length;
+      }
+    }
   }
 
   iterateSpans() {
     const arr = [];
-    for(let n = this.start;; n = n.nextSibling) {
+    for(let n = this.startEl;; n = n.nextSibling) {
       if(n.isA('SPAN'))
         arr.push(n);
-      if(n === this.end)
+      if(n === this.endEl)
         break;
     }
     return arr;
   }
   iterate() {
     const arr = [];
-    for(let n = this.start;; n = n.nextSibling) {
+    for(let n = this.startEl;; n = n.nextSibling) {
       arr.push(n);
-      if(n === this.end)
+      if(n === this.endEl)
         break;
     }
     return arr;
@@ -234,10 +248,10 @@ class RangeWrapper {
 }
 
 const hTxtMUp = function(){
-  const rangeW = getNodesFromSelection();
+  const rangeW = new RangeWrapper(getSel().getRangeAt(0));
   let $initialSource;
-  if(rangeW.start.isA('BR')) {
-    let curr = rangeW.start;
+  if(rangeW.startEl.isA('BR')) {
+    let curr = rangeW.startEl;
     while(curr = curr.previousSibling) {
       if(!curr.isA('BR'))
         break;
@@ -245,7 +259,7 @@ const hTxtMUp = function(){
     if(curr) {
       $initialSource = $(curr);
     } else {
-      curr = rangeW.start;
+      curr = rangeW.startEl;
       while(curr = curr.nextSibling) {
         if(!curr.isA('BR'))
           break;
@@ -256,13 +270,13 @@ const hTxtMUp = function(){
         throw new Error("HOW DID WE GET HERE?");
     }
   } else {
-    $initialSource = $(rangeW.start);
+    $initialSource = $(rangeW.startEl);
   }
 
   let fontFam  =  $initialSource.css('font-family');
   let fontSize = +$initialSource.css('font-size').slice(0, -2);
   let index;
-  for(let n = rangeW.start;; n = n.nextSibling){
+  for(let n = rangeW.startEl;; n = n.nextSibling){
     const nextFam  =  $(n).css('font-family');
     const nextSize = +$(n).css('font-size').slice(0, -2);
     if(fontFam !== nextFam){
@@ -271,7 +285,7 @@ const hTxtMUp = function(){
     if(nextSize < fontSize) {
       fontSize = nextSize;
     }
-    if(n === rangeW.end)
+    if(n === rangeW.endEl)
       break;
   }
 
@@ -300,8 +314,8 @@ const hElPaste = async function(e) {
   const data = ev.clipboardData.getData('text');
   if(data.length > 0) {
     const rangeW = makeNodesFromSelection();
-    const insertTarget = rangeW.end.nextSibling;
-    let styleSource = rangeW.start.previousSibling;
+    const insertTarget = rangeW.endEl.nextSibling;
+    let styleSource = rangeW.startEl.previousSibling;
     if(styleSource && styleSource.isA('BR'))
       styleSource = styleSource.previousSibling;
     if(!styleSource || styleSource.isA('BR')) {
@@ -348,14 +362,17 @@ const hElKeyDown = function(e) {
   const selection = getSel();
   const range = selection.getRangeAt(0);
 
-  //strg+z
-  if(key === 90 && ev.ctrlKey){
-    // (lucas) since we do a lot of manual changes the default undo wont work at all and we have to just block it for now
-    e.preventDefault();
+  if(ev.ctrlKey) {
+    //ctrl+z
+    if(key === 90){
+      // (lucas) since we do a lot of manual changes the default undo wont work at all and we have to just block it for now
+      e.preventDefault();
+    }
+    // dont try to meddle with commands except ctrl z
     return;
   }
 
-    // arrow keys               // shift/caps | strg | alt
+    // arrow keys               // shift/caps | ctrl | alt
   if((key < 37 || e.keyCode > 40) && (key < 16 || key > 18)
     // img up/down  pos1/end       //caps      //osright     //ctxmen
     && (key < 33 || key > 36) && key !== 20 && key !== 91 && key !== 93) {
@@ -446,8 +463,8 @@ const hElKeyDown = function(e) {
         }
 
         const rangeW = makeNodesFromSelection();
-        box.insertBefore(make('BR'), rangeW.start);
-        rangeW.range.setStartBefore(rangeW.start);
+        box.insertBefore(make('BR'), rangeW.startEl);
+        rangeW.range.setStartBefore(rangeW.startEl);
         rangeW.range.deleteContents();
       }
     }
@@ -479,88 +496,14 @@ $(".fontTypeButton").click(function(){
   e.stopPropagation();
 });
 
-const getNodesFromSelection = function() {
+const makeNodesFromSelection = function() {
   const selection = getSel();
-  if(selection.rangeCount < 1)
-    return new RangeWrapper();
-
   // (lucas 09.01.21)
   // todo: loop over all ranges to support multi select,
   //       this then also needs to be respected while saving / restoring the selection
-  const range = selection.getRangeAt(0).cloneRange();
-  const rangeW = new RangeWrapper(range);
-
-  if(range.collapsed) {
-    if(range.startContainer.isA('SPAN') && $(range.startContainer).hasClass('text')) {
-      rangeW.setStart(range.startContainer.childNodes[range.startOffset]);
-      rangeW.setEnd(range.endContainer.childNodes[range.endOffset]);
-    }
-    return rangeW;
-  }
-
-  // (lucas)
-  // this section tries to unify behaviour of the selection.
-  // the problem arises from the fact that depending on the specific position selected
-  // and even how it was selected doc.getSelection() returns different values
-  const $start = $(range.startContainer);
-  if($start.hasClass('text')){
-    const newStart = range.startContainer.childNodes[range.startOffset];
-    rangeW.setStart(newStart);
-  } else if($start.hasClass('fontStyle')) {
-    rangeW.setStart(range.startContainer, range.startOffset);
-  } else if(range.startOffset === range.startContainer.textContent.length && range.startContainer.isA('#text')) {
-    const next = range.startContainer.parentNode.nextSibling;
-    rangeW.setStart(next);
-  }
-  const $end = $(range.endContainer);
-  if($end.hasClass('text')){
-    const children = range.endContainer.childNodes;
-    const el = children[range.endOffset];
-    rangeW.setEnd(el || children[children.length - 1]);
-  } else if($end.hasClass('fontStyle')) {
-    rangeW.setEnd(range.endContainer, range.endOffset);
-  } else if (range.endOffset === 0 && range.endContainer.isA('#text')) {
-    const prev = range.endContainer.parentNode.previousSibling;
-    rangeW.setEnd(prev);
-  }
-
-  return rangeW;
-}
-const makeNodesFromSelection = function() {
-  const selection = getSel();
   const range = selection.getRangeAt(0);
-
-  let startEl;
-  let startOffs;
-  if(range.startContainer.isA('#text')) {
-    startEl   = range.startContainer.parentNode;
-    startOffs = range.startOffset;
-  } else if(range.startContainer.isA('SPAN')) {
-    if(range.startContainer.className === 'text') {
-      startEl   = range.startContainer.childNodes[range.startOffset];
-      startOffs = 0;
-    } else {
-      startEl   = range.startContainer;
-      startOffs = 0;
-    }
-  }
-  const box = startEl.parentNode;
-
-  let endEl;
-  let endOffs;
-  if(range.endContainer.isA('#text')) {
-    endEl   = range.endContainer.parentNode;
-    endOffs = range.endOffset;
-  } else if(range.endContainer.isA('SPAN')) {
-    if(range.endContainer.className === 'text') {
-      endEl   = range.endContainer.childNodes[range.endOffset]
-        || range.endContainer.childNodes[range.endContainer.childNodes.length - 1];
-      endOffs = endEl.textContent.length;
-    } else {
-      endEl   = range.endContainer;
-      endOffs = endEl.textContent.length;
-    }
-  }
+  const rangeW = new RangeWrapper(range);
+  const { startEl: startEl, endEl: endEl, startOffs: startOffs, endOffs: endOffs, box: box } = rangeW;
 
   if(startEl.isA('SPAN') && startEl === endEl) {
     let modified = false;
@@ -610,7 +553,7 @@ const makeNodesFromSelection = function() {
     }
   }
 
-  return new RangeWrapper(range.cloneRange());
+  return rangeW;
 };
 
 //dragging
