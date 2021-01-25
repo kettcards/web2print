@@ -157,13 +157,13 @@ $.get(web2print.links.apiUrl+'card/'+Parameters.card)
 
 const Spawner = {
   TEXT: function(p){
-    return $('<span class="text"><span class="fontStyle">Ihr Text Hier!</span></span>')
+    return $('<div class="text" contenteditable="true"><p><span>Ihr Text Hier!</span></p></div>')
       .mousedown(hTxtMDown)
       .mouseup(hTxtMUp)
       .click(hElClick)
-      .on('paste',   hElPaste)
+      .on('paste', hElPaste)
       .on('keydown', hElKeyDown)
-      .on('keyup',   hElKeyUp)
+      .on('keyup', hElKeyUp)
         // (lucas 09.01.21)
         // this is a quick fix to disable the glitchy behaviour when dragging selected text.
         // unfortunately this also produces quite the rough experience when a user actually wants do use drag n drop
@@ -333,7 +333,7 @@ const hElPaste = async function(e) {
       el.appendChild(child);
       return el;
     } : function(child) {
-      return make('span.fontStyle', child);
+      return make('span', child);
     };
     rangeW.range.deleteContents();
 
@@ -361,138 +361,20 @@ const hElKeyDown = function(e) {
   const ev = e.originalEvent;
   const key = ev.keyCode;
 
-  const selection = getSel();
-  const range = selection.getRangeAt(0);
-
-  if(ev.ctrlKey) {
-    //ctrl+z
-    if(key === 90){
-      // (lucas) since we do a lot of manual changes the default undo wont work at all and we have to just block it for now
-      e.preventDefault();
-    }
-    // dont try to meddle with commands except ctrl z
-    return;
-  }
-
-    // arrow keys               // shift | ctrl | alt
-  if((key < 37 || e.keyCode > 40) && (key < 16 || key > 18)
-    // img up/down  pos1/end       //caps      //osright     //ctxmen
-    && (key < 33 || key > 36) && key !== 20 && key !== 91 && key !== 93) {
-    const box = e.delegateTarget;
-
-    const fixCtrlA = function() {
-      let save;
-      for (const c of box.childNodes)
-        if (c.isA('SPAN')) {
-          save = c.cloneNode();
-          break;
-        }
-      if (!save)
-        save = make('span.fontStyle');
-      const txt = makeT('');
-      save.appendChild(txt);
-
-      const remRange = makeR();
-      remRange.selectNodeContents(box);
-      remRange.deleteContents();
-
-      box.appendChild(save);
-      const selRange = makeR();
-      selRange.setEndAfter(txt);
-      selRange.collapse();
-      selection.removeAllRanges();
-      selection.addRange(selRange);
-
-      if (key === 8 || key === 46) {//backspace / del
-        e.preventDefault();
-      }
-    };
-
-    if($(range.startContainer).is('span.text') && $(range.endContainer).is('span.text')) {
-      // (lucas)
-      // if the user selects all (ctrl-a) and then starts typing the inner span is removed
-      // we would overwrite the whole textbox, but this removes the inner span - so we dont
-      if (range.startOffset === 0 && range.endOffset === box.childNodes.length) {
-        fixCtrlA();
-      } else if(key === 13) {
-        e.preventDefault();
-        if(range.collapsed) {
-          const br = make('BR');
-          box.insertBefore(br, box.childNodes[range.startOffset]);
-
-          const newCursor = makeR();
-          newCursor.setEndAfter(br);
-          newCursor.collapse();
-          selection.removeAllRanges();
-          selection.addRange(newCursor);
-        } else {
-          // (lucas 24.01.21) todo
-          console.error('not implemented 1');
-        }
-      } else {
-        if (key !== 8 && key !== 46) {
-          const insertTarget = box.childNodes[range.endOffset];
-          const styleSource = new RangeWrapper(range).findReference();
-          const txt = makeT('');
-          const span = make('span.fontStyle', txt);
-          $(span).css($(styleSource).css(['font-family', 'font-size']));
-          range.deleteContents();
-          box.insertBefore(span, insertTarget);
-
-          range.setEndAfter(txt);
-          range.collapse();
-        }
-      }
-    } else if(box.childNodes.length === 1 && range.startContainer.isA('#text') && range.endContainer.isA('#text')
-      && range.startOffset === 0 && range.endOffset === range.endContainer.textContent.length) {
-      // ctrl-a for crome
-      fixCtrlA();
-    }  else if (key === 13) {
-      //just prevent it in all cases
-      e.preventDefault();
-      if(range.startContainer.isA('#text') && range.endContainer.isA('#text')) {
-        if(range.collapsed) {
-          const span = range.startContainer.parentNode;
-          const offs = range.startOffset;
-          if(offs === 0) {
-            box.insertBefore(make('BR'), span);
-            return;
-          } else if(offs === range.startContainer.textContent.length) {
-            const br = make('BR');
-            const insertTarget = span.nextSibling;
-            box.insertBefore(br, insertTarget);
-
-            const newCursor = makeR();
-
-            // (lucas) if the br is the last element it gets ignored, this is however not the expected behaviour of en editor
-            if(!insertTarget) {
-              box.insertBefore(make('BR'), insertTarget);
-            }
-            newCursor.setEndAfter(br);
-            newCursor.collapse();
-            selection.removeAllRanges();
-            selection.addRange(newCursor);
-            return;
-          }
-        }
-
-        const rangeW = makeNodesFromSelection();
-        box.insertBefore(make('BR'), rangeW.startEl);
-        rangeW.range.setStartBefore(rangeW.startEl);
-        // (lucas 24.01.21) todo: move end ?
-        rangeW.range.deleteContents();
-      }
-    }
+  if(ev.shiftKey && key === 13) {
+    //(lucas 25.01.21) todo: dont just block it, resolve it properly
+    e.preventDefault();
   }
 };
+
 const hElKeyUp = function(e) {
-  const ev = e.originalEvent;
-  const key = ev.keyCode;
+  e.preventDefault();
+  const key = e.originalEvent.keyCode;
 
   if((key >= 37 && key <= 40) || (key >= 33 && key <= 36)) {
     hTxtMUp();
   }
-}
+};
 
 $('.addElBtn').click(function(e){
   state.addOnClick = Spawner[$(e.target).data('enum')];
@@ -504,9 +386,44 @@ $(".alignmentBtn").click(function(){
 }).mouseup(stopPropagation);
 $(".fontTypeButton").click(function(){
   const classToAdd = $(this).val();
-  const $nodes = $(makeNodesFromSelection().iterateSpans());
-  const shouldRemove = $nodes.filter('.'+classToAdd).length === $nodes.length;
-  $nodes[shouldRemove ? 'removeClass' : 'addClass'](classToAdd);
+  // todo: remove tags
+  const range = getSel().getRangeAt(0);
+
+  console.log(range);
+  // <p>te[xt te]xt</p> | <p>t<span>e[xt te]x</span>t</p>
+  if(range.commonAncestorContainer.isA('#text')) {
+    const span = range.startContainer.parentNode;
+    const par = span.parentNode;
+    if(range.startOffset === 0 && range.endOffset === range.startContainer.textContent.length) {
+      $(range.startContainer.parentNode).toggleClass(classToAdd);
+    } else {
+      const text = range.startContainer.textContent;
+      const before = span.cloneNode();
+      before.appendChild(makeT(text.substr(0, range.startOffset)));
+      par.insertBefore(before, span);
+      const after = span.cloneNode();
+      after.appendChild(makeT(text.substr(range.endOffset)));
+      par.insertBefore(after, span.nextSibling);
+      range.startContainer.textContent = text.substr(range.startOffset, range.endOffset - range.startOffset);
+      $(span).addClass(classToAdd);
+
+      const txt = range.startContainer;
+      range.setStart(txt, 0);
+      range.setEnd(txt, txt.textContent.length);
+    }
+  }
+  // ctrl+a : FF: <p>[<b>text</b>]</p> | CHROME: <p><b>[text]</b></p>
+  // <p>te[xt <b>test </b> te]xt</p> | <p>text <b>te[st </b> te]xt</p> | [<p>text <b>test </b> text</p>]
+  // <p>te[xt <span class="b">test </b> te]xt</p> | <p>text <span class="b">te[st </span><span class="b i" te]xt</span><span class="b" >asdasdasd</span></p>
+  else if(range.commonAncestorContainer.isA('P')) {
+    if(range.startContainer.isA('#text') &&
+      range.startOffset === range.startContainer.textContent.length) {
+      range.setStart(range.startContainer.parentNode.nextSibling.firstChild, 0);
+    }
+  } else {
+    console.warn('cant handle ', range);
+  }
+
 }).mouseup(stopPropagation);
 
 const makeNodesFromSelection = function() {
@@ -547,7 +464,7 @@ const makeNodesFromSelection = function() {
         const c = startEl.cloneNode();
         c.appendChild(makeT(text.substr(0, startOffs)));
         box.insertBefore(c, startEl);
-        const txt = makeT(text.substr(startOffs));;
+        const txt = makeT(text.substr(startOffs));
         startEl.childNodes[0].replaceWith(txt);
         range.setStart(txt, 0);
       }
@@ -723,11 +640,12 @@ $.get(web2print.links.apiUrl+'fonts')
  });
 
 const applyFont = function() {
-  const nodes = makeNodesFromSelection().iterateSpans();
+  const range = getSel().getRangeAt(0);
   const fName = $fontSelect.val();
   (!FontAttributeMap[fName] ? beginLoadFont(fName) : Promise.resolve())
   .then(function() {
-    $(nodes).css('font-family', fName);
+    const w = $(make('span')).css('font-family', fName)[0];
+    range.surroundContents(w);
   });
 };
 
@@ -777,7 +695,9 @@ const $fontSizeSelect = $('#fontSizeSelect')
   const selection = getSel();
   selection.removeAllRanges();
   selection.addRange(state.range);
-  $(makeNodesFromSelection().iterateSpans()).css('font-size', e.target.value+'pt');
+  const $w = $(make('span')).css('font-size', e.target.value+'pt');
+  selection.getRangeAt(0).surroundContents($w[0]);
+  $w.children().css('font-size', '');
 });
 
 // changing pages

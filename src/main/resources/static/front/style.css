@@ -258,18 +258,18 @@ body {
   background-color: lightgray;
 }
 
-.fontStyle {
+.text span {
   font-style: normal;
   font-weight: 400;
 }
-.fontStyle.b {
+.text .b {
   font-weight: 600;
   font-weight: bold;
 }
-.fontStyle.i {
+.text .i {
   font-style: italic;
 }
-.fontStyle.u {
+.text .u {
   text-decoration: underline;
 }
 
