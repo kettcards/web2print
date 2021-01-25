@@ -103,6 +103,7 @@ const loadCard = function(card){
     }
   }
 
+  // (lucas 24.01.21) todo: outer = mBack?
   const outerFrag = pageFrag.cloneNode(true);
   $(pageFrag.childNodes[0]).find('.motive-layer')[0].src = mFront;
   pages.$innerPages = $('#inner').append(pageFrag).children();
@@ -156,14 +157,13 @@ $.get(web2print.links.apiUrl+'card/'+Parameters.card)
 
 const Spawner = {
   TEXT: function(p){
-    return $('<span class="text" contenteditable><span class="fontStyle">Ihr Text Hier!</span></span>')
+    return $('<span class="text"><span class="fontStyle">Ihr Text Hier!</span></span>')
       .mousedown(hTxtMDown)
       .mouseup(hTxtMUp)
       .click(hElClick)
       .on('paste',   hElPaste)
       .on('keydown', hElKeyDown)
       .on('keyup',   hElKeyUp)
-      //.on('input', hElInput)
         // (lucas 09.01.21)
         // this is a quick fix to disable the glitchy behaviour when dragging selected text.
         // unfortunately this also produces quite the rough experience when a user actually wants do use drag n drop
@@ -374,42 +374,46 @@ const hElKeyDown = function(e) {
     return;
   }
 
-    // arrow keys               // shift/caps | ctrl | alt
+    // arrow keys               // shift | ctrl | alt
   if((key < 37 || e.keyCode > 40) && (key < 16 || key > 18)
     // img up/down  pos1/end       //caps      //osright     //ctxmen
     && (key < 33 || key > 36) && key !== 20 && key !== 91 && key !== 93) {
-    if($(range.startContainer).is('span.text') && $(range.endContainer).is('span.text')) {
-      const box = e.delegateTarget;
+    const box = e.delegateTarget;
 
+    const fixCtrlA = function() {
+      let save;
+      for (const c of box.childNodes)
+        if (c.isA('SPAN')) {
+          save = c.cloneNode();
+          break;
+        }
+      if (!save)
+        save = make('span.fontStyle');
+      const txt = makeT('');
+      save.appendChild(txt);
+
+      const remRange = makeR();
+      remRange.selectNodeContents(box);
+      remRange.deleteContents();
+
+      box.appendChild(save);
+      const selRange = makeR();
+      selRange.setEndAfter(txt);
+      selRange.collapse();
+      selection.removeAllRanges();
+      selection.addRange(selRange);
+
+      if (key === 8 || key === 46) {//backspace / del
+        e.preventDefault();
+      }
+    };
+
+    if($(range.startContainer).is('span.text') && $(range.endContainer).is('span.text')) {
       // (lucas)
       // if the user selects all (ctrl-a) and then starts typing the inner span is removed
       // we would overwrite the whole textbox, but this removes the inner span - so we dont
-      if (range.startOffset === 0 && range.endOffset === range.endContainer.childNodes.length) {
-        let save;
-        for (const c of box.childNodes)
-          if (c.isA('SPAN')) {
-            save = c.cloneNode();
-            break;
-          }
-        if (!save)
-          save = make('span.fontStyle');
-        const txt = makeT('');
-        save.appendChild(txt);
-
-        const remRange = makeR();
-        remRange.selectNodeContents(box);
-        remRange.deleteContents();
-
-        box.appendChild(save);
-        const selRange = makeR();
-        selRange.setEndAfter(txt);
-        selRange.collapse();
-        selection.removeAllRanges();
-        selection.addRange(selRange);
-
-        if (key === 8 || key === 46) {//backspace / del
-          e.preventDefault();
-        }
+      if (range.startOffset === 0 && range.endOffset === box.childNodes.length) {
+        fixCtrlA();
       } else if(key === 13) {
         e.preventDefault();
         if(range.collapsed) {
@@ -422,6 +426,7 @@ const hElKeyDown = function(e) {
           selection.removeAllRanges();
           selection.addRange(newCursor);
         } else {
+          // (lucas 24.01.21) todo
           console.error('not implemented 1');
         }
       } else {
@@ -438,10 +443,13 @@ const hElKeyDown = function(e) {
           range.collapse();
         }
       }
-    } else if (key === 13) {
+    } else if(box.childNodes.length === 1 && range.startContainer.isA('#text') && range.endContainer.isA('#text')
+      && range.startOffset === 0 && range.endOffset === range.endContainer.textContent.length) {
+      // ctrl-a for crome
+      fixCtrlA();
+    }  else if (key === 13) {
       //just prevent it in all cases
       e.preventDefault();
-      const box = e.delegateTarget;
       if(range.startContainer.isA('#text') && range.endContainer.isA('#text')) {
         if(range.collapsed) {
           const span = range.startContainer.parentNode;
@@ -471,6 +479,7 @@ const hElKeyDown = function(e) {
         const rangeW = makeNodesFromSelection();
         box.insertBefore(make('BR'), rangeW.startEl);
         rangeW.range.setStartBefore(rangeW.startEl);
+        // (lucas 24.01.21) todo: move end ?
         rangeW.range.deleteContents();
       }
     }
@@ -498,9 +507,7 @@ $(".fontTypeButton").click(function(){
   const $nodes = $(makeNodesFromSelection().iterateSpans());
   const shouldRemove = $nodes.filter('.'+classToAdd).length === $nodes.length;
   $nodes[shouldRemove ? 'removeClass' : 'addClass'](classToAdd);
-}).mouseup(function(e){
-  e.stopPropagation();
-});
+}).mouseup(stopPropagation);
 
 const makeNodesFromSelection = function() {
   const selection = getSel();
@@ -694,7 +701,7 @@ const serializeSide = function($els, target) {
 };
 
 //font stuff
-const $fontSelect = $('#fontSelect').mouseup(function(e){e.stopPropagation();});
+const $fontSelect = $('#fontSelect').mouseup(stopPropagation);
 let FontNames;
 
 $.get(web2print.links.apiUrl+'fonts')
@@ -770,7 +777,7 @@ const $fontSizeSelect = $('#fontSizeSelect')
   const selection = getSel();
   selection.removeAllRanges();
   selection.addRange(state.range);
-  $(makeNodesFromSelection().iterateSpans()).css('font-size', e.target.value+'px');
+  $(makeNodesFromSelection().iterateSpans()).css('font-size', e.target.value+'pt');
 });
 
 // changing pages
