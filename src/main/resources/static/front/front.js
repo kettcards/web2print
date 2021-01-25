@@ -522,7 +522,7 @@ const serializeSide = function($els, target) {
       h: $el.height() * MMPerPx.y
     };
     switch($el[0].nodeName){
-      case 'SPAN': {
+      case 'DIV': {
         let align = $el.css('text-align');
         switch (align) {
           case 'justify': align = 'j'; break;
@@ -538,24 +538,28 @@ const serializeSide = function($els, target) {
         let $innerChildren = $el.children();
         for (let j = 0; j < $innerChildren.length; j++) {
           let $iel = $innerChildren.eq(j);
-          switch ($iel[0].nodeName) {
-            case 'SPAN': {
-              let attributes = 0;
-              //(lucas 05.01.20) compat: 93.42%  destructuring ... might need to do this differently
-              for(const [c, v] of Object.entries(FontStyleValues))
-                if ($iel.hasClass(c))
-                  attributes |= v;
-              box.r.push({
-                f: $iel.css('font-family'),
-                s: Math.round((+$iel.css('font-size').slice(0,-2)) / 96 * 72),
-                a: attributes,
-                t: $iel.text()
-              });
-            } break;
-            case 'BR':
-              box.r.push('br');
-              break;
-            default: console.warn('cannot serialize element', $iel[0]);
+          if($iel[0].isA('P')) {
+            const $spans = $iel.children();
+            for(let k = 0; k < $spans.length; k++) {
+              const $span = $spans.eq(k);
+              if($span[0].isA('SPAN')) {
+                let attributes = 0;
+                for(const [c, v] of Object.entries(FontStyleValues))
+                  if ($span.hasClass(c))
+                    attributes |= v;
+                box.r.push({
+                  f: $span.css('font-family'),
+                  s: Math.round((+$span.css('font-size').slice(0,-2)) / 96 * 72),
+                  a: attributes,
+                  t: $span.text()
+                });
+              } else {
+                console.warn('cannot serialize element', $span[0]);
+              }
+            }
+            box.r.push('br');
+          } else {
+            console.warn('cannot serialize element', $iel[0]);
           }
         }
         target.push(box);
