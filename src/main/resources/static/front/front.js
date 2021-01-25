@@ -399,49 +399,14 @@ $(".fontTypeButton").click(function(){
   const classToAdd = $(this).val();
   const range = getSel().getRangeAt(0);
 
-  const [startEl, startOffs, endEl, endOffs] = getSelectedNodes(range);
-
-  let par = startEl.parentNode;
   let shouldRemoveClass = true;
-  for(let curr = startEl;;) {
-    console.assert(curr.isA('SPAN') && curr.childNodes.length === 1 && curr.firstChild.isA('#text'), 'illegal p child ', curr, range);
-
-    let modified = false;
-    if(curr === startEl) {
-      const text = startEl.textContent;
-      const before = startEl.cloneNode();
-      before.appendChild(makeT(text.substr(0, startOffs)));
-      par.insertBefore(before, startEl);
-      const txt = makeT(text.substr(startOffs))
-      startEl.firstChild.replaceWith(txt);
-
-      range.setStart(txt, 0);
-      modified = true;
-    }
-
-    if(curr === endEl) {
-      const text = endEl.textContent;
-      const after = endEl.cloneNode();
-      after.appendChild(makeT(text.substr(endOffs - (modified ? startOffs : 0))));
-      par.insertBefore(after, endEl.nextSibling);
-      const txt = makeT(text.substr(0, endOffs - (modified ? startOffs : 0)));
-      endEl.firstChild.replaceWith(txt);
-
-      range.setEnd(txt, txt.textContent.length);
-    }
-
+  const [startEl, endEl] = makeNodesFromSelection(range, function(curr) {
     if(shouldRemoveClass && !$(curr).hasClass(classToAdd))
       shouldRemoveClass = false;
+  });
 
-    if(curr === endEl)
-      break;
-    if(curr.nextSibling === null) {
-      curr = curr.parentNode.nextSibling.firstChild;
-      par  = curr.parentNode;
-    } else {
-      curr = curr.nextSibling;
-    }
-  }
+
+  let par = startEl.parentNode;
   for(let curr = startEl;;) {
     console.assert(curr.isA('SPAN') && curr.childNodes.length === 1 && curr.firstChild.isA('#text'), 'illegal p child ', curr, range);
 
@@ -458,6 +423,67 @@ $(".fontTypeButton").click(function(){
   }
 
 }).mouseup(stopPropagation);
+
+const makeNodesFromSelection = function(range, foreachAction) {
+  const [startEl, startOffs, endEl, endOffs] = getSelectedNodes(range);
+
+  let par = startEl.parentNode;
+  if(startEl === endEl){
+    const text = startEl.textContent;
+    const before = startEl.cloneNode();
+    before.appendChild(makeT(text.substr(0, startOffs)));
+    par.insertBefore(before, startEl);
+    const after = startEl.cloneNode();
+    after.appendChild(makeT(text.substr(endOffs)));
+    par.insertBefore(after, startEl.nextSibling);
+
+    const txt = makeT(text.substr(startOffs, endOffs - startOffs));
+    startEl.firstChild.replaceWith(txt);
+
+    range.setStart(txt, 0);
+    range.setEnd(txt, endOffs - startOffs);
+
+    if(foreachAction)
+      foreachAction(startEl);
+  } else
+  for(let curr = startEl;;) {
+    console.assert(curr.isA('SPAN') && curr.childNodes.length === 1 && curr.firstChild.isA('#text'), 'illegal p child ', curr, range);
+
+     if(curr === startEl) {
+      const text = startEl.textContent;
+      const before = startEl.cloneNode();
+      before.appendChild(makeT(text.substr(0, startOffs)));
+      par.insertBefore(before, startEl);
+      const txt = makeT(text.substr(startOffs))
+      startEl.firstChild.replaceWith(txt);
+
+      range.setStart(txt, 0);
+    } else if(curr === endEl) {
+      const text = endEl.textContent;
+      const after = endEl.cloneNode();
+      after.appendChild(makeT(text.substr(endOffs)));
+      par.insertBefore(after, endEl.nextSibling);
+      const txt = makeT(text.substr(0, endOffs));
+      endEl.firstChild.replaceWith(txt);
+
+      range.setEnd(txt, txt.textContent.length);
+    }
+
+    if(foreachAction)
+      foreachAction(curr);
+
+    if(curr === endEl)
+      break;
+    if(curr.nextSibling === null) {
+      curr = curr.parentNode.nextSibling.firstChild;
+      par  = curr.parentNode;
+    } else {
+      curr = curr.nextSibling;
+    }
+  }
+
+  return [startEl, endEl];
+};
 
 const getSelectedNodes = function(range) {
   console.log('get', range);
@@ -496,66 +522,6 @@ const getSelectedNodes = function(range) {
     console.warn('cant handle', range);
 
   return [startEl, startOffs, endEl, endOffs];
-};
-
-const makeNodesFromSelection = function() {
-  const selection = getSel();
-  // (lucas 09.01.21)
-  // todo: loop over all ranges to support multi select,
-  //       this then also needs to be respected while saving / restoring the selection
-  const range = selection.getRangeAt(0);
-  const rangeW = new RangeWrapper(range);
-  const { startEl: startEl, endEl: endEl, startOffs: startOffs, endOffs: endOffs, box: box } = rangeW;
-
-  if(startEl.isA('SPAN') && startEl === endEl) {
-    let modified = false;
-    let text = startEl.textContent;
-    if(startOffs > 0) {
-      const w = startEl.cloneNode();
-      w.appendChild(makeT(text.substr(0, startOffs)));
-      box.insertBefore(w, startEl);
-      modified = true;
-    }
-    if(endOffs < text.length) {
-      const w = startEl.cloneNode();
-      w.appendChild(makeT(text.substr(endOffs)));
-      box.insertBefore(w, startEl.nextSibling);
-      modified = true;
-    }
-
-    if(modified) {
-      const txt = makeT(text.substr(startOffs, endOffs - startOffs));
-      startEl.childNodes[0].replaceWith(txt);
-      range.setStart(txt, 0);
-      range.setEnd(txt, txt.textContent.length);
-    }
-  } else {
-    if(startEl.isA('SPAN')) {
-      const text = startEl.textContent;
-      if (startOffs > 0) {
-        const c = startEl.cloneNode();
-        c.appendChild(makeT(text.substr(0, startOffs)));
-        box.insertBefore(c, startEl);
-        const txt = makeT(text.substr(startOffs));
-        startEl.childNodes[0].replaceWith(txt);
-        range.setStart(txt, 0);
-      }
-    }
-
-    if(endEl.isA('SPAN')) {
-      const text = endEl.textContent;
-      if (endOffs < text.length) {
-        const c = endEl.cloneNode();
-        c.appendChild(makeT(text.substr(endOffs)));
-        box.insertBefore(c, endEl.nextSibling);
-        const txt = makeT(text.substr(0, endOffs));
-        endEl.childNodes[0].replaceWith(txt);
-        range.setEnd(txt, txt.textContent.length);
-      }
-    }
-  }
-
-  return rangeW;
 };
 
 //dragging
