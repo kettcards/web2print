@@ -188,97 +188,13 @@ const hTxtMDown = function(e){
   state.addOnClick = undefined;
 };
 
-class RangeWrapper {
-  range;
-  box;
-  startEl; startOffs;
-    endEl;   endOffs;
-
-  constructor(range) {
-    this.range = range;
-
-    if(range.startContainer.isA('#text')) {
-      this.startEl   = range.startContainer.parentNode;
-      this.startOffs = range.startOffset;
-    } else if(range.startContainer.isA('SPAN')) {
-      if(range.startContainer.className === 'text') {
-        this.startEl   = range.startContainer.childNodes[range.startOffset];
-        this.startOffs = 0;
-      } else {
-        this.startEl   = range.startContainer;
-        this.startOffs = 0;
-      }
-    }
-    this.box = this.startEl.parentNode;
-
-    if(range.endContainer.isA('#text')) {
-      this.endEl   = range.endContainer.parentNode;
-      this.endOffs = range.endOffset;
-    } else if(range.endContainer.isA('SPAN')) {
-      if(range.endContainer.className === 'text') {
-        this.endEl   = range.endContainer.childNodes[range.endOffset]
-          || range.endContainer.childNodes[range.endContainer.childNodes.length - 1];
-        this.endOffs = this.endEl.textContent.length;
-      } else {
-        this.endEl   = range.endContainer;
-        this.endOffs = this.endEl.textContent.length;
-      }
-    }
-  }
-
-  iterateSpans() {
-    const arr = [];
-    for(let n = this.startEl;; n = n.nextSibling) {
-      if(n.isA('SPAN'))
-        arr.push(n);
-      if(n === this.endEl)
-        break;
-    }
-    return arr;
-  }
-  iterate() {
-    const arr = [];
-    for(let n = this.startEl;; n = n.nextSibling) {
-      arr.push(n);
-      if(n === this.endEl)
-        break;
-    }
-    return arr;
-  }
-
-  findReference() {
-    if(this.startEl.isA('BR')) {
-      let curr = this.startEl;
-      while(curr = curr.previousSibling) {
-        if(!curr.isA('BR'))
-          break;
-      }
-      if(curr)
-        return curr;
-
-      curr = this.startEl;
-      while(curr = curr.nextSibling) {
-        if(!curr.isA('BR'))
-          break;
-      }
-      if(curr)
-        return curr;
-
-      throw new Error("not implemented 22");
-    }
-
-    return this.startEl;
-  }
-}
-
 const hTxtMUp = function(){
-  const rangeW = new RangeWrapper(getSel().getRangeAt(0));
-  let $initialSource = $(rangeW.findReference());
+  const [startEl, _, endEl, __] = getSelectedNodes(getSel().getRangeAt(0));
 
-  let fontFam  =  $initialSource.css('font-family');
-  let fontSize = +$initialSource.css('font-size').slice(0, -2);
+  let fontFam  =  $(startEl).css('font-family');
+  let fontSize = +$(startEl).css('font-size').slice(0, -2);
   let index;
-  for(let n = rangeW.startEl;; n = n.nextSibling){
+  for(let n = startEl;; n = n.nextSibling){
     const nextFam  =  $(n).css('font-family');
     const nextSize = +$(n).css('font-size').slice(0, -2);
     if(fontFam !== nextFam){
@@ -287,7 +203,7 @@ const hTxtMUp = function(){
     if(nextSize < fontSize) {
       fontSize = nextSize;
     }
-    if(n === rangeW.endEl)
+    if(n === endEl)
       break;
   }
 
@@ -305,14 +221,10 @@ const hElClick = function(e){
 };
 const hElPaste = async function(e) {
   e.preventDefault();
+  return;
   const ev  = e.originalEvent;
   const box = e.delegateTarget;
-  // (lucas 21.01.21)
-  // this could be the beforeinput event, but sadly you have to explicitly allow it in the config under firefox
 
-  // (lucas) dont bother with trying to get teh html, its just not worth the hassle of converting the structure
-  //         firefox doesnt give you a proper fragment, it generates tags around the fragment.
-  //         I could extract the comment tags and go from there, but ist just not worth it.
   const data = ev.clipboardData.getData('text');
   if(data.length > 0) {
     const rangeW = makeNodesFromSelection();
@@ -428,7 +340,7 @@ const makeNodesFromSelection = function(range, foreachAction) {
   const [startEl, startOffs, endEl, endOffs] = getSelectedNodes(range);
 
   let par = startEl.parentNode;
-  if(startEl === endEl){
+  if(startEl === endEl) {
     const text = startEl.textContent;
     const before = startEl.cloneNode();
     before.appendChild(makeT(text.substr(0, startOffs)));
@@ -656,7 +568,20 @@ const serializeSide = function($els, target) {
 };
 
 //font stuff
-const $fontSelect = $('#fontSelect').mouseup(stopPropagation);
+const applyFont = function() {
+  const range = getSel().getRangeAt(0);
+  const fName = $fontSelect.val();
+  (!FontAttributeMap[fName] ? beginLoadFont(fName) : Promise.resolve())
+    .then(function() {
+      makeNodesFromSelection(range, function(curr) {
+        $(curr).css('font-family', fName);
+      })
+    });
+};
+
+const $fontSelect = $('#fontSelect')
+  .mouseup(stopPropagation)
+  .change(applyFont);
 let FontNames;
 
 $.get(web2print.links.apiUrl+'fonts')
@@ -668,7 +593,6 @@ $.get(web2print.links.apiUrl+'fonts')
      $options[i] = $('<option value="'+fName+'">'+fName+'</option>');
    }
    $fontSelect.append($options);
-   $fontSelect.change(applyFont);
 
    //(lucas 18.01.21) todo: be more elegant about this, mbe explicitly spec it ?
    defaultFont = data[0];
@@ -676,16 +600,6 @@ $.get(web2print.links.apiUrl+'fonts')
  }).catch(function(e) {
   alert('[fatal] something went wrong loading fonts: '+JSON.stringify(e));
  });
-
-const applyFont = function() {
-  const range = getSel().getRangeAt(0);
-  const fName = $fontSelect.val();
-  (!FontAttributeMap[fName] ? beginLoadFont(fName) : Promise.resolve())
-  .then(function() {
-    const w = $(make('span')).css('font-family', fName)[0];
-    range.surroundContents(w);
-  });
-};
 
 const beginLoadFont = function(name) {
   return $.get(web2print.links.apiUrl+'font/'+name)
@@ -729,13 +643,13 @@ const $fontSizeSelect = $('#fontSizeSelect')
 })
 .mouseup(stopPropagation)
 .change(function(e) {
-  //restore selection
-  const selection = getSel();
-  selection.removeAllRanges();
-  selection.addRange(state.range);
-  const $w = $(make('span')).css('font-size', e.target.value+'pt');
-  selection.getRangeAt(0).surroundContents($w[0]);
-  $w.children().css('font-size', '');
+  const fontSize = e.target.value;
+  const sel = getSel();
+  sel.removeAllRanges();
+  sel.addRange(state.range);
+  makeNodesFromSelection(sel.getRangeAt(0), function(curr) {
+    $(curr).css('font-size', fontSize+'pt');
+  });
 });
 
 // changing pages
