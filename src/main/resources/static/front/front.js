@@ -371,6 +371,17 @@ const hElKeyUp = function(e) {
   e.preventDefault();
   const key = e.originalEvent.keyCode;
 
+  const range = getSel().getRangeAt(0);
+  if(range.collapsed && range.startContainer.parentNode.isA('P')) {
+    const p = range.startContainer.parentNode;
+    const insertTarget = range.startContainer.nextSibling;
+    const txt = p.removeChild(range.startContainer);
+    const w = make('span', txt);
+    p.insertBefore(w, insertTarget);
+    range.setEnd(txt, txt.textContent.length);
+    range.collapse();
+  }
+
   if((key >= 37 && key <= 40) || (key >= 33 && key <= 36)) {
     hTxtMUp();
   }
@@ -386,45 +397,106 @@ $(".alignmentBtn").click(function(){
 }).mouseup(stopPropagation);
 $(".fontTypeButton").click(function(){
   const classToAdd = $(this).val();
-  // todo: remove tags
   const range = getSel().getRangeAt(0);
 
-  console.log(range);
-  // <p>te[xt te]xt</p> | <p>t<span>e[xt te]x</span>t</p>
-  if(range.commonAncestorContainer.isA('#text')) {
-    const span = range.startContainer.parentNode;
-    const par = span.parentNode;
-    if(range.startOffset === 0 && range.endOffset === range.startContainer.textContent.length) {
-      $(range.startContainer.parentNode).toggleClass(classToAdd);
-    } else {
-      const text = range.startContainer.textContent;
-      const before = span.cloneNode();
-      before.appendChild(makeT(text.substr(0, range.startOffset)));
-      par.insertBefore(before, span);
-      const after = span.cloneNode();
-      after.appendChild(makeT(text.substr(range.endOffset)));
-      par.insertBefore(after, span.nextSibling);
-      range.startContainer.textContent = text.substr(range.startOffset, range.endOffset - range.startOffset);
-      $(span).addClass(classToAdd);
+  const [startEl, startOffs, endEl, endOffs] = getSelectedNodes(range);
 
-      const txt = range.startContainer;
+  let par = startEl.parentNode;
+  let shouldRemoveClass = true;
+  for(let curr = startEl;;) {
+    console.assert(curr.isA('SPAN') && curr.childNodes.length === 1 && curr.firstChild.isA('#text'), 'illegal p child ', curr, range);
+
+    let modified = false;
+    if(curr === startEl) {
+      const text = startEl.textContent;
+      const before = startEl.cloneNode();
+      before.appendChild(makeT(text.substr(0, startOffs)));
+      par.insertBefore(before, startEl);
+      const txt = makeT(text.substr(startOffs))
+      startEl.firstChild.replaceWith(txt);
+
       range.setStart(txt, 0);
+      modified = true;
+    }
+
+    if(curr === endEl) {
+      const text = endEl.textContent;
+      const after = endEl.cloneNode();
+      after.appendChild(makeT(text.substr(endOffs - (modified ? startOffs : 0))));
+      par.insertBefore(after, endEl.nextSibling);
+      const txt = makeT(text.substr(0, endOffs - (modified ? startOffs : 0)));
+      endEl.firstChild.replaceWith(txt);
+
       range.setEnd(txt, txt.textContent.length);
     }
-  }
-  // ctrl+a : FF: <p>[<b>text</b>]</p> | CHROME: <p><b>[text]</b></p>
-  // <p>te[xt <b>test </b> te]xt</p> | <p>text <b>te[st </b> te]xt</p> | [<p>text <b>test </b> text</p>]
-  // <p>te[xt <span class="b">test </b> te]xt</p> | <p>text <span class="b">te[st </span><span class="b i" te]xt</span><span class="b" >asdasdasd</span></p>
-  else if(range.commonAncestorContainer.isA('P')) {
-    if(range.startContainer.isA('#text') &&
-      range.startOffset === range.startContainer.textContent.length) {
-      range.setStart(range.startContainer.parentNode.nextSibling.firstChild, 0);
+
+    if(shouldRemoveClass && !$(curr).hasClass(classToAdd))
+      shouldRemoveClass = false;
+
+    if(curr === endEl)
+      break;
+    if(curr.nextSibling === null) {
+      curr = curr.parentNode.nextSibling.firstChild;
+      par  = curr.parentNode;
+    } else {
+      curr = curr.nextSibling;
     }
-  } else {
-    console.warn('cant handle ', range);
+  }
+  for(let curr = startEl;;) {
+    console.assert(curr.isA('SPAN') && curr.childNodes.length === 1 && curr.firstChild.isA('#text'), 'illegal p child ', curr, range);
+
+    $(curr)[shouldRemoveClass?'removeClass':'addClass'](classToAdd);
+
+    if(curr === endEl)
+      break;
+    if(curr.nextSibling === null) {
+      curr = curr.parentNode.nextSibling.firstChild;
+      par  = curr.parentNode;
+    } else {
+      curr = curr.nextSibling;
+    }
   }
 
 }).mouseup(stopPropagation);
+
+const getSelectedNodes = function(range) {
+  console.log('get', range);
+  let startEl  , endEl  ;
+  let startOffs, endOffs;
+
+  if(range.commonAncestorContainer.isA('#text')) {
+    startEl = endEl = range.startContainer.parentNode;
+    startOffs = range.startOffset;
+    endOffs   = range.endOffset;
+  } else if(range.commonAncestorContainer.isA('P') || range.commonAncestorContainer.className === 'text') {
+    if(range.startContainer.isA('#text')){
+      startEl   = range.startContainer.parentNode;
+      startOffs = range.startOffset;
+    } else if(range.startContainer.isA('P')){
+      startEl   = range.startContainer.childNodes[range.startOffset];
+      startOffs = 0;
+    } else if(range.startContainer.isA('SPAN')) {
+      console.assert(range.startOffset === 0, "start offset should be 0 but is ", range.startOffset);
+      startEl   = range.startContainer;
+      startOffs = 0;
+    }
+
+    if(range.endContainer.isA('#text')){
+      endEl   = range.endContainer.parentNode;
+      endOffs = range.endOffset;
+    } else if(range.endContainer.isA('P')){
+      console.assert(range.endContainer.childNodes.length > 0, 'there must be at least one child', range);
+      endEl   = range.endContainer.childNodes[range.endOffset]
+        || range.endContainer.childNodes[range.endContainer.childNodes.length - 1];
+      endOffs = endEl.textContent.length;
+    } else if(range.endContainer.isA('SPAN')) {
+      console.error('how did we get here', range);
+    }
+  } else
+    console.warn('cant handle', range);
+
+  return [startEl, startOffs, endEl, endOffs];
+};
 
 const makeNodesFromSelection = function() {
   const selection = getSel();
