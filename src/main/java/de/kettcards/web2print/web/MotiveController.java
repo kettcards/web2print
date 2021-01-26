@@ -1,31 +1,15 @@
 package de.kettcards.web2print.web;
 
-import de.kettcards.web2print.model.db.Card;
-import de.kettcards.web2print.model.db.Motive;
-import de.kettcards.web2print.model.tableimport.request.MotiveRequest;
-import de.kettcards.web2print.model.tableimport.request.MotiveResponse;
-import de.kettcards.web2print.repository.MotiveRepository;
-import de.kettcards.web2print.service.MotiveScaleService;
-import de.kettcards.web2print.service.StorageService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-
+@Deprecated
 @RestController
 @RequestMapping("${web2print.links.api-path}/motive")
 public class MotiveController {
-
+    /*
     @Autowired
-    private StorageService storageService;
+    private ImportService importService;
 
     @Autowired
     private MotiveRepository motiveRepository;
@@ -50,5 +34,7 @@ public class MotiveController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+     */
 
 }

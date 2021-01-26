@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 @Data
 @ConfigurationProperties(prefix = "web2print", ignoreUnknownFields = false)
-public class Web2PrintApplicationConfiguration {
+public class ApplicationConfiguration {
 
     @JsonView(Include.Public.class)
     @NestedConfigurationProperty
@@ -17,6 +17,9 @@ public class Web2PrintApplicationConfiguration {
     @JsonView(Include.Api.class)
     @NestedConfigurationProperty
     private Page page;
+
+    @JsonView(Include.Internal.class)
+    private String baseDir;
 
     @Data
     public static class Link {

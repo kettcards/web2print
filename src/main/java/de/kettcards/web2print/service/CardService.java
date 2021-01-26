@@ -1,6 +1,6 @@
 package de.kettcards.web2print.service;
 
-import de.kettcards.web2print.config.Web2PrintApplicationConfiguration;
+import de.kettcards.web2print.config.ApplicationConfiguration;
 import de.kettcards.web2print.model.db.Card;
 import de.kettcards.web2print.model.projectons.CardOverview;
 import de.kettcards.web2print.repository.CardRepository;
@@ -12,11 +12,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CardService {
+
     private final CardRepository cardRepository;
 
-    private final Web2PrintApplicationConfiguration configuration;
+    private final ApplicationConfiguration configuration;
 
-    public CardService(CardRepository cardRepository, Web2PrintApplicationConfiguration configuration) {
+    public CardService(CardRepository cardRepository, ApplicationConfiguration configuration) {
         this.cardRepository = cardRepository;
         this.configuration = configuration;
     }

@@ -3,7 +3,7 @@ package de.kettcards.web2print.serialize;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import de.kettcards.web2print.config.Web2PrintApplicationConfiguration;
+import de.kettcards.web2print.config.ApplicationConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jackson.JsonComponent;
 import org.springframework.data.domain.PageImpl;
@@ -15,7 +15,7 @@ import java.io.IOException;
 public class PageSerializer extends JsonSerializer<PageImpl<?>> {
 
     @Autowired
-    private Web2PrintApplicationConfiguration configuration;
+    private ApplicationConfiguration configuration;
 
     @Override
     public void serialize(PageImpl<?> value, JsonGenerator gen, SerializerProvider serializers) throws IOException {

@@ -1,11 +1,9 @@
 package de.kettcards.web2print.testUtils;
 
-import de.kettcards.web2print.config.Web2PrintApplicationConfiguration;
+import de.kettcards.web2print.config.ApplicationConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.ApplicationContextInitializer;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -34,7 +32,7 @@ public class TestBeanConfiguration implements EnvironmentAware {
 
     @Primary
     @Bean
-    public Web2PrintApplicationConfiguration getDefaultApplicationConfiguration() {
+    public ApplicationConfiguration getDefaultApplicationConfiguration() {
         boolean useSsl = false;
         boolean useLocalThumbnails = false;
         boolean useRandomizedBasePath = false;
@@ -46,9 +44,11 @@ public class TestBeanConfiguration implements EnvironmentAware {
             log.warn("unable to determine host address; backing up to localhost");
             hostAddress = "localhost";
         }
-        Integer port = environment.getRequiredProperty("local.server.port", Integer.class);
-        var c = new Web2PrintApplicationConfiguration();
-        var l = new Web2PrintApplicationConfiguration.Link();
+        Integer port = environment.getProperty("local.server.port", Integer.class);
+        if (port == null)
+            port = 8080;
+        var c = new ApplicationConfiguration();
+        var l = new ApplicationConfiguration.Link();
         StringBuilder baseUrl = new StringBuilder();
         if (useSsl)
             baseUrl.append("https://");
@@ -75,7 +75,7 @@ public class TestBeanConfiguration implements EnvironmentAware {
         else
             l.setThumbnailUrl("https://www.kettcards.de/img/");
         c.setLinks(l);
-        var p = new Web2PrintApplicationConfiguration.Page();
+        var p = new ApplicationConfiguration.Page();
         p.setDefaultPageSize(5);
         p.setMaxPageSize(10);
         c.setPage(p);
