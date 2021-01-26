@@ -61,7 +61,7 @@ body {
   color: white;
   text-align: center;
   font-size: 32px;
-  transition: 0.3s;
+  transition: background-color 0.3s,color 0.3s;
 }
 
 #toolbar {
@@ -70,6 +70,7 @@ body {
   background-color: lightgray;
   overflow: hidden;
   padding-top: 5px;
+  padding-left: 10px;
 }
 .toolbar-row {
   position: relative;
@@ -98,7 +99,7 @@ body {
   text-align: center;
   font-size: 13px;
   margin: 4px 2px;
-  transition: 0.3s;
+  transition: background-color 0.3s,color 0.3s;
 }
 #toolbar button:hover, #submitBtn:hover, #toolBox button:hover {
   background-color: white;
@@ -365,7 +366,7 @@ body {
   color: white;
   text-align: center;
   font-size: 13px;
-  transition: 0.3s;
+  transition: background-color 0.3s,color 0.3s;
 }
 #toolBox #moveBtn {
   position: absolute;
