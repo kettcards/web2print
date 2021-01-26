@@ -72,7 +72,7 @@ public class MotiveImportService extends StorageContextAware implements WebConte
                 }
                 if (out == null)
                     continue;
-                save(new Content(new InMemoryResource(stream.toByteArray())), content.getOriginalFilename());
+                save(new Content(new InMemoryResource(stream.toByteArray())), out);
             }
 
         } catch (IOException e) {
