@@ -1,8 +1,6 @@
 package de.kettcards.web2print.pdfGen.cardData;
 
 import de.kettcards.web2print.pdfGen.PDFGenerator;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -44,15 +42,17 @@ public class TextBoxData extends BoxData{
         content.beginText();
         var box = this;
         float largestFontSize = PDFGenerator.getLargestFontSize(box.getTextRuns().listIterator());
-        switch (box.getAlignment()) { //corresponding to the alignment the newLineAtOffset will be set
-            case 'r':
-                content.newLineAtOffset(mm2pt(box.getWInMM()), box.getYInPt() + mm2pt(box.getHInMM()) - largestFontSize); //since TextBoxData stores everything in mm, the conversion to pt must be handeled here
-                break;
+        switch (box.getAlignment()) {
+            //since TextBoxData stores everything in mm, the conversion to pt must be handeled here
             case 'c':
-                content.newLineAtOffset(mm2pt(box.getWInMM() / 2), box.getYInPt() + mm2pt(box.getHInMM()) - largestFontSize);
+                content.newLineAtOffset((box.getXInPt() / 2f), box.getYInPt() + mm2pt(box.getHInMM()) - largestFontSize);
+                //content.newLineAtOffset(mm2pt(box.getWInMM() / 2), box.getYInPt() + mm2pt(box.getHInMM()) - largestFontSize);
                 break;
             //TODO: justify case
-            case 'l': case 'j': default:
+            case 'l':
+            case 'j': //corresponding to the alignment the newLineAtOffset will be set
+            case 'r':
+            default:
                 content.newLineAtOffset(box.getXInPt(), box.getYInPt() + mm2pt(box.getHInMM()) - largestFontSize);
                 break;
         }
