@@ -16,12 +16,15 @@
     <div id="horizontal-wrapper">
       <div id="editor-container">
         <div id="toolbar">
-          <div class="toolbar-row" data-name="Add Elements">
-            <button class="addElBtn" data-enum="TEXT">Text</button>
-            <button class="addElBtn" data-enum="IMAGE">Image</button>
-            <button class="addElBtn" data-enum="GEOM">Geometry</button>
+          <div class="toolbar-row" >
+            <span class="toolbar-label">Add Elements</span>
+            <div class="toolbar-buttons">
+              <button class="addElBtn" data-enum="TEXT">Text</button>
+              <button class="addElBtn" data-enum="IMAGE" style="display: none">Image</button>
+              <button class="addElBtn" data-enum="GEOM" style="display: none">Geometry</button>
+            </div>
           </div>
-          <div class="toolbar-row" data-name="dbg">
+          <div class="toolbar-row" data-name="dbg" style="display: none;">
             <button onclick="debugger;"> test </button>
           </div>
         </div>
@@ -57,7 +60,7 @@
         <div id="preview-container">
           <img alt="A preview Render of the printed Card" />
         </div>
-        <div id="render-styles-container">
+        <div id="render-styles-container" style="display: none">
           <template id="render-style-btn-tmpl"><button class="render-select" onclick="hRenderStyleChanged(+this.dataset['style-index']);"></button></template>
         </div>
         <button id="submitBtn">Submit</button>
@@ -66,14 +69,16 @@
     <menu id="toolBox" style="visibility: collapse;">
       <div>
         <select id="fontSelect"></select><!--
-     --><input type="number" id="fontSizeSelect" min="0" value="99">
+     --></div>
+      <div>
+        <input type="number" id="fontSizeSelect" min="0" value="99">
       </div>
       <div>
-        <button class="fontTypeButton" value="b">B</button><!--
-     --><button class="fontTypeButton" value="i">I</button>
+        <button class="fontTypeButton" style="font-weight: bold" value="b">B</button><!--
+     --><button class="fontTypeButton" style="font-style: italic" value="i">I</button>
       </div>
       <div>
-        <button id="moveBtn">M</button><!--
+        <button id="moveBtn"></button><!--
      --><button class="alignmentBtn" value="left">L</button><!--
      --><button class="alignmentBtn" value="center">C</button><!--
      --><button class="alignmentBtn" value="right">R</button>

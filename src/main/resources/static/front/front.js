@@ -277,7 +277,7 @@ const hElKeyDown = function(e) {
   const key = ev.keyCode;
 
   if(ev.shiftKey && key === 13) {
-    //(lucas 25.01.21) todo: dont just block it, resolve it properly
+    // (lucas 25.01.21) todo: dont just block it, resolve it properly
     e.preventDefault();
   }
 };
@@ -287,14 +287,27 @@ const hElKeyUp = function(e) {
   const key = e.originalEvent.keyCode;
 
   const range = getSel().getRangeAt(0);
-  if(range.collapsed && range.startContainer.parentNode.isA('P')) {
-    const p = range.startContainer.parentNode;
-    const insertTarget = range.startContainer.nextSibling;
-    const txt = p.removeChild(range.startContainer);
-    const w = make('span', txt);
-    p.insertBefore(w, insertTarget);
-    range.setEnd(txt, txt.textContent.length);
-    range.collapse();
+  if(range.collapsed) {
+    if(range.startContainer.parentNode.isA('P')) {
+      const p = range.startContainer.parentNode;
+      const insertTarget = range.startContainer.nextSibling;
+      const txt = p.removeChild(range.startContainer);
+      const w = make('span', txt);
+      p.insertBefore(w, insertTarget);
+      range.setEnd(txt, txt.textContent.length);
+      range.collapse();
+    } else if(range.startContainer.isA('#text') && range.startContainer.parentNode.isA('DIV')) {
+      const box = range.startContainer.parentNode;
+      const insertTarget = range.startContainer.nextSibling;
+      const txt = box.removeChild(range.startContainer);
+      const span = make('span', txt);
+      box.insertBefore(make('p', span), insertTarget);
+      if(insertTarget && insertTarget.isA('BR'))
+        box.removeChild(insertTarget);
+
+      range.setEnd(txt, txt.textContent.length);
+      range.collapse();
+    }
   }
 
   if((key >= 37 && key <= 40) || (key >= 33 && key <= 36)) {
@@ -420,7 +433,11 @@ const getSelectedNodes = function(range) {
       console.assert(range.startOffset === 0, "start offset should be 0 but is ", range.startOffset);
       startEl   = range.startContainer;
       startOffs = 0;
-    }
+    } else if(range.startContainer.isA('DIV')) {
+      startEl   = range.startContainer.childNodes[range.startOffset].childNodes[0];
+      startOffs = 0;
+    } else
+      console.warn('cant handle start', range);
 
     if(range.endContainer.isA('#text')){
       endEl   = range.endContainer.parentNode;
@@ -432,7 +449,12 @@ const getSelectedNodes = function(range) {
       endOffs = endEl.textContent.length;
     } else if(range.endContainer.isA('SPAN')) {
       console.error('how did we get here', range);
-    }
+    } else if(range.endContainer.isA('DIV')) {
+      const pars = range.endContainer.childNodes;
+      endEl    = (pars[range.endOffset] || pars[pars.length - 1]).childNodes[0];
+      endOffs  = endEl.textContent.length;
+    } else
+      console.warn('cant handle end', range);
   } else
     console.warn('cant handle', range);
 
