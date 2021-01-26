@@ -91,9 +91,6 @@ public class PDFGenerator{
     }
 
     public void applyTo(PDDocument doc, CardData data) throws IOException {
-
-        var lineList = new ArrayList<LineData>();
-
         var page = new PDPage(data.getPageBounds());
         doc.addPage(page);
 
