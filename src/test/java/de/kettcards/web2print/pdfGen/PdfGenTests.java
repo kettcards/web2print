@@ -1,4 +1,4 @@
-package de.kettcards.web2print;
+package de.kettcards.web2print.pdfGen;
 
 import de.kettcards.web2print.model.db.CardFormat;
 import de.kettcards.web2print.model.fonts.Font;
@@ -9,6 +9,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
 import java.io.File;
@@ -79,8 +80,8 @@ class PdfGenTests {
         //US016 - "PDF Generator - Text, Positionierung"
     void freeTextPositioning() throws IOException {
         var data = MakeCardData(150, 200);
-        var box = new TextBoxData(20, data.getPageHeight() - 100, -1, -1, 'l');
-        box.getTextRuns().add(makeDefaultTextRun("Diese Zeile ist auf X: " + box.getX() + ";Y: " + box.getY()));
+        var box = new TextBoxData(20, data.getPageHeight() - 100, 100, 50, 'l');
+        box.getTextRuns().add(makeDefaultTextRun("Diese Zeile ist auf X: " + box.getXInMM() + ";Y: " + box.getYInMM()));
         box.getTextRuns().add(TextRunData.LineBreak);
         box.getTextRuns().add(makeDefaultTextRun("Zeile 2"));
         data.getInnerElements().add(box);
@@ -94,7 +95,7 @@ class PdfGenTests {
         //US019 - "PDF Generator - Text, Schriftart"
     void customTextFont() throws IOException {
         var data = MakeCardData(200, 200);
-        var box = new TextBoxData(10, data.getPageWidth() - 20, -1, -1, 'l');
+        var box = new TextBoxData(10, data.getPageWidth() - 20, 100, 10, 'l');
         for (var attribute : FontStyle.values()) {
             box.getTextRuns().add(makeDefaultTextRun(EnumSet.of(attribute), attribute.toString()));
             box.getTextRuns().add(makeDefaultTextRun(" "));
@@ -102,12 +103,7 @@ class PdfGenTests {
         box.getTextRuns().add(TextRunData.LineBreak);
 
         box.getTextRuns().add(makeDefaultTextRun(EnumSet.of(FontStyle.BOLD, FontStyle.ITALIC), "BOLD_ITALIC"));
-        box.getTextRuns().add(makeDefaultTextRun(" "));
-        box.getTextRuns().add(makeDefaultTextRun(EnumSet.of(FontStyle.BOLD, FontStyle.UNDERLINE), "BOLD_UNDERLINE"));
         box.getTextRuns().add(TextRunData.LineBreak);
-
-        box.getTextRuns().add(makeDefaultTextRun(EnumSet.of(FontStyle.BOLD, FontStyle.ITALIC, FontStyle.UNDERLINE), "BOLD_ITALIC_UNDERLINE"));
-
         data.getInnerElements().add(box);
 
         var doc = new PDDocument();
@@ -115,27 +111,14 @@ class PdfGenTests {
         doc.save(GetOutputFile());
     }
 
-    static Resource customFontFile = new Resource() {
-        @Override public boolean exists() { return true; }
-        @Override public URL getURL() { return null; }
-        @Override public URI getURI() { return null; }
-        @Override public File getFile() { return null; }
-        @Override public long contentLength() { return 0; }
-        @Override public long lastModified() { return 0; }
-        @Override public Resource createRelative(String relativePath) { return null; }
-        @Override public String getFilename() { return null; }
-        @Override public String getDescription() { return null; }
-        @Override public InputStream getInputStream() throws IOException {
-            return new FileInputStream(new File("src/test/java/de/kettcards/web2print/customFontTest/HanaleiFill-Regular.ttf"));
-        }
-    };
     static Font.Face[] customFont = {
-        new Font.Face(customFontFile, 0, "normal", 400, "..."),
-        new Font.Face(customFontFile, 0, "normal", 400, "..."),
-        new Font.Face(customFontFile, 0, "italic", 400, "..."),
-        new Font.Face(customFontFile, 0, "italic", 400, "...")
+            new Font.Face(new FileSystemResource("src/test/resources/testFonts/josefinslab/static/JosefinSlab-Regular.ttf"), 0, "normal", 400, "..."),
+            new Font.Face(new FileSystemResource("src/test/resources/testFonts/josefinslab/static/JosefinSlab-Bold.ttf"), 0, "bold", 400, "..."),
+            new Font.Face(new FileSystemResource("src/test/resources/testFonts/josefinslab/static/JosefinSlab-Italic.ttf"), 0, "italic", 400, "..."),
+            new Font.Face(new FileSystemResource("src/test/resources/testFonts/josefinslab/static/JosefinSlab-BoldItalic.ttf"), 0, "bold_italic", 400, "...")
     };
     static Font.Provider customProvider = new Font.Provider("test", customFont[0], customFont[1], customFont[2], customFont[3]);
+
     static TextRunData makeCustomTextRun(PDDocument doc, int fontSize, EnumSet<FontStyle> attributes, String text) throws IOException {
         return new TextRunData(customProvider.load(doc), fontSize, attributes, text);
     }
@@ -146,13 +129,14 @@ class PdfGenTests {
         var doc = new PDDocument();
 
         var data = MakeCardData(200, 200);
-        var box = new TextBoxData(10, data.getPageWidth() - 20, -1, -1, 'l');
+        var box = new TextBoxData(10, data.getPageWidth() - 20, 100, 10, 'l');
 
 
         for (var attribute : FontStyle.values()) {
             box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(attribute), attribute.toString()));
             box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(FontStyle.NONE), " "));
         }
+        box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(FontStyle.BOLD, FontStyle.ITALIC), "BOLD_ITALIC"));
 
         data.getInnerElements().add(box);
 
@@ -161,20 +145,18 @@ class PdfGenTests {
     }
 
     @Test
-    void multipleSize() throws IOException{
+    void multipleSize() throws IOException {
         var doc = new PDDocument();
-
         var data = MakeCardData(200, 200);
-        var box = new TextBoxData(10, data.getPageWidth() - 20, -1, -1, 'l');
+        var box = new TextBoxData(5, data.getPageHeight() - 20, 100, 0, 'l');
 
-        for (var attribute : FontStyle.values()) {
-            box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(attribute), attribute.toString()));
-            box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(FontStyle.NONE), " "));
-        }
+        box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(FontStyle.NONE), "Lorem ipsum dolor "));
+        box.getTextRuns().add(makeCustomTextRun(doc, 28, EnumSet.of(FontStyle.BOLD), "sit amet,"));
         box.getTextRuns().add(TextRunData.LineBreak);
-        box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(FontStyle.NONE), "This is a "));
-        box.getTextRuns().add(makeCustomTextRun(doc, 28, EnumSet.of(FontStyle.NONE), "Giant"));
-        box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(FontStyle.NONE), " in this Line!"));
+        box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(FontStyle.NONE), "consectetur "));
+        box.getTextRuns().add(makeCustomTextRun(doc, 8, EnumSet.of(FontStyle.ITALIC), "testestestest "));
+        box.getTextRuns().add(makeCustomTextRun(doc, 28, EnumSet.of(FontStyle.NONE), "adipiscing "));
+        box.getTextRuns().add(makeCustomTextRun(doc, 8, EnumSet.of(FontStyle.ITALIC), "elit. Suspendisse ut."));
 
         data.getInnerElements().add(box);
         generator.applyTo(doc, data);
@@ -182,54 +164,10 @@ class PdfGenTests {
     }
 
     @Test
-    void underline() throws IOException {
-        var doc = new PDDocument();
-
-        var data = MakeCardData(200, 200);
-        var box = new TextBoxData(10, data.getPageWidth() - 20, -1, -1, 'l');
-
-        for (var attribute : FontStyle.values()) {
-            box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(attribute), attribute.toString()));
-            box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(FontStyle.NONE), " "));
-        }
-        box.getTextRuns().add(TextRunData.LineBreak);
-        box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(FontStyle.UNDERLINE), "This Text is Underlined"));
-
-        box.getTextRuns().add(TextRunData.LineBreak);
-        box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(FontStyle.UNDERLINE), "This"));
-        box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(FontStyle.NONE), " is underlined and "));
-        box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(FontStyle.UNDERLINE), "This"));
-
-        data.getInnerElements().add(box);
-
-        generator.applyTo(doc, data);
-        doc.save(GetOutputFile());
-    }
-
-    @Test
-    void multiSizeAndUnderline() throws IOException{
-        var doc = new PDDocument();
-        var data = MakeCardData(200,200);
-        var box = new TextBoxData(5, data.getPageHeight() - 20, -1,-1, 'l');
-
-        box.getTextRuns().add(makeCustomTextRun(doc, 12,EnumSet.of(FontStyle.NONE), "Lorem ipsum dolor "));
-        box.getTextRuns().add(makeCustomTextRun(doc, 28,EnumSet.of(FontStyle.BOLD), "sit amet,"));
-        box.getTextRuns().add(TextRunData.LineBreak);
-        box.getTextRuns().add(makeCustomTextRun(doc, 12,EnumSet.of(FontStyle.UNDERLINE), " consectetur "));
-        box.getTextRuns().add(makeCustomTextRun(doc, 8,EnumSet.of(FontStyle.ITALIC), "testestestest "));
-        box.getTextRuns().add(makeCustomTextRun(doc, 28,EnumSet.of(FontStyle.UNDERLINE), "adipiscing "));
-        box.getTextRuns().add(makeCustomTextRun(doc, 8,EnumSet.of(FontStyle.ITALIC), "elit. Suspendisse ut."));
-
-        data.getInnerElements().add(box);
-        generator.applyTo(doc,data);
-        doc.save(GetOutputFile());
-    }
-
-    @Test
-    void rightAlignment() throws IOException{
+    void rightAlignment() throws IOException {
         var doc = new PDDocument();
         var data = MakeCardData(100, 50);
-        var box = new TextBoxData(5, data.getPageHeight() -10, data.getPageBounds().getWidth()-PDFGenerator.mm2pt(10f),-1,'r');
+        var box = new TextBoxData(5, data.getPageHeight() - 10, data.getPageWidth() - 10, 0, 'r');
 
         box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(FontStyle.NONE), "Lorem ipsum dolor sit amet,"));
         box.getTextRuns().add(TextRunData.LineBreak);
@@ -249,15 +187,15 @@ class PdfGenTests {
         box.getTextRuns().add(TextRunData.LineBreak);
 
         data.getInnerElements().add(box);
-        generator.applyTo(doc,data);
+        generator.applyTo(doc, data);
         doc.save(GetOutputFile());
     }
 
     @Test
-    void centerAlignment() throws IOException{
+    void centerAlignment() throws IOException {
         var doc = new PDDocument();
         var data = MakeCardData(200, 200);
-        var box = new TextBoxData(5, data.getPageHeight() -20, data.getPageBounds().getWidth()-PDFGenerator.mm2pt(25f),-1,'c');
+        var box = new TextBoxData(5, data.getPageHeight() - 20, data.getPageWidth() - 25, 0, 'c');
 
         box.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(FontStyle.NONE), "Lorem ipsum dolor sit amet,"));
         box.getTextRuns().add(TextRunData.LineBreak);
@@ -277,10 +215,11 @@ class PdfGenTests {
         box.getTextRuns().add(TextRunData.LineBreak);
 
         data.getInnerElements().add(box);
-        generator.applyTo(doc,data);
+        generator.applyTo(doc, data);
         doc.save(GetOutputFile());
     }
 
+    /*
     @Test
     void justifyAlignment() throws IOException{
         var doc = new PDDocument();
@@ -305,6 +244,7 @@ class PdfGenTests {
         doc.save(GetOutputFile());
     }
 
+
     @Test
     void justifyEdgeCase() throws IOException{
         var doc = new PDDocument();
@@ -320,21 +260,22 @@ class PdfGenTests {
         generator.applyTo(doc,data);
         doc.save(GetOutputFile());
     }
+     */
 
     @Test
-    void alignments() throws IOException{
+    void alignments() throws IOException {
         var doc = new PDDocument();
         var data = MakeCardData(200, 200);
-        var boxL = new TextBoxData(5, data.getPageHeight() -20, data.getPageBounds().getWidth()-PDFGenerator.mm2pt(25f),-1,'l');
+        var boxL = new TextBoxData(5, data.getPageHeight() - 20, data.getPageWidth() - 25, 0, 'l');
 
-       for (var attribute : FontStyle.values()) {
+        for (var attribute : FontStyle.values()) {
             boxL.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(attribute), attribute.toString()));
             boxL.getTextRuns().add(TextRunData.LineBreak);
         }
 
         data.getInnerElements().add(boxL);
 
-        var boxR = new TextBoxData(5, data.getPageHeight() -50, data.getPageBounds().getWidth()-PDFGenerator.mm2pt(25f),-1,'r');
+        var boxR = new TextBoxData(5, data.getPageHeight() - 50, data.getPageWidth() - 25, 0, 'r');
 
         for (var attribute : FontStyle.values()) {
             boxR.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(attribute), attribute.toString()));
@@ -343,7 +284,7 @@ class PdfGenTests {
 
         data.getInnerElements().add(boxR);
 
-        var boxC = new TextBoxData(5, data.getPageHeight() -80, data.getPageBounds().getWidth()-PDFGenerator.mm2pt(25f),-1,'c');
+        var boxC = new TextBoxData(5, data.getPageHeight() - 80, data.getPageWidth() - 25, 0, 'c');
 
         for (var attribute : FontStyle.values()) {
             boxC.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(attribute), attribute.toString()));
@@ -352,7 +293,47 @@ class PdfGenTests {
 
         data.getInnerElements().add(boxC);
 
-        generator.applyTo(doc,data);
+        generator.applyTo(doc, data);
+        doc.save(GetOutputFile());
+    }
+
+    @Test
+    void checkTextInTextBox() throws IOException {
+        var doc = new PDDocument();
+        var data = MakeCardData(200, 200);
+
+        var boxL = new TextBoxData(5, data.getPageHeight() - 20, data.getPageWidth() - 25, 0, 'l');
+
+        for (var attribute : FontStyle.values()) {
+            boxL.getTextRuns().add(makeCustomTextRun(doc, 12, EnumSet.of(attribute), attribute.toString()));
+            boxL.getTextRuns().add(TextRunData.LineBreak);
+        }
+
+        data.getInnerElements().add(boxL);
+
+        generator.applyTo(doc, data);
+        doc.save(GetOutputFile());
+    }
+
+    @Test
+    void insertImage() throws IOException {
+        var doc = new PDDocument();
+        var data = MakeCardData(750, 350);
+
+        TextBoxData textBox = new TextBoxData(10, data.getPageHeight() - 20, data.getPageWidth() - 25, 20, 'l');
+        for (var attribute : FontStyle.values()) {
+            textBox.getTextRuns().add(makeCustomTextRun(doc, 36, EnumSet.of(attribute), attribute.toString()));
+            textBox.getTextRuns().add(TextRunData.LineBreak);
+        }
+        data.getInnerElements().add(textBox);
+
+        ImageBoxData imgBox1 = new ImageBoxData(10, 0, 300, 300, new FileSystemResource("src/test/resources/testImages/hyper.jpg"));
+        data.getInnerElements().add(imgBox1);
+
+        ImageBoxData imgBox2 = new ImageBoxData(10 + imgBox1.getWInMM(), 0, 300, 300, new FileSystemResource("src/test/resources/testImages/smaller.jpg"));
+        data.getInnerElements().add(imgBox2);
+
+        generator.applyTo(doc, data);
         doc.save(GetOutputFile());
     }
 

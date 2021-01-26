@@ -105,9 +105,9 @@ const loadCard = function(card){
 
   // (lucas 24.01.21) todo: outer = mBack?
   const outerFrag = pageFrag.cloneNode(true);
-  $(pageFrag.childNodes[0]).find('.motive-layer')[0].src = mFront;
+  $(pageFrag.childNodes[0]).find('.motive-layer')[0].src  = web2print.links.motiveUrl+mBack;
   pages.$innerPages = $('#inner').append(pageFrag).children();
-  $(outerFrag.childNodes[0]).find('.motive-layer')[0].src = mBack;
+  $(outerFrag.childNodes[0]).find('.motive-layer')[0].src = web2print.links.motiveUrl+mFront;
   pages.$outerPages = $('#outer').append(outerFrag).children();
 
   //sadly the stepping needs to be done in js because the cumulative error of stacking css is noticeable
@@ -732,4 +732,17 @@ const hPageSwitch = function(direction) {
   renderStyleState.getActiveDot().addClass('active');
   $pageLabel.text(renderStyleState.getActiveLabel());
 };
+
+// tutorial
+if(Cookie.getValue('tutorial') !== 'no') {
+  const $tutOver = $('<div style="position:absolute;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.66)"><div class="center" style="max-width:70%;max-height:70%;background-color:gray;padding:5px;"><img src="./tutorial.gif" alt="" style="width:100%;height:100%;display:block;"><input type="checkbox" id="dont-show-again" style="margin:10px 2px 0 0;"><label for="dont-show-again">don\'t show again</label><button style="margin:5px 0 0 0;float: right;">Got It</button></div></div>');
+  const dontShowAgain = $tutOver.find('input')[0];
+  $tutOver.find('button').click(function(){
+    if(dontShowAgain.checked) {
+      Cookie.set('tutorial', 'no');
+    }
+    $tutOver.remove();
+  });
+  $body.append($tutOver);
+}
 

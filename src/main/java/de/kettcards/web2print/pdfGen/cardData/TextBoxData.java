@@ -1,6 +1,10 @@
 package de.kettcards.web2print.pdfGen.cardData;
 
+import de.kettcards.web2print.pdfGen.PDFGenerator;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 
 import java.io.IOException;
@@ -9,45 +13,87 @@ import java.util.List;
 
 import static de.kettcards.web2print.pdfGen.PDFGenerator.mm2pt;
 
-@Data
-public class TextBoxData {
-    private final float x, y, w, h;
+
+public class TextBoxData extends BoxData{
+    @Getter
     private final char alignment;
+    @Getter
     private final List<TextRunData> textRuns;
-    private float offX = 0, offY = 0;
 
     public TextBoxData(float x, float y, float w, float h, char alignment) {
         this(x, y, w, h, alignment, new ArrayList<>());
     }
 
+    /**
+     * x and y are top left coords from text box starting from origin which is at bottm left
+     * @param x - where Textbox is on x Axis in mm
+     * @param y - where Textbox is on Y Axis in mm
+     * @param w - width of Textbox in mm
+     * @param h - height of Textbox in mm
+     * @param alignment - alignment of Text
+     * @param textRuns - textRuns.
+     */
     public TextBoxData(float x, float y, float w, float h, char alignment, List<TextRunData> textRuns) {
-        this.x = x;
-        this.y = y;
-        offX = mm2pt(x);
-        offY = mm2pt(y);
-        this.w = w;
-        this.h = h;
+        super(x,y,w,h);
         this.alignment = alignment;
         this.textRuns = textRuns;
     }
 
-    public void applyTo(PDPageContentStream content) throws IOException {
-        switch (alignment) {
-            case 'l':
-                content.newLineAtOffset(offX, offY);
-                break;
+    @Override
+    public void applyTo(PDDocument doc, PDPageContentStream content) throws IOException {
+        content.beginText();
+        var box = this;
+        float largestFontSize = PDFGenerator.getLargestFontSize(box.getTextRuns().listIterator());
+        switch (box.getAlignment()) { //corresponding to the alignment the newLineAtOffset will be set
             case 'r':
-                content.newLineAtOffset(w, offY);
+                content.newLineAtOffset(mm2pt(box.getWInMM()), box.getYInPt() + mm2pt(box.getHInMM()) - largestFontSize); //since TextBoxData stores everything in mm, the conversion to pt must be handeled here
                 break;
             case 'c':
-                content.newLineAtOffset(w/2, offY);
+                content.newLineAtOffset(mm2pt(box.getWInMM() / 2), box.getYInPt() + mm2pt(box.getHInMM()) - largestFontSize);
                 break;
-            case 'j':
-                content.newLineAtOffset(offX, offY);
-                break;
-            default:
-                content.newLineAtOffset(offX, offY);
+            //TODO: justify case
+            case 'l': case 'j': default:
+                content.newLineAtOffset(box.getXInPt(), box.getYInPt() + mm2pt(box.getHInMM()) - largestFontSize);
                 break;
         }
+        var runsIter = box.getTextRuns().listIterator();
+        while (runsIter.hasNext()) {
+            TextRunData run = runsIter.next();
+            if (run == TextRunData.LineBreak) { //when new line it has to check the largest font size in that line to adjust the leading
+                var lineIter = box.getTextRuns().listIterator(runsIter.nextIndex());
+                largestFontSize = PDFGenerator.getLargestFontSize(lineIter);
+                if (largestFontSize > 0) {
+                    content.setLeading(largestFontSize);
+                    content.newLine();
+                    //dont need to set the font back, itll get set back with the next run
+                }
+            } else {
+                var font = run.getFont().resolve(run.getAttributes());
+                var runWidth = run.getFontSize() * font.getStringWidth(run.getText()) / 1000;
+                content.setFont(font, run.getFontSize());
+                switch (box.getAlignment()) { //corresponding to the alignment the cursor gets shiftet
+                    case 'r':
+                        content.newLineAtOffset(-runWidth, 0);
+                        content.showText(run.getText());
+                        content.newLineAtOffset(runWidth, 0);
+                        break;
+                    case 'c':
+                        content.newLineAtOffset(-(runWidth / 2), 0);
+                        content.showText(run.getText());
+                        content.newLineAtOffset((runWidth / 2), 0);
+                        break;
+                    //TODO: justify case
+                    default:
+                        content.showText(run.getText());
+                        break;
+                }
+                    /*
+                    if (run.getAttributes().contains(FontStyle.UNDERLINE)) {
+                        lineList.add(new LineData(cursorX, cursorY - 1.75f, runWidth));
+                    }
+                    */
+            }
+        }
+        content.endText();
     }
 }
