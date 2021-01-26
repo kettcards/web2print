@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
@@ -48,7 +49,9 @@ public class LayoutStorageService {
      * @param cardData base64 encoded json card data string
      */
     public void ExportCard(String cardData) throws IOException, ParseException {
-        var data = Base64.getDecoder().decode(cardData); //(lucas 18.01.21) mbe reuse the byte array
+        var asciiData = Base64.getDecoder().decode(cardData); //(lucas 18.01.21) mbe reuse the byte array
+        var data = new String(asciiData, StandardCharsets.ISO_8859_1).getBytes(StandardCharsets.UTF_8);
+
         var rootNode = jsonMapper.readValue(data, ObjectNode.class);
 
         //(lucas) could be better with the repository
