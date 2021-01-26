@@ -1,5 +1,6 @@
 html,
 body {
+  font-family: Arial, Helvetica, sans-serif;
   height: 100%;
 }
 
@@ -25,7 +26,7 @@ body {
 #right-container {
   width: 20%;
   max-width: 300px;
-  background-color: gray;
+  background-color: lightgray;
   position: relative;
 }
 
@@ -55,25 +56,57 @@ body {
   width: 200px;
   max-width: 67%;
   height: 75px;
+  background-color: #003f73;
+  border: #003f73 solid thin;
+  color: white;
+  text-align: center;
+  font-size: 32px;
+  transition: 0.3s;
 }
 
 #toolbar {
+  /* using flex here removes the small spaces between the toolbar-rows */
+  display: flex;
   background-color: lightgray;
   overflow: hidden;
+  padding-top: 5px;
 }
 .toolbar-row {
-  display: inline-block;
   position: relative;
-  padding-top: 10px;
-  margin-top: 10px;
-  border: solid black 1px;
+  min-width: max-content;
 }
-.toolbar-row::before {
-  content: attr(data-name);
-  position: absolute;
-  top: -10px;
-  left: 2px;
+/* n+2 because of magic */
+.toolbar-row:nth-child(n+2) {
+  border-left: solid gray 1px;
+}
+.toolbar-label {
+  display: block;
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
   background-color: lightgray;
+}
+.toolbar-buttons {
+  display: flex;
+  justify-content: center;
+}
+#toolbar button {
+  background-color: #003f73;
+  border: #003f73 solid thin;
+  color: white;
+  padding: 8px 16px;
+  text-align: center;
+  font-size: 13px;
+  margin: 4px 2px;
+  transition: 0.3s;
+}
+#toolbar button:hover, #submitBtn:hover, #toolBox button:hover {
+  background-color: white;
+  color: #003f73;
+}
+#toolbar button:active, #submitBtn:active, #toolBox button:active {
+  background-color: #00549a;
+  color: white;
 }
 
 #page-container {
@@ -89,10 +122,10 @@ body {
   transform: translateY(-50%);
 }
 .nav-btn.left {
-  left: 0;
+  left: 30px;
 }
 .nav-btn.right {
-  right: 0;
+  right: 30px;
 }
 
 .nav-btn-inner {
@@ -117,10 +150,10 @@ body {
 .center {
   display: inline-block;
   white-space: nowrap;
-  position: absolute;  
-  left: 50%;  
+  position: absolute;
+  left: 50%;
   transform: translate(-50%, -50%);
-  top: 50%;  
+  top: 50%;
 }
 
 #perspective-anchor {
@@ -313,8 +346,9 @@ body {
   white-space: nowrap;
 }
 
-#toolbox #fontSizeSelect {
+#toolBox #fontSizeSelect {
   max-width: 50px;
+  float: right;
 }
 
 #toolBox button {
@@ -325,9 +359,18 @@ body {
   padding: 0;
   margin: 1px;
 }
-
+#toolBox button {
+  background-color: #003f73;
+  border: #003f73 solid thin;
+  color: white;
+  text-align: center;
+  font-size: 13px;
+  transition: 0.3s;
+}
 #toolBox #moveBtn {
   position: absolute;
+  background: url(Move_Anchor.png);
+  border: none;
   transform: translateX(-100%);
 }
 
