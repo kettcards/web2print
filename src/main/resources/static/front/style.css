@@ -21,6 +21,7 @@ body {
   flex-direction: column;
   flex-grow: 1;
   overflow: hidden;
+  background-color: #ffffee;
 }
 
 #right-container {
@@ -50,18 +51,13 @@ body {
 
 #submitBtn {
   position: absolute;
-  bottom: 0;
+  bottom: 30px;
   left: 50%;
   transform: translateX(-50%);
   width: 200px;
   max-width: 67%;
   height: 75px;
-  background-color: #003f73;
-  border: #003f73 solid thin;
-  color: white;
-  text-align: center;
   font-size: 32px;
-  transition: background-color 0.3s,color 0.3s;
 }
 
 #toolbar {
@@ -92,22 +88,9 @@ body {
   justify-content: center;
 }
 #toolbar button {
-  background-color: #003f73;
-  border: #003f73 solid thin;
-  color: white;
   padding: 8px 16px;
-  text-align: center;
   font-size: 13px;
   margin: 4px 2px;
-  transition: background-color 0.3s,color 0.3s;
-}
-#toolbar button:hover, #submitBtn:hover, #toolBox button:hover {
-  background-color: white;
-  color: #003f73;
-}
-#toolbar button:active, #submitBtn:active, #toolBox button:active {
-  background-color: #00549a;
-  color: white;
 }
 
 #page-container {
@@ -168,7 +151,7 @@ body {
 }
 
 .ruler {
-  background-color: #a7a7b9;
+  background-color: #d1d5d4;
   position: absolute;
   margin: 0;
   padding: 0;
@@ -178,7 +161,7 @@ body {
 .ruler::after {
   content: '';
   position: absolute;
-  background-color: #a7a7b9;
+  background-color: #d1d5d4;
 }
 .ruler.top {
   width: 100%;
@@ -286,10 +269,11 @@ body {
   position: absolute;
   margin: 0;
   transition: background-color 1s;
+  outline: none;
 }
 .text:focus,
 .text:hover {
-  background-color: lightgray;
+  background-color: rgba(200, 200, 200, 0.6);
 }
 
 .text p {
@@ -302,7 +286,6 @@ body {
   font-weight: 400;
 }
 .text .b {
-  font-weight: 600;
   font-weight: bold;
 }
 .text .i {
@@ -343,15 +326,13 @@ body {
   padding: 0;
   margin: 0;
   transform: translateY(-100%);
-  background-color: #8c8585;
+  background-color: rgba(200, 200, 200, 0.6);
   white-space: nowrap;
 }
-
 #toolBox #fontSizeSelect {
   max-width: 50px;
   float: right;
 }
-
 #toolBox button {
   position: relative;
   width:  20pt;
@@ -359,20 +340,14 @@ body {
   box-sizing: border-box;
   padding: 0;
   margin: 1px;
-}
-#toolBox button {
-  background-color: #003f73;
-  border: #003f73 solid thin;
-  color: white;
-  text-align: center;
   font-size: 13px;
-  transition: background-color 0.3s,color 0.3s;
 }
 #toolBox #moveBtn {
   position: absolute;
   background: url(Move_Anchor.png);
   border: none;
   transform: translateX(-100%);
+  outline: none ;
 }
 
 .hFold{
@@ -387,4 +362,20 @@ body {
   background-color: deeppink;
   width: 1px;
   height: 100%;
+}
+
+button {
+  background-color: #003f73;
+  border: #003f73 solid thin;
+  color: white;
+  text-align: center;
+  transition: background-color 0.3s,color 0.3s;
+}
+button:hover {
+  background-color: white;
+  color: #003f73;
+}
+button:active {
+  background-color: #007ae1;
+  color: white;
 }
