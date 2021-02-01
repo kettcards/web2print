@@ -171,8 +171,6 @@ body {
   content: 'CM';
   text-align: center;
   padding-top: 15px;
-  background-color: #a7a7b9;
-  position: absolute;
   height: 100%;
   box-sizing: border-box;
   left: -60px;
@@ -199,10 +197,14 @@ body {
   transform: translate(-50%, -21px);
 }
 .ruler.left {
-  top: -10px;
-  height: calc(100% + 20px);
+  height: calc(100% + 10px);
   left: -60px;
   width: 50px;
+}
+.ruler.left::before {
+  width: 100%;
+  top: -10px;
+  height: 10px;
 }
 .ruler.left>li {
   right: 0;
@@ -211,7 +213,6 @@ body {
 }
 .ruler.left>li:nth-child(2n+1) {
   width: 20px;
-  translate(-21px, -9px);
 }
 .ruler.left>li:nth-child(2n+1)::after {
   right: 0;
@@ -358,6 +359,18 @@ body {
   background-color: deeppink;
   width: 1px;
   height: 100%;
+}
+
+#imgTool {
+  position: absolute;
+}
+
+#fileUpload {
+  display: none;
+}
+
+.logo{
+  position: absolute;
 }
 
 button {

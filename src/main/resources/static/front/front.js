@@ -23,6 +23,7 @@ const mod = function(a, n) {return ((a % n) + n) % n;};
 Node.prototype.isA = function(n) {return this.nodeName === n;};
 
 const $toolBox       = $('#toolBox');
+const imgTool        = $('#imgTool');
 const $editorArea    = $("#editor-area");
 const $cardContainer = $('#card-container')
 const rsContainer = get('render-styles-container');
@@ -134,7 +135,19 @@ const Spawner = {
         'font-size': '16pt'
       }, p));
   },
-  IMAGE: undefined,
+  IMAGE: function(p){
+    return $("<img class='logo' src='"+web2print.links.apiUrl+"content/"+logoContentId+"' alt='"+logoContentId+"' draggable='false'>")
+        .mousedown(function(e){
+          state.target = $(e.delegateTarget);
+          state.addOnClick = undefined;
+          state.dragging = true;
+          $toolBox.css(Object.assign({
+            visibility: 'hidden',
+          }));
+        })
+        .click(imgClick)
+        .css(p);
+  },
   GEOM: undefined,
 };
 
@@ -142,6 +155,7 @@ const state = {
   addOnClick: undefined,
   target: undefined,
   dragging: false,
+  resizing: false,
   dx: 0,
   dy: 0,
 };
@@ -275,9 +289,56 @@ const hElKeyUp = function(e) {
   }
 };
 
+var logoContentId;
 $('.addElBtn').click(function(e){
-  state.addOnClick = Spawner[$(e.target).data('enum')];
+  let targetData = $(e.target).data('enum');
+  state.addOnClick = Spawner[targetData];
+  //trigger Fileupload
+  if(targetData === 'IMAGE'){
+    const fileUp = $('#fileUpload');
+    fileUp.change(function (evt){
+      //file Upload code
+      let file = evt.target.files[0];
+      console.log(file.type);
+      //send to server
+      let fd = new FormData();
+      fd.append("file", file);
+      let req = jQuery.ajax({
+        url: web2print.links.apiUrl + "content",
+        method: "POST",
+        data: fd,
+        processData: false,
+        contentType: false
+      });
+      req.then(function (response) {
+        logoContentId = JSON.parse(response).contentId;
+      }, function (xhr) {
+        console.error('failed to fetch xhr', xhr)
+      });
+
+    });
+    fileUp.click();
+  }
 });
+
+$("#resize").mousedown(function(e){
+  state.resizing = true;
+});
+
+$("#logoRotation").change(function(e){
+  state.target.css('transform', 'rotate('+ $(this).val()+'deg)');
+}).mouseup(function(e){
+  e.stopPropagation();
+})
+
+const imgClick = function(e){
+  e.stopPropagation();
+
+  const target = $(e.delegateTarget);
+  imgTool.css(Object.assign({
+    visibility: 'visible',
+  }, target.offset()));
+}
 
 //changing text alignment
 $(".alignmentBtn").click(function(){
@@ -421,28 +482,59 @@ const getSelectedNodes = function(range) {
   return [startEl, startOffs, endEl, endOffs];
 };
 
+//function to return transform rotation angle of the state.target
+const getRotation = function(){
+  let transformMatrix = state.target.css('transform');
+  let angle = 0;
+  if(transformMatrix !== "none") {
+    let mat = transformMatrix.split('(')[1].split(')')[0].split(',');
+    let a = mat[0];
+    let b = mat[1];
+    let radians = Math.atan2(b, a);
+    if (radians < 0) {
+      radians += (2 * Math.PI);
+    }
+    angle = Math.round(radians * (180 / Math.PI));
+  }
+  return angle;
+};
+
+
 //dragging
 $('#moveBtn').mousedown(function(){
   state.dragging = true;
 });
 
 let $body = $('body').mousemove(function(e){
-  if(!state.dragging)
+  if(!state.dragging && !state.resizing)
     return;
   state.dx += e.originalEvent.movementX;
   state.dy += e.originalEvent.movementY;
-  
-  state.target.css('transform', 'translate('+state.dx/EditorTransform.scale+'px, '+state.dy/EditorTransform.scale+'px)');
-  $toolBox.css('transform', 'translate('+state.dx+'px, calc(-100% + '+state.dy+'px))');
+
+  if(state.resizing){
+    state.target.css({
+      width: '+='+(e.originalEvent.movementX),
+      height: '+='+(e.originalEvent.movementY),
+    });
+  }else if(state.dragging) {
+    state.target.css('transform', 'translate('+state.dx/EditorTransform.scale+'px, '+state.dy/EditorTransform.scale+'px) rotate('+getRotation()+'deg)');
+    $toolBox.css('transform', 'translate('+state.dx+'px, calc(-100% + '+state.dy+'px))');
+    imgTool.css('transform', 'translate('+state.dx+'px, '+state.dy+'px)');
+  }
 }).mouseup(function(){
   if(state.dragging){
     if(state.dx !== 0 || state.dy !== 0){
       state.target.css({
         left: '+='+state.dx/EditorTransform.scale,
         top: '+='+state.dy/EditorTransform.scale,
-        transform: '',
+        transform: 'translate('+0+'px, '+0+'px) rotate('+getRotation()+'deg)',
       });
       $toolBox.css({
+        left: '+='+state.dx,
+        top: '+='+state.dy,
+        transform: '',
+      });
+      imgTool.css({
         left: '+='+state.dx,
         top: '+='+state.dy,
         transform: '',
@@ -451,8 +543,14 @@ let $body = $('body').mousemove(function(e){
       state.dy = 0;
     }
     state.dragging = false;
-  } else 
+  }else if(state.resizing){
+    state.resizing = false;
+    state.dx = 0;
+    state.dy = 0;
+  }else {
     $toolBox.css('visibility', 'collapse');
+    imgTool.css('visibility', 'hidden');
+  }
 });
 
 const MMPerPx = (function(){

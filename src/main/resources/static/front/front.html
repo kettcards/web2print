@@ -20,7 +20,8 @@
             <span class="toolbar-label">Add Elements</span>
             <div class="toolbar-buttons">
               <button class="addElBtn" data-enum="TEXT">Text</button>
-              <button class="addElBtn" data-enum="IMAGE" style="display: none">Image</button>
+              <button class="addElBtn" data-enum="IMAGE">Image</button>
+              <input id="fileUpload" type="file" accept=".gif,.jpg,.jpeg,.png,.svg,.eps"/>
               <button class="addElBtn" data-enum="GEOM" style="display: none">Geometry</button>
             </div>
           </div>
@@ -90,6 +91,11 @@
      --><button class="alignmentBtn" value="right">R</button>
       </div>      
     </menu>
+    </div>
+    <div id="imgTool" style="visibility: hidden;">
+      <button id="resize">Resize</button>
+      <input type="number" id="logoRotation" min="0" max="360" value="0">
+    </div>
     <script src="./front.js" type="text/javascript"></script>
   </body>
 </html>
