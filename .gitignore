@@ -116,5 +116,5 @@ gradle-app.setting
 src/main/resources/application-*Dev.properties
 /test_output/*
 /pdf_output/*
-/textures/*
-/motives/*
+/data/**
+!/data/fonts/**
