@@ -22,7 +22,12 @@ const falsify = function() {return false;};
 const mod = function(a, n) {return ((a % n) + n) % n;};
 Node.prototype.isA = function(n) {return this.nodeName === n;};
 
-const $toolBox = $('#toolBox');
+const $toolBox       = $('#toolBox');
+const $editorArea    = $("#editor-area");
+const $cardContainer = $('#card-container')
+const rsContainer = get('render-styles-container');
+const $navDotsUl  = $('#nav-dots-container>ul');
+const $pageLabel  = $('#nav-dots-container>span');
 
 const createFold = function(fold){
   if(fold.x1 === fold.x2){
@@ -41,15 +46,6 @@ const createFold = function(fold){
   }
 }
 
-const bgStretchObjs = {
-  STRETCH: {
-    'background-size': 'cover',   
-    'background-repeat': 'no-repeat ',
-    'background-position': 'center center',
-  },
-  //todo: add more tiling modes, should work just fine - the fallback is just no special background styling, page dimensions are still correct
-};
-
 const EditorTransform = {
   $transformAnchor: $('#transform-anchor'),
   scale: 1,
@@ -61,10 +57,7 @@ const EditorTransform = {
   }
 };
 
-const pages = {
-  $outerPages: undefined,
-  $innerPages: undefined
-};
+let cardData;
 // [call once]
 const loadCard = function(card){
   console.log('loading', card);
@@ -72,51 +65,18 @@ const loadCard = function(card){
   document.querySelector('#preview-container>img').src
       = web2print.links.thumbnailUrl+card.thumbSlug;
 
-  const width = card.cardFormat.width;
-  const height = card.cardFormat.height;
-  const $pageContainer = $("#page-container");
-  // 55 additional pixels for the rulers
-  EditorTransform.scale = Math.min(
-      $pageContainer.width() * MMPerPx.x / (width + 55),
-      $pageContainer.height() * MMPerPx.x / (height + 55)
-  ) * 0.9;
-  EditorTransform.apply();
+  cardData = card;
 
-  const pageFrag = get('page-template').content.cloneNode(true);
-  const $newPage = $(pageFrag.childNodes[0]);
-  $newPage.css(Object.assign({
-    width: width+'mm',
-    height: height+'mm',
-    'background-image': 'url("'+web2print.links.materialUrl+card.material.textureSlug+'")',
-  }, bgStretchObjs[card.material.tiling]));
-
-  for(let fold of card.cardFormat.folds) {
-    $newPage.find('.folds-layer').append(createFold(fold));
+  for(let i = 0; i < RenderStyles.length; i++) {
+    const renderStyle = RenderStyles[i];
+    if(!renderStyle.condition(card))
+      continue;
+    const frag = make('button.render-select');
+    $(frag).text(renderStyle.name).attr('onclick', 'hRenderStyleChanged('+i+');');
+    rsContainer.appendChild(frag);
   }
 
-  let mFront, mBack;
-  for(const motive of card.motive) {
-    switch(motive.side) {
-      case 'FRONT': mFront = motive.textureSlug; break;
-      case 'BACK':  mBack  = motive.textureSlug; break;
-      default: throw new Error("unknown motive side '"+motive.side+"'");
-    }
-  }
-
-  // (lucas 24.01.21) todo: outer = mBack?
-  const outerFrag = pageFrag.cloneNode(true);
-  $(pageFrag.childNodes[0]).find('.motive-layer')[0].src  = web2print.links.motiveUrl+mBack;
-  pages.$innerPages = $('#inner').append(pageFrag).children();
-  $(outerFrag.childNodes[0]).find('.motive-layer')[0].src = web2print.links.motiveUrl+mFront;
-  pages.$outerPages = $('#outer').append(outerFrag).children();
-
-  //sadly the stepping needs to be done in js because the cumulative error of stacking css is noticeable
-  const $topRuler  = $('.ruler.top');
-  for(let i = 0; i < width; i+=5)
-    $topRuler.append($(make('li')).css('left', i+'mm').attr('data-val', i/10));
-  const $leftRuler = $('.ruler.left');
-  for(let i = 0; i < height; i+=5)
-    $leftRuler.append($(make('li')).css('top', i+'mm').attr('data-val', i/10));
+  hRenderStyleChanged(0);
 };
 //spawning new elements
 const hElementsLayerClick = function(e, target) {
@@ -513,15 +473,20 @@ let defaultFont;
 
 //serialize data
 $('#submitBtn').click(function(){
-  let data = {
+  const data = {
     v: '0.2',
     card: Parameters.card,
     outerEls: [],
     innerEls: []
   };
 
-  serializeSide(pages.$outerPages.find('.elements-layer').children(), data.outerEls);
-  serializeSide(pages.$innerPages.find('.elements-layer').children(), data.innerEls);
+  const $bundles = $cardContainer.children();
+  for(let i = 0; i < $bundles.length; i++) {
+    const $b = $bundles.eq(i);
+    const offs = +$b[0].dataset.xOffset;
+    serializeSide($b.find('.front>.elements-layer').children(), offs, data.outerEls);
+    serializeSide($b.find('.back>.elements-layer').children() , offs, data.innerEls);
+  }
 
   console.log("sending", data);
   const _export = true;
@@ -533,13 +498,12 @@ $('#submitBtn').click(function(){
     });
 });
 
-const serializeSide = function($els, target) {
-  for(let i = 0; i < $els.length; i++) {
-    const $el  = $els.eq(i);
-    const el   = $el[0];
+const serializeSide = function($els, xOffs, target) {
+  for(let j = 0; j < $els.length; j++) {
+    const $el = $els.eq(j);
     const bounds = {
-      x: el.offsetLeft * MMPerPx.x,
-      y: ($el.parent().height() - (el.offsetTop + $el.height())) * MMPerPx.y,
+      x: xOffs + $el[0].offsetLeft * MMPerPx.x,
+      y: ($el.parent().height() - ($el[0].offsetTop + $el.height())) * MMPerPx.y,
       w: $el.width() * MMPerPx.x,
       h: $el.height() * MMPerPx.y
     };
@@ -683,39 +647,189 @@ const $fontSizeSelect = $('#fontSizeSelect')
 
 // changing pages
 $('.right>.nav-btn-inner').click(function() {
-  EditorTransform.rotate += 180;
-  EditorTransform.apply();
   hPageSwitch(+1);
 });
 $('.left>.nav-btn-inner').click(function() {
-  EditorTransform.rotate -= 180;
-  EditorTransform.apply();
   hPageSwitch(-1);
 });
 
 //changing render style
 const RenderStyles = [{
   name: 'Simple',
+  condition: function(card){ return true; },
+  BgStretchObjs: {
+    stretch: {
+      'background-size': 'cover',
+      'background-repeat': 'no-repeat ',
+      'background-position': 'center center',
+    },
+    //todo: add more tiling modes, should work just fine - the fallback is just no special background styling, page dimensions are still correct
+  },
   pageGen: function(card) {
+    const width = card.cardFormat.width;
+    const height = card.cardFormat.height;
+    // 55 additional pixels for the rulers
+    EditorTransform.scale = Math.min(
+      $editorArea.width() * MMPerPx.x / (width + 55),
+      $editorArea.height() * MMPerPx.x / (height + 55)
+    ) * 0.9;
+    EditorTransform.apply();
 
+    const $bundle = $(get('page-template').content.firstElementChild.cloneNode(true));
+    $bundle.css({
+       width:  width+'mm',
+      height: height+'mm'
+    });
+    $bundle.children().css(Object.assign({
+      'background-image': 'url("'+web2print.links.materialUrl+card.material.textureSlug+'")'
+    }, this.BgStretchObjs[card.material.tiling]));
+
+    for(let fold of card.cardFormat.folds) {
+      $bundle.find('.folds-layer').append(createFold(fold));
+    }
+
+    let mFront, mBack;
+    for(const motive of card.motive) {
+      switch(motive.side) {
+        case 'FRONT': mFront = motive.textureSlug; break;
+        case 'BACK':  mBack  = motive.textureSlug; break;
+        default: throw new Error("unknown motive side '"+motive.side+"'");
+      }
+    }
+
+    if(mBack)
+      $bundle.find('.back>.motive-layer')[0].src  = web2print.links.motiveUrl+mBack;
+    if(mFront)
+      $bundle.find('.front>.motive-layer')[0].src = web2print.links.motiveUrl+mFront;
+
+    //sadly the stepping needs to be done in js because the cumulative error of stacking css is noticeable
+    const $topRuler  = $('.ruler.top');
+    for(let i = 0; i < width; i+=5)
+      $topRuler.append($(make('li')).css('left', i+'mm').attr('data-val', i/10));
+    const $leftRuler = $('.ruler.left');
+    for(let i = 0; i < height; i+=5)
+      $leftRuler.append($(make('li')).css('top', i+'mm').attr('data-val', i/10));
+
+    return $bundle;
   },
   pageLabels: [
     'Inside',
     'Outside'
   ],
-  initialDotIndex: 0
-}];
+  initialDotIndex: 0,
+  hPageChanged: function(direction) {
+    EditorTransform.rotate += direction * 180;
+    EditorTransform.apply();
+  }
+}, {
+  name: 'simple_foldable',
+  condition: function(card){
+    const folds = card.cardFormat.folds;
+    return folds.length === 1 && folds[0].x1 === folds[0].x2;
+  },
+  BgStretchObjs: {
+    stretch: function(xOffset) { return {
+        'background-size': 'cover',
+        'background-repeat': 'no-repeat ',
+        'background-position': 'center center',
+      };
+    },
+    //todo: add more tiling modes, should work just fine - the fallback is just no special background styling, page dimensions are still correct
+  },
+  pageGen: function(card) {
+    EditorTransform.rotate = 0;
+    EditorTransform.apply();
 
-const rsBtnTmpl   = get('render-style-btn-tmpl');
-const rsContainer = get('render-styles-container');
-const $navDotsUl  = $('#nav-dots-container>ul');
-const $pageLabel  = $('#nav-dots-container>span');
-for(let i = 0; i < RenderStyles.length; i++) {
-  const renderStyle = RenderStyles[i];
-  const frag = rsBtnTmpl.content.cloneNode(true);
-  $(frag.childNodes[0]).text(renderStyle.name).data('style-index', i);
-  rsContainer.appendChild(frag);
-}
+    const cardWidth = card.cardFormat.width;
+    const w1 = card.cardFormat.folds[0].x1;
+    const w2 = cardWidth - w1;
+
+    const template = get('page-template').content.firstElementChild;
+
+    const $page1 = this.data.$page1 = $(template.cloneNode(true)).css({
+      width: w1+'mm',
+      height: card.cardFormat.height+'mm',
+      'transform-origin': 'right center',
+      transition: 'transform .5s, z-index .5s'
+    });
+    const $page2 = this.data.$page2 = $(template.cloneNode(true)).css({
+      width: w2+'mm',
+      height: card.cardFormat.height+'mm',
+      'transform-origin': 'left center',
+      transition: 'transform .5s, z-index .5s'
+    });
+    $page2[0].dataset.xOffset = w1;
+
+    $page1.add($page2).children().css(Object.assign({
+      'background-image': 'url("'+web2print.links.materialUrl+card.material.textureSlug+'")'
+    }, this.BgStretchObjs[card.material.tiling]));
+
+    let mFront, mBack;
+    for(const motive of card.motive) {
+      switch(motive.side) {
+        case 'FRONT': mFront = motive.textureSlug; break;
+        case  'BACK': mBack  = motive.textureSlug; break;
+        default: throw new Error("unknown motive side '"+motive.side+"'");
+      }
+    }
+
+    if(mFront) {
+      $page1.find('.front>.motive-layer').css({ left:           0, width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mFront;
+      $page2.find('.front>.motive-layer').css({ left: '-'+w1+'mm', width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mFront;
+    }
+
+    if(mBack) {
+      $page1.find('.back>.motive-layer').css({ left:           0, width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mBack;
+      $page2.find('.back>.motive-layer').css({ left: '-'+w1+'mm', width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mBack;
+    }
+
+    this.data.p1r = 0;
+    this.data.p2r = 0;
+    this.data.state = 1;
+
+    return $(document.createDocumentFragment()).append($page1, $page2);
+  },
+  pageLabels: [
+    'Back',
+    'Inside',
+    'Front'
+  ],
+  initialDotIndex: 1,
+  hPageChanged: function(direction) {
+    this.data.state = mod(this.data.state + direction, 3);
+
+    let p1z = 0, p2z = 0;
+
+    if(direction === 1) {
+      switch(this.data.state) {
+        case 0: this.data.p1r += 180; this.data.p2r += 180; p2z = 1; break;
+        case 1:                       this.data.p2r += 180;          break;
+        case 2: this.data.p1r += 180;                       p1z = 1; break;
+      }
+    } else if(direction === -1) {
+      switch(this.data.state) {
+        case 0:                        this.data.p2r += -180; p2z = 1; break;
+        case 1: this.data.p1r += -180;                                 break;
+        case 2: this.data.p1r += -180; this.data.p2r += -180; p1z = 1; break;
+      }
+    }
+    this.data.$page1.css({
+      transform: 'rotateY('+this.data.p1r+'deg)',
+      'z-index': p1z
+    });
+    this.data.$page2.css({
+      transform: 'rotateY('+this.data.p2r+'deg)',
+      'z-index': p2z
+    });
+  },
+  data: {
+    state: 1,
+    $page1: undefined,
+    $page2: undefined,
+    p1r: 0,
+    p2r: 0
+  }
+}];
 
 const renderStyleState = {
   style:           undefined,
@@ -745,10 +859,14 @@ const hRenderStyleChanged = function(index) {
     renderStyleState.dots[i] = $el;
     $navDotsUl.append($el);
   }
+
+  range.selectNodeContents($cardContainer[0]);
+  range.deleteContents();
+  $cardContainer.append(renderStyleState.style.pageGen(cardData));
 };
-hRenderStyleChanged(0);
 
 const hPageSwitch = function(direction) {
+  renderStyleState.style.hPageChanged(direction);
   renderStyleState.getActiveDot().removeClass('active');
   renderStyleState.currentDotIndex = mod(renderStyleState.currentDotIndex + direction, renderStyleState.dots.length);
   renderStyleState.getActiveDot().addClass('active');

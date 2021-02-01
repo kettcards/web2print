@@ -28,20 +28,26 @@
             <button onclick="debugger;"> test </button>
           </div>
         </div>
-        <div id="page-container">
-          <template id="page-template"><div class="page">
-              <img class="motive-layer" alt="">
-              <div class="elements-layer" onclick="hElementsLayerClick(event, this);"></div>
-              <div class="folds-layer"></div>
-            </div></template>
-          <div class="center">
-            <div id="perspective-anchor">
-              <div id="transform-anchor">
-                <ul class="ruler top"></ul>
-                <ul class="ruler left"></ul>
-                <div id="inner"></div>
-                <div id="outer"></div>
+        <div id="editor-area">
+          <template id="page-template">
+            <div class="page-bundle" data-x-offset="0">
+              <div class="page front">
+                <img class="motive-layer" alt="">
+                <div class="elements-layer" onclick="hElementsLayerClick(event, this);"></div>
+                <div class="folds-layer"></div>
               </div>
+              <div class="page back">
+                <img class="motive-layer" alt="">
+                <div class="elements-layer" onclick="hElementsLayerClick(event, this);"></div>
+                <div class="folds-layer"></div>
+              </div>
+            </div>
+          </template>
+          <div class="center">
+            <div id="transform-anchor">
+              <ul class="ruler top"></ul>
+              <ul class="ruler left"></ul>
+              <div id="card-container"></div>
             </div>
           </div>
           <div class="nav-btn left">
@@ -60,8 +66,8 @@
         <div id="preview-container">
           <img alt="A preview Render of the printed Card" />
         </div>
-        <div id="render-styles-container" style="display: none">
-          <template id="render-style-btn-tmpl"><button class="render-select" onclick="hRenderStyleChanged(+this.dataset['style-index']);"></button></template>
+        <div id="render-styles-container">
+          <template id="render-style-btn-tmpl"></template>
         </div>
         <button id="submitBtn">Submit</button>
       </div>
