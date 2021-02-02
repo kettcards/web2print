@@ -3,19 +3,19 @@
   "faces": [
     {
       "fontStyle": "NORMAL",
-      "source": "static/Ebgaramond-Regular.ttf"
+      "source": "static/EBGaramond-Regular.ttf"
     },
     {
       "fontStyle": "BOLD",
-      "source": "static/Ebgaramond-Bold.ttf"
+      "source": "static/EBGaramond-Bold.ttf"
     },
     {
       "fontStyle": "ITALIC",
-      "source": "static/Ebgaramond-Italic.ttf"
+      "source": "static/EBGaramond-Italic.ttf"
     },
     {
       "fontStyle": "BOLD,ITALIC",
-      "source": "static/Ebgaramond-boldItalic.ttf",
+      "source": "static/EBGaramond-BoldItalic.ttf",
       "fontWeight": 700
     }
   ]
