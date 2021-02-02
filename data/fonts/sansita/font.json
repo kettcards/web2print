@@ -1,11 +1,22 @@
 {
-  "name" : "Sansita",
-  "faces" : [
+  "packageName": "Sansita",
+  "faces": [
     {
-      "v" : 0,
-      "fs" : "normal",
-      "fw" : 500,
-      "s" : "sansita/Sansita-Regular.ttf"
+      "fontStyle": "NORMAL",
+      "source": "Sansita-Regular.ttf"
+    },
+    {
+      "fontStyle": "BOLD",
+      "source": "Sansita-Bold.ttf"
+    },
+    {
+      "fontStyle": "ITALIC",
+      "source": "Sansita-Italic.ttf"
+    },
+    {
+      "fontStyle": "BOLD,ITALIC",
+      "source": "Sansita-BoldItalic.ttf",
+      "fontWeight": 700
     }
   ]
 }

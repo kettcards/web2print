@@ -1,11 +1,13 @@
 {
-  "name" : "Tangerine",
-  "faces" : [
+  "packageName": "Tangerine",
+  "faces": [
     {
-      "v" : 0,
-      "fs" : "normal",
-      "fw" : 500,
-      "s" : "tangerine/Tangerine-Regular.ttf"
+      "fontStyle": "NORMAL",
+      "source": "Tangerine-Regular.ttf"
+    },
+    {
+      "fontStyle": "BOLD",
+      "source": "Tangerine-Bold.ttf"
     }
   ]
 }

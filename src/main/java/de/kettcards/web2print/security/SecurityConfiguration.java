@@ -84,6 +84,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     /**
      * https://docs.spring.io/spring-security/site/docs/5.4.2/reference/html5/#servlet-authentication-jdbc-bean
+     *
      * @return the active user detail service
      */
     @Bean
@@ -100,6 +101,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     /**
      * https://docs.spring.io/spring-security/site/docs/5.4.2/reference/html5/#servlet-authentication-password-storage
+     *
      * @return the active password encoder
      */
     @Bean

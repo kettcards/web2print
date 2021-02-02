@@ -24,6 +24,6 @@ public interface VirtualId {
             }
         }
         return false;
-    };
+    }
 
 }

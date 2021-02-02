@@ -1,11 +1,13 @@
 {
-  "name" : "YanoneKaffeesatz",
-  "faces" : [
+  "packageName": "YanoneKaffeesatz",
+  "faces": [
     {
-      "v" : 0,
-      "fs" : "normal",
-      "fw" : 500,
-      "s" : "yanonekaffeesatz/static/YanoneKaffeesatz-Regular.ttf"
+      "fontStyle": "NORMAL",
+      "source": "static/YanoneKaffeesatz-Regular.ttf"
+    },
+    {
+      "fontStyle": "BOLD",
+      "source": "static/YanoneKaffeesatz-Bold.ttf"
     }
   ]
 }

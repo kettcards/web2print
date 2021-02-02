@@ -45,7 +45,7 @@ public class CardFormatSheetRow implements VirtualId {
 
     @Override
     public int getVirtualHash() {
-        return Objects.hash(height, width,foldType);
+        return Objects.hash(height, width, foldType);
     }
 
     public CardFormat toCardFormat() throws IllegalArgumentException {
@@ -86,7 +86,7 @@ public class CardFormatSheetRow implements VirtualId {
                 break;
             default:
                 return null;
-                //throw new IllegalArgumentException("unknown fold type: " + foldType);
+            //throw new IllegalArgumentException("unknown fold type: " + foldType);
         }
         return fold;
     }

@@ -1,11 +1,22 @@
 {
-  "name" : "Roboto",
-  "faces" : [
+  "packageName": "Roboto",
+  "faces": [
     {
-      "v" : 0,
-      "fs" : "normal",
-      "fw" : 500,
-      "s" : "roboto/static/Roboto-Regular.ttf"
+      "fontStyle": "NORMAL",
+      "source": "static/Roboto-Regular.ttf"
+    },
+    {
+      "fontStyle": "BOLD",
+      "source": "static/Roboto-Bold.ttf"
+    },
+    {
+      "fontStyle": "ITALIC",
+      "source": "static/Roboto-Italic.ttf"
+    },
+    {
+      "fontStyle": "BOLD,ITALIC",
+      "source": "static/Roboto-BoldItalic.ttf",
+      "fontWeight": 700
     }
   ]
 }

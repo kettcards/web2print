@@ -26,8 +26,28 @@ build:
 
 test:
   stage: test
-  script: gradle check
+  script: gradle test
   allow_failure: true
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - build
+      - .gradle
+
+checkstyle:
+  stage: test
+  script: gradle checkstyleMain
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - build
+      - .gradle
+
+javadoc:
+  stage: test
+  script: gradle javadoc
   cache:
     key: "$CI_COMMIT_REF_NAME"
     policy: pull

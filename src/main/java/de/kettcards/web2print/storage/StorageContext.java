@@ -33,4 +33,12 @@ public interface StorageContext {
         return new LinkedList<>();
     }
     */
+
+    /**
+     * @return whether the storage implementation should keep the file extension
+     */
+    default boolean keepExtension() {
+        return false;
+    }
+
 }

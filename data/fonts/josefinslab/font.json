@@ -1,11 +1,22 @@
 {
-  "name" : "JosefinSlab",
-  "faces" : [
+  "packageName": "JosefinSlab",
+  "faces": [
     {
-      "v" : 0,
-      "fs" : "normal",
-      "fw" : 500,
-      "s" : "josefinslab/static/JosefinSlab-Regular.ttf"
+      "fontStyle": "NORMAL",
+      "source": "static/JosefinSlab-Regular.ttf"
+    },
+    {
+      "fontStyle": "BOLD",
+      "source": "static/JosefinSlab-Bold.ttf"
+    },
+    {
+      "fontStyle": "ITALIC",
+      "source": "static/JosefinSlab-Italic.ttf"
+    },
+    {
+      "fontStyle": "BOLD,ITALIC",
+      "source": "static/JosefinSlab-BoldItalic.ttf",
+      "fontWeight": 700
     }
   ]
 }

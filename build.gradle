@@ -1,6 +1,9 @@
 plugins {
 	id 'org.springframework.boot' version '2.4.1'
 	id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+	id 'org.asciidoctor.convert' version '1.5.8'
+	id 'checkstyle'
+	id 'jacoco'
 	id 'java'
 }
 
@@ -29,39 +32,84 @@ repositories {
 	}
 }
 
+ext {
+	set('snippetsDir', file("build/generated-snippets"))
+	set('testcontainersVersion', "1.15.1")
+}
+
 dependencies {
+	//compiler
+	annotationProcessor 'org.projectlombok:lombok'
+
+	//spring
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	compileOnly 'org.projectlombok:lombok'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	developmentOnly 'org.springframework.boot:spring-boot-starter-actuator'
-	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-	runtimeOnly group: 'com.h2database', name: 'h2', version: '1.4.200'
 
-	runtimeOnly group: 'org.webjars.bower', name: 'jquery', version: '3.5.1'
 
+	//db
+	runtimeOnly 'org.hsqldb:hsqldb'
+	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+
+
+	//jwt
+	implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.2'
+
+	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.2'
+	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.2'
+
+
+	//pdf generator
 	implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.22'
-	implementation group: 'org.json', name: 'json', version: '20201115'
 
+
+	//table import
 	implementation group: 'org.apache.poi', name: 'poi', version: '4.1.2'
 	implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
 
-	implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-csv', version: '2.11.3'
+
+	//webjars
+	runtimeOnly group: 'org.webjars.bower', name: 'jquery', version: '3.5.1'
 
 
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.2'
-	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.2'
-	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.2'
+	//dev
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	developmentOnly 'org.springframework.boot:spring-boot-starter-actuator'
+
+
+	//test
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '3.141.59'
+	testImplementation group: 'org.seleniumhq.selenium', name: 'selenium-firefox-driver', version: '3.141.59'
+	testImplementation group: 'org.apache.pdfbox', name: 'preflight', version: '2.0.22'
+	testImplementation 'com.github.romankh3:image-comparison:4.3.0'
 
 }
 
 test {
 	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+asciidoctor {
+	inputs.dir snippetsDir
+	dependsOn test
+}
+
+jacocoTestReport {
+	dependsOn test // tests are required to run before generating the report
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.testcontainers:testcontainers-bom:${testcontainersVersion}"
+	}
 }
 
 

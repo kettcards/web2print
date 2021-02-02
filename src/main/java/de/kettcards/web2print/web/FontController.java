@@ -1,6 +1,7 @@
 package de.kettcards.web2print.web;
 
 import de.kettcards.web2print.model.fonts.Font;
+import de.kettcards.web2print.model.fonts.FontPackage;
 import de.kettcards.web2print.service.FontService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -26,7 +27,6 @@ public class FontController {
     }
 
     /**
-     *
      * @return the names of available fonts
      */
     @GetMapping({"/font", "/fonts"})
@@ -35,8 +35,8 @@ public class FontController {
     }
 
     @GetMapping("/font/{fontName}")
-    public Font.Provider getFonts(@PathVariable("fontName") String fontId) {
-        return fontService.getProvider(fontId);
+    public FontPackage getFonts(@PathVariable("fontName") String fontId) {
+        return fontService.getFont(fontId);
     }
 
     @GetMapping("/font/{fontId}/source")

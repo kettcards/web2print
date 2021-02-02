@@ -28,7 +28,6 @@ public enum Roles {
     }
 
     /**
-     *
      * @return the granted authorities for each role
      */
     public Set<GrantedAuthority> getRoleAuthorities() {
@@ -37,13 +36,14 @@ public enum Roles {
 
     /**
      * utility method to define authorities for each role
+     *
      * @param authorities granted authorities
      * @return an unmodifiable set of granted authorities
      */
     private static Set<GrantedAuthority> setAuthorities(Authorities... authorities) {
-         return Arrays.stream(authorities).map(authority ->
-                 new SimpleGrantedAuthority(authority.getAuthority()))
-                 .collect(Collectors.toUnmodifiableSet());
+        return Arrays.stream(authorities).map(authority ->
+                new SimpleGrantedAuthority(authority.getAuthority()))
+                .collect(Collectors.toUnmodifiableSet());
     }
 
 }

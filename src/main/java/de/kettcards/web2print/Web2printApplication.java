@@ -10,8 +10,8 @@ import org.springframework.context.annotation.Configuration;
 @SpringBootApplication
 public class Web2printApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(Web2printApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(Web2printApplication.class, args);
+    }
 
 }

@@ -25,7 +25,7 @@ public class ContentController extends StorageContextAware {
         Content load = load(contentId); //TODO add custom bean pre/post processor for content class
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(load.getContentMediaType());
-        return new ResponseEntity<>(load.getResource(), httpHeaders, HttpStatus.OK);
+        return new ResponseEntity<>(load, httpHeaders, HttpStatus.OK);
     }
 
     @PostMapping
@@ -40,4 +40,8 @@ public class ContentController extends StorageContextAware {
         return "userContent";
     }
 
+    @Override
+    public boolean keepExtension() {
+        return true;
+    }
 }

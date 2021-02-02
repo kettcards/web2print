@@ -1,6 +1,5 @@
 package de.kettcards.web2print.storage;
 
-import lombok.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,18 +19,17 @@ import java.util.List;
  *
  * @author dt
  */
-@Value
-public class Content implements Resource {
+public final class Content implements Resource {
 
-    private static final MediaType defaultMediaType = MediaType.APPLICATION_OCTET_STREAM;
+    private static final MediaType DEFAULT_MEDIA_TYPE = MediaType.APPLICATION_OCTET_STREAM;
 
-    protected Resource resource;
+    private final Resource resource;
 
-    protected String contentType;
+    private final String contentType;
 
-    protected String originalFilename;
+    private final String originalFilename;
 
-    protected List<StorageConstraint> constraints;
+    private final List<StorageConstraint> constraints;
 
     public Content(Content content, Resource resource) {
         this(resource, content.getContentType(), content.getOriginalFilename(), content.getConstraints());
@@ -163,8 +161,20 @@ public class Content implements Resource {
 
     public MediaType getContentMediaType() {
         if (getContentType() == null || getContentType().isBlank())
-            return defaultMediaType;
+            return DEFAULT_MEDIA_TYPE;
         return MediaType.parseMediaType(getContentType());
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public String getOriginalFilename() {
+        return originalFilename;
+    }
+
+    public List<StorageConstraint> getConstraints() {
+        return Collections.unmodifiableList(constraints);
     }
 
 }

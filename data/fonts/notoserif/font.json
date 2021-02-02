@@ -1,11 +1,22 @@
 {
-  "name" : "NotoSerif",
-  "faces" : [
+  "packageName": "NotoSerif",
+  "faces": [
     {
-      "v" : 0,
-      "fs" : "normal",
-      "fw" : 500,
-      "s" : "notoserif/NotoSerif-Regular.ttf"
+      "fontStyle": "NORMAL",
+      "source": "NotoSerif-Regular.ttf"
+    },
+    {
+      "fontStyle": "BOLD",
+      "source": "NotoSerif-Bold.ttf"
+    },
+    {
+      "fontStyle": "ITALIC",
+      "source": "NotoSerif-Italic.ttf"
+    },
+    {
+      "fontStyle": "BOLD,ITALIC",
+      "source": "NotoSerif-BoldItalic.ttf",
+      "fontWeight": 700
     }
   ]
 }
