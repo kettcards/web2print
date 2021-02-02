@@ -1,0 +1,34 @@
+package de.kettcards.web2print.serialize;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import de.kettcards.web2print.model.fonts.FontPackage;
+import de.kettcards.web2print.model.fonts.FontStyle;
+import org.springframework.boot.jackson.JsonComponent;
+
+import java.io.IOException;
+
+@JsonComponent
+public class FontPackageSerializer extends JsonSerializer<FontPackage> {
+
+    @Override
+    public void serialize(FontPackage value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+        gen.writeStartObject();
+
+        gen.writeStringField("name", value.getName());
+        gen.writeArrayFieldStart("faces");
+        for (var face : value.getFontFaces()) {
+            gen.writeStartObject();
+            gen.writeNumberField("v", FontStyle.getValues(face.getFontStyle()));
+            gen.writeStringField("fs", "normal"); //TODO do we even need this since "v" already describes the style?
+            gen.writeNumberField("fw", face.getFontWeight());
+            gen.writeStringField("s", value.getName().toLowerCase() + "/" + face.getSource()); //TODO same problem as in font service .load()
+            gen.writeEndObject();
+        }
+        gen.writeEndArray();
+
+        gen.writeEndObject();
+    }
+
+}

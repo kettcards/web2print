@@ -1,11 +1,22 @@
 {
-  "name" : "EBGaramond",
-  "faces" : [
+  "packageName": "Ebgaramond",
+  "faces": [
     {
-      "v" : 0,
-      "fs" : "normal",
-      "fw" : 500,
-      "s" : "ebgaramond/static/EBGaramond-Regular.ttf"
+      "fontStyle": "NORMAL",
+      "source": "static/Ebgaramond-Regular.ttf"
+    },
+    {
+      "fontStyle": "BOLD",
+      "source": "static/Ebgaramond-Bold.ttf"
+    },
+    {
+      "fontStyle": "ITALIC",
+      "source": "static/Ebgaramond-Italic.ttf"
+    },
+    {
+      "fontStyle": "BOLD,ITALIC",
+      "source": "static/Ebgaramond-boldItalic.ttf",
+      "fontWeight": 700
     }
   ]
 }

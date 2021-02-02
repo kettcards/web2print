@@ -30,7 +30,7 @@ public class ImportService {
      * determines the import service for given content
      *
      * @return resource name
-     * @throws IOException
+     * @throws IOException if import was unsuccessful
      */
     public String importContent(Content content) throws IOException {
         String response = "200"; //TODO response code should be int

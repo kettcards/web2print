@@ -25,6 +25,7 @@ public abstract class StoragePool {
      * register contexts with {@link StoragePool#registerStorageContext(StorageContext)}
      *
      * @param storageContext
+     * @throws IOException if one context is not unable to be initialized
      */
     @Autowired
     public final void registerStorageContext(List<StorageContext> storageContext) throws IOException {
@@ -35,6 +36,7 @@ public abstract class StoragePool {
 
     /**
      * @param storageContext new namespace to register
+     * @throws IOException if registration is not possible
      */
     //if a new context will be created after startup it must be registered manually
     public void registerStorageContext(StorageContext storageContext) throws IOException {
@@ -57,7 +59,7 @@ public abstract class StoragePool {
     /**
      * initiate graceful shutdown
      *
-     * @throws IOException
+     * @throws IOException if destruction is not possible
      */
     @PostConstruct
     public final void destroy() throws IOException {
@@ -109,6 +111,18 @@ public abstract class StoragePool {
      */
     public String save(StorageContext storageContext, Content content) throws IOException {
         String contentName = UUID.randomUUID().toString();
+        if (storageContext.keepExtension()) {
+            //try splitting
+            var extension = "";
+            var originalFilename = content.getOriginalFilename();
+            if (originalFilename != null) {
+                var dot = originalFilename.lastIndexOf('.');
+                if (dot > 0) {
+                    extension = originalFilename.substring(dot);
+                }
+            }
+            contentName += extension;
+        }
         save(storageContext, content, contentName);
         return contentName;
     }

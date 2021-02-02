@@ -1,11 +1,21 @@
 {
-  "name" : "PlayfairDisplay",
-  "faces" : [
+  "packageName": "PlayfairDisplay",
+  "faces": [
     {
-      "v" : 0,
-      "fs" : "normal",
-      "fw" : 500,
-      "s" : "playfairdisplay/static/PlayfairDisplay-Regular.ttf"
+      "fontStyle": "NORMAL",
+      "source": "static/PlayfairDisplay-Regular.ttf"
+    },
+    {
+      "fontStyle": "BOLD",
+      "source": "static/PlayfairDisplay-Bold.ttf"
+    },
+    {
+      "fontStyle": "ITALIC",
+      "source": "static/PlayfairDisplay-Italic.ttf"
+    },
+    {
+      "fontStyle": "BOLD",
+      "source": "static/PlayfairDisplay-BoldItalic.ttf"
     }
   ]
 }

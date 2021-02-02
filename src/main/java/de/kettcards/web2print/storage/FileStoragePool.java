@@ -12,7 +12,7 @@ import java.util.*;
  * file based {@link Content} storage implementation,
  * if the storage configuration doesn't specify another storage location for a namespace
  * a directory with the same name as the namespace will be created,
- * non-defined namespaces are created under {@link FileStoragePoolConfiguration#getBasePath()},
+ * non-defined namespaces are created with the same name
  * by default the base directory is ".pool_data" inside the current working directory
  *
  * @author dt
@@ -62,6 +62,7 @@ public class FileStoragePool extends StoragePool {
     /**
      * @param storageContext current context
      * @return list of content for the entire context
+     * @throws IOException if content can't be listed
      */
     public List<Content> listContent(StorageContext storageContext) throws IOException {
         Path contentPath = determineContextDirectory(storageContext);

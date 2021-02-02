@@ -20,7 +20,7 @@ public class CardController {
 
     @GetMapping({"/card", "/cards"})
     public ResponseEntity<Page<CardOverview>> getCardOverview(@RequestParam(required = false) Integer page,
-                                                             @RequestParam(required = false) Integer size) {
+                                                              @RequestParam(required = false) Integer size) {
         return ResponseEntity.ok(cardService.listCardOverview(page, size));
     }
 

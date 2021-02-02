@@ -1,11 +1,13 @@
 {
-  "name" : "Cinzel",
-  "faces" : [
+  "packageName": "Cinzel",
+  "faces": [
     {
-      "v" : 0,
-      "fs" : "normal",
-      "fw" : 500,
-      "s" : "cinzel/static/Cinzel-Regular.ttf"
+      "fontStyle": "NORMAL",
+      "source": "static/Cinzel-Regular.ttf"
+    },
+    {
+      "fontStyle": "BOLD",
+      "source": "static/Cinzel-Bold.ttf"
     }
   ]
 }

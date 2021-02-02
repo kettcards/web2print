@@ -1,0 +1,203 @@
+{
+  "v": "0.2",
+  "card": "grgrwo034gruen",
+  "outerEls": [],
+  "innerEls": [
+    {
+      "t": "t",
+      "a": "l",
+      "r": [
+        {
+          "f": "JosefinSlab",
+          "s": 16,
+          "a": 0,
+          "t": ""
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 16,
+          "a": 0,
+          "t": "This is a "
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 16,
+          "a": 2,
+          "t": ""
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 16,
+          "a": 3,
+          "t": "Text"
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 16,
+          "a": 2,
+          "t": ""
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 16,
+          "a": 0,
+          "t": ""
+        },
+        "br",
+        {
+          "f": "JosefinSlab",
+          "s": 16,
+          "a": 0,
+          "t": "with some GREAT proportions"
+        },
+        "br",
+        {
+          "f": "JosefinSlab",
+          "s": 14,
+          "a": 0,
+          "t": "that is some "
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 14,
+          "a": 2,
+          "t": "weird"
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 14,
+          "a": 0,
+          "t": " "
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 14,
+          "a": 1,
+          "t": "behavior"
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 14,
+          "a": 0,
+          "t": ""
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 14,
+          "a": 0,
+          "t": ""
+        },
+        "br",
+        {
+          "f": "JosefinSlab",
+          "s": 16,
+          "a": 0,
+          "t": ""
+        },
+        "br"
+      ],
+      "x": 100,
+      "y": 100,
+      "w": 0,
+      "h": 0
+    },
+    {
+      "t": "t",
+      "a": "l",
+      "r": [
+        {
+          "f": "JosefinSlab",
+          "s": 16,
+          "a": 0,
+          "t": ""
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 16,
+          "a": 0,
+          "t": "This is a "
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 16,
+          "a": 2,
+          "t": ""
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 16,
+          "a": 3,
+          "t": "Text"
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 16,
+          "a": 2,
+          "t": ""
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 16,
+          "a": 0,
+          "t": ""
+        },
+        "br",
+        {
+          "f": "JosefinSlab",
+          "s": 16,
+          "a": 0,
+          "t": "with some GREAT proportions"
+        },
+        "br",
+        {
+          "f": "JosefinSlab",
+          "s": 14,
+          "a": 0,
+          "t": "that is some "
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 14,
+          "a": 2,
+          "t": "weislkdskdlsdrd"
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 14,
+          "a": 0,
+          "t": " "
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 14,
+          "a": 1,
+          "t": "behavior"
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 14,
+          "a": 0,
+          "t": ""
+        },
+        {
+          "f": "JosefinSlab",
+          "s": 14,
+          "a": 0,
+          "t": ""
+        },
+        "br",
+        {
+          "f": "JosefinSlab",
+          "s": 16,
+          "a": 0,
+          "t": ""
+        },
+        "br"
+      ],
+      "x": 100,
+      "y": 100,
+      "w": 0,
+      "h": 0
+    }
+  ]
+}

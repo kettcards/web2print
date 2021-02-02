@@ -1,11 +1,9 @@
 {
-  "name" : "KaushanScript",
-  "faces" : [
+  "packageName": "Kaushanscript",
+  "faces": [
     {
-      "v" : 0,
-      "fs" : "normal",
-      "fw" : 500,
-      "s" : "kaushanscript/KaushanScript-Regular.ttf"
+      "fontStyle": "NORMAL",
+      "source": "Kaushanscript-Regular.ttf"
     }
   ]
 }

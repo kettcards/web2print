@@ -1,11 +1,13 @@
 {
-  "name" : "DancingScript",
-  "faces" : [
+  "packageName": "DancingScript",
+  "faces": [
     {
-      "v" : 0,
-      "fs" : "normal",
-      "fw" : 500,
-      "s" : "dancingscript/static/DancingScript-Regular.ttf"
+      "fontStyle": "NORMAL",
+      "source": "static/DancingScript-Regular.ttf"
+    },
+    {
+      "fontStyle": "BOLD",
+      "source": "static/DancingScript-Bold.ttf"
     }
   ]
 }

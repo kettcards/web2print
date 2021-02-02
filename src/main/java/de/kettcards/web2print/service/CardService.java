@@ -2,6 +2,7 @@ package de.kettcards.web2print.service;
 
 import de.kettcards.web2print.config.ApplicationConfiguration;
 import de.kettcards.web2print.model.db.Card;
+import de.kettcards.web2print.model.db.CardFormat;
 import de.kettcards.web2print.model.projectons.CardOverview;
 import de.kettcards.web2print.repository.CardRepository;
 import org.springframework.data.domain.Page;
@@ -24,6 +25,13 @@ public class CardService {
 
     public Card findCard(@NonNull String orderId) {
         return cardRepository.findCardByOrderId(orderId);
+    }
+
+    public CardFormat findCardFormat(@NonNull String orderId) {
+        var card = cardRepository.findCardByOrderId(orderId);
+        if (card == null)
+            return null;
+        return card.getCardFormat();
     }
 
     public Page<CardOverview> listCardOverview(@Nullable Integer page,
