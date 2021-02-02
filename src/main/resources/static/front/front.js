@@ -648,11 +648,15 @@ const serializeSide = function($els, xOffs, target) {
         }
         target.push(box);
       } break;
-      /* (lucas 02.01.20) deferred todo: add handling for images here
-      case 'IMG':{
 
+      case 'IMG':{
+        let box = Object.assign({
+          t: "i",
+          s: $el[0].alt,
+        }, bounds);
+        target.push(box);
       } break;
-      */
+
       default: console.warn('cannot serialize element', $el[0]);
     }
   }
