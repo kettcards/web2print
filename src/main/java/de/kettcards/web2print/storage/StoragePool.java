@@ -143,6 +143,24 @@ public abstract class StoragePool {
      */
     public abstract Content load(StorageContext storageContext, String contentName) throws IOException;
 
+
+    /**
+     * @param storageContext current context
+     * @return lists all valid paths inside the current storage context
+     * @throws IOException if listing was unsuccessful
+     */
+    public List<String> list(StorageContext storageContext) throws IOException {
+        return list(storageContext, "/");
+    }
+
+
+    /**
+     * @param storageContext current context
+     * @return lists all valid paths inside the current path
+     * @throws IOException if listing was unsuccessful
+     */
+    public abstract List<String> list(StorageContext storageContext, String path) throws IOException;
+
     /**
      * deletes content form context by identifier,
      * when the requested content doesn't exists, the method returns 'true' without throwing an exception

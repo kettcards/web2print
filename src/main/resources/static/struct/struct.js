@@ -163,27 +163,55 @@ function renewRatios() {
     });
 }
 
+const $pdfContainer = $('#pdf-container');
+const updatePdfList = function() {
+    $pdfContainer.html('');
+    $.get(web2print.links.apiUrl+'pdfs').then(function(pdfs) {
+        for(const pdf of pdfs) {
+            $pdfContainer.append('<div class="pdf-entry" onclick="downloadPdf(\'' + pdf + '\');">' + pdf + '</div>');
+        }
+    }).catch(function(e) {
+        console.error(e);
+        alert(JSON.stringify(e));
+    });
+};
+
+const downloadPdf = function(name) {
+    window.open(web2print.links.apiUrl+'pdfs/'+name, '_blank');
+};
+
 $(window).bind("hashchange", function () { //TODO onload hashchange is not working
     let Import = document.getElementById("Import");
     let Seitenformat = document.getElementById("Seitenformat");
     let Motive = document.getElementById("Motive");
+    let Export = document.getElementById("Export");
     console.log(location.hash);
     switch (location.hash) {
         case "#import":
             Import.style.display = "inline";
             Seitenformat.style.display = "none";
             Motive.style.display = "none";
+            Export.style.display = "none";
             break;
         case "#ov-format":
             Import.style.display = "none";
             Seitenformat.style.display = "inline";
             Motive.style.display = "none";
+            Export.style.display = "none";
             renewRatios();
             break;
         case "#ov-motive":
             Import.style.display = "none";
             Seitenformat.style.display = "none";
             Motive.style.display = "inline";
+            Export.style.display = "none";
+            break;
+        case "#export":
+            Import.style.display = "none";
+            Seitenformat.style.display = "none";
+            Motive.style.display = "none";
+            Export.style.display = "inline";
+            updatePdfList();
             break;
     }
 });
