@@ -3,6 +3,7 @@ package de.kettcards.web2print.storage;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * context aware wrapper implementation for {@link StorageContext}
@@ -58,6 +59,17 @@ public abstract class StorageContextAware implements StorageContext {
     public Content load(String contentName) throws IOException {
         validatePool();
         return storagePool.load(this, contentName);
+    }
+
+
+    /**
+     * @param storageContext current context
+     * @return lists all valid paths inside the current storage context
+     * @throws IOException if listing was unsuccessful
+     */
+    public List<String> list() throws IOException {
+        validatePool();
+        return storagePool.list(this, "");
     }
 
     /**

@@ -139,6 +139,22 @@ public class FileStoragePool extends StoragePool {
         return content;
     }
 
+    @Override
+    public List<String> list(StorageContext storageContext, String path) throws IOException {
+        Path contextDirectory = determineContextDirectory(storageContext);
+        var resolve = contextDirectory.resolve(path);
+        var ret = new LinkedList<String>();
+        Files.walkFileTree(resolve, new SimpleFileVisitor<>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                ret.add(contextDirectory.relativize(file).toString().replaceAll("\\\\", "/"));
+                return super.visitFile(file, attrs);
+            }
+        });
+
+        return ret;
+    }
+
     /**
      * delete file
      * {@inheritDoc}
