@@ -1,8 +1,10 @@
 package de.kettcards.web2print.service;
 
 import de.kettcards.web2print.model.db.Card;
+import de.kettcards.web2print.model.db.CardFormat;
 import de.kettcards.web2print.model.db.Motive;
 import de.kettcards.web2print.model.db.rel.MotiveMap;
+import de.kettcards.web2print.repository.CardFormatRepository;
 import de.kettcards.web2print.repository.CardRepository;
 import de.kettcards.web2print.repository.MotiveMapRepository;
 import de.kettcards.web2print.repository.MotiveRepository;
@@ -29,18 +31,24 @@ import java.util.List;
 @Component
 public class MotiveImportService extends StorageContextAware implements WebContextAware {
 
+    private static final String defaultPrefix = "default/";
+
     private final MotiveRepository motiveRepository;
 
     private final MotiveMapRepository motiveMapRepository;
 
     private final CardRepository cardRepository;
 
+    private final CardFormatRepository cardFormatRepository;
+
     public MotiveImportService(MotiveRepository motiveRepository,
                                MotiveMapRepository motiveMapRepository,
-                               CardRepository cardRepository) {
+                               CardRepository cardRepository,
+                               CardFormatRepository cardFormatRepository) {
         this.motiveRepository = motiveRepository;
         this.motiveMapRepository = motiveMapRepository;
         this.cardRepository = cardRepository;
+        this.cardFormatRepository = cardFormatRepository;
     }
 
     public String importMotive(Content content) {
@@ -81,6 +89,39 @@ public class MotiveImportService extends StorageContextAware implements WebConte
         }
         return "200";
     }
+
+    public void importDefaultMotive(Content content) throws IOException {
+        String originalFilename = content.getOriginalFilename();
+        String id = originalFilename.substring(0, originalFilename.lastIndexOf('.'));
+        var format = cardFormatRepository.findById(Integer.parseInt(id)).orElseThrow();
+
+        var streams = printPdfToImage(content.getInputStream(), getScaleFactor());
+
+        if (streams.get(0) != null) {
+            saveDefaultFormat(format, streams.get(0), "-front.png");
+        }
+
+        if (streams.get(1) != null) {
+            saveDefaultFormat(format, streams.get(1), "-back.png");
+        }
+
+        save(content, defaultPrefix.concat(originalFilename));
+        Motive motive = new Motive();
+        motive.setTextureSlug(originalFilename);
+
+    }
+
+    private void saveDefaultFormat(CardFormat cardFormat, ByteArrayOutputStream stream, String suffix) throws IOException {
+        if (stream != null) {
+            var name = defaultPrefix + cardFormat.getId() + suffix;
+            save(new Content(new InMemoryResource(stream.toByteArray())), name);
+            Motive motive = new Motive();
+            motive.setTextureSlug(name);
+            cardFormat.setDefaultFrontMotive(motive);
+            cardFormatRepository.save(cardFormat);
+        }
+    }
+
 
     private void updateDatabase(String motiveName, Card card, String side) {
         Motive frontMotive = new Motive();

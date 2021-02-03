@@ -1,5 +1,6 @@
 package de.kettcards.web2print.model.db;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,6 +10,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.List;
 
 @Data
@@ -52,6 +54,28 @@ public class Card implements Serializable, VirtualId {
     @OneToMany(mappedBy = "card")
     private List<MotiveMap> motiveMaps;
 
+    @JsonGetter
+    public List<MotiveMap> getMotiveMaps() {
+        if (motiveMaps == null || motiveMaps.isEmpty()) {
+            var list = new LinkedList<MotiveMap>();
+            if (cardFormat.getDefaultFrontMotive() != null) {
+                MotiveMap motiveMap = new MotiveMap();
+                motiveMap.setCard(this);
+                motiveMap.setSide("FRONT");
+                motiveMap.setMotive(cardFormat.getDefaultFrontMotive());
+                list.add(motiveMap);
+            }
+            if (cardFormat.getDefaultFrontMotive() != null) {
+                MotiveMap motiveMap = new MotiveMap();
+                motiveMap.setCard(this);
+                motiveMap.setSide("BACK");
+                motiveMap.setMotive(cardFormat.getDefaultBackMotive());
+                list.add(motiveMap);
+            }
+            return list;
+        }
+        return motiveMaps;
+    }
 
     @Override
     public int getVirtualId() {
@@ -60,6 +84,11 @@ public class Card implements Serializable, VirtualId {
 
     @Override
     public int getVirtualHash() {
+        return orderId.hashCode();
+    }
+
+    @Override
+    public int hashCode() {
         return orderId.hashCode();
     }
 

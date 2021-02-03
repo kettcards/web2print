@@ -119,6 +119,7 @@ public class FileStoragePool extends StoragePool {
         Path contextDirectory = determineContextDirectory(storageContext);
         Path resolve = safeResolveContentName(contextDirectory, contentName);
         try (var stream = content.getInputStream()) {
+            Files.createDirectories(resolve.getParent());
             Files.copy(stream, resolve, StandardCopyOption.REPLACE_EXISTING);
         }
     }
