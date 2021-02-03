@@ -1,5 +1,6 @@
 package de.kettcards.web2print.model.db;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -25,6 +26,14 @@ public class CardFormat implements Serializable, VirtualId {
 
     @Column(name = "name")
     private String name;
+
+    @JsonIgnore
+    @Column(name = "defaultFrontMotive")
+    private Motive defaultFrontMotive;
+
+    @JsonIgnore
+    @Column(name = "defaultBackMotive")
+    private Motive defaultBackMotive;
 
     @OneToMany(mappedBy = "id")
     private List<Fold> folds;

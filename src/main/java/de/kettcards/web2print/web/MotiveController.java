@@ -1,29 +1,37 @@
 package de.kettcards.web2print.web;
 
+import de.kettcards.web2print.service.MotiveImportService;
+import de.kettcards.web2print.storage.Content;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Deprecated
 @RestController
-@RequestMapping("${web2print.links.api-path}/motive")
+@RequestMapping("${web2print.links.api-path}")
 public class MotiveController {
-    /*
-    @Autowired
-    private ImportService importService;
 
     @Autowired
-    private MotiveRepository motiveRepository;
+    private MotiveImportService motiveImportService;
 
-    @Autowired
-    private MotiveScaleService motiveScaleService;
-
-    //TODO move that somewhere else
-    private Path baseDir;
-
-    @PostConstruct
-    public void init() throws IOException {
-        baseDir = Files.createTempDirectory("w2p_motives_raw");
+    @PostMapping("/defaultMotive")
+    public ResponseEntity<String> saveStandardMotive(@RequestParam("file") MultipartFile file) {
+        try {
+            motiveImportService.importDefaultMotive(Content.from(file));
+            return ResponseEntity.ok("");
+        } catch (IOException ex) {
+            return ResponseEntity.badRequest().build();
+        }
     }
+
+
+    /*
 
     @GetMapping
     public ResponseEntity<byte[]> getMotive(@RequestBody String motiveRequest) { //name of the image, motive files should be served static

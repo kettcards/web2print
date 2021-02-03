@@ -6,14 +6,14 @@ const inputXlsxElement = document.getElementById("xlsx-input"),
 const xlsxDropbox = document.getElementById("xlsx-import");
 xlsxDropbox.addEventListener("dragenter", dragenter, false);
 xlsxDropbox.addEventListener("dragover", dragover, false);
-xlsxDropbox.addEventListener("drop", drop, false);
+xlsxDropbox.addEventListener("drop", xlsxDrop, false);
 
 const inputPdfElement = document.getElementById("pdf-input"),
     pdfSubmit = document.getElementById("pdf-submit");
 const pdfDropbox = document.getElementById("pdf-import");
 pdfDropbox.addEventListener("dragenter", dragenter, false);
 pdfDropbox.addEventListener("dragover", dragover, false);
-pdfDropbox.addEventListener("drop", drop, false);
+pdfDropbox.addEventListener("drop", pdfDrop, false);
 
 function dragenter(e) {
     e.stopPropagation();
@@ -25,14 +25,24 @@ function dragover(e) {
     e.preventDefault();
 }
 
-function drop(e) {
+function xlsxDrop(e) {
     e.stopPropagation();
     e.preventDefault();
 
     const dt = e.dataTransfer;
     dragAndDropFiles = dt.files;
 
-    handleFiles();
+    handleFiles("backend/resource");
+}
+
+function pdfDrop(e) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    const dt = e.dataTransfer;
+    dragAndDropFiles = dt.files;
+
+    handleFiles("defaultMotive");
 }
 
 pdfSubmit.addEventListener("click", function () {
@@ -46,9 +56,9 @@ xlsxSubmit.addEventListener("click", function () {
     }
 });
 
-inputXlsxElement.addEventListener("change", handleFiles, false);
+inputXlsxElement.addEventListener("change", () => handleFiles("backend/resource"), false);
 
-function handleFiles() {
+function handleFiles(endpoint) {
     let fileList = this.files;
     if (fileList === undefined) {
         fileList = dragAndDropFiles;
@@ -57,7 +67,7 @@ function handleFiles() {
         let fd = new FormData();
         fd.append("file", listEl);
         let req = jQuery.ajax({
-            url: web2print.links.apiUrl + "backend/resource",
+            url: web2print.links.apiUrl + endpoint,
             method: "POST",
             data: fd,
             processData: false,
@@ -181,7 +191,8 @@ $(window).bind("hashchange", function () { //TODO onload hashchange is not worki
 var dialogButton = document.querySelector('.dialog-button');
 var dialog = document.querySelector('#dialog');
 if (!dialog.showModal) {
-    dialogPolyfill.registerDialog(dialog);
+    console.log("was passiert hier?");
+    //dialogPolyfill.registerDialog(dialog);
 }
 dialogButton.addEventListener('click', function () {
     dialog.showModal();
