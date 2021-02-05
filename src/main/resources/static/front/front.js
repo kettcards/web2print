@@ -21,6 +21,7 @@ const falsify = function() {return false;};
 //         this function does.
 const mod = function(a, n) {return ((a % n) + n) % n;};
 Node.prototype.isA = function(n) {return this.nodeName === n;};
+let rulerRendered = false;
 
 const $toolBox       = $('#toolBox');
 const imgTool        = $('#imgTool');
@@ -805,13 +806,7 @@ const RenderStyles = [{
       $bundle.find('.front>.motive-layer')[0].src = web2print.links.motiveUrl+mFront;
 
     //sadly the stepping needs to be done in js because the cumulative error of stacking css is noticeable
-    const $topRuler  = $('.ruler.top');
-    for(let i = 0; i < width; i+=5)
-      $topRuler.append($(make('li')).css('left', i+'mm').attr('data-val', i/10));
-    const $leftRuler = $('.ruler.left');
-    for(let i = 0; i < height; i+=5)
-      $leftRuler.append($(make('li')).css('top', i+'mm').attr('data-val', i/10));
-
+    createRuler();
     return $bundle;
   },
   pageLabels: [
@@ -888,6 +883,8 @@ const RenderStyles = [{
     this.data.p1r = 0;
     this.data.p2r = 0;
     this.data.state = 1;
+
+    createRuler();
 
     return $(document.createDocumentFragment()).append($page1, $page2);
   },
@@ -988,3 +985,15 @@ if(Cookie.getValue('tutorial') !== 'no') {
   $body.append($tutOver);
 }
 
+function createRuler() {
+  if(!rulerRendered) {
+    const $topRuler = $('.ruler.top');
+    for(let i = 0; i < width; i += 5)
+      $topRuler.append($(make('li')).css('left', i + 'mm').attr('data-val', i / 10));
+
+    const $leftRuler = $('.ruler.left');
+    for(let i = 0; i < height; i += 5)
+      $leftRuler.append($(make('li')).css('top', i + 'mm').attr('data-val', i / 10));
+    rulerRendered = true;
+  }
+}
