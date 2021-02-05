@@ -804,13 +804,7 @@ const RenderStyles = [{
     if(mFront)
       $bundle.find('.front>.motive-layer')[0].src = web2print.links.motiveUrl+mFront;
 
-    //sadly the stepping needs to be done in js because the cumulative error of stacking css is noticeable
-    const $topRuler  = $('.ruler.top');
-    for(let i = 0; i < width; i+=5)
-      $topRuler.append($(make('li')).css('left', i+'mm').attr('data-val', i/10));
-    const $leftRuler = $('.ruler.left');
-    for(let i = 0; i < height; i+=5)
-      $leftRuler.append($(make('li')).css('top', i+'mm').attr('data-val', i/10));
+    createRuler(width, height);
 
     return $bundle;
   },
@@ -843,6 +837,7 @@ const RenderStyles = [{
     EditorTransform.apply();
 
     const cardWidth = card.cardFormat.width;
+    const cardHeight = card.cardFormat.height;
     const w1 = card.cardFormat.folds[0].x1;
     const w2 = cardWidth - w1;
 
@@ -888,6 +883,8 @@ const RenderStyles = [{
     this.data.p1r = 0;
     this.data.p2r = 0;
     this.data.state = 1;
+
+    createRuler(cardWidth, cardHeight);
 
     return $(document.createDocumentFragment()).append($page1, $page2);
   },
@@ -988,3 +985,17 @@ if(Cookie.getValue('tutorial') !== 'no') {
   $body.append($tutOver);
 }
 
+let rulerRendered = false;
+function createRuler(width, height) {
+  if(!rulerRendered) {
+    const $topRuler = $('.ruler.top');
+    //sadly the stepping needs to be done in js because the cumulative error of stacking css is noticeable
+    for(let i = 0; i < width; i += 5)
+      $topRuler.append($(make('li')).css('left', i + 'mm').attr('data-val', i / 10));
+
+    const $leftRuler = $('.ruler.left');
+    for(let i = 0; i < height; i += 5)
+      $leftRuler.append($(make('li')).css('top', i + 'mm').attr('data-val', i / 10));
+    rulerRendered = true;
+  }
+}
