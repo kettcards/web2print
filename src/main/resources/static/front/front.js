@@ -796,11 +796,10 @@ const RenderStyles = [{
       }
     }
 
-    const fallbackImgData = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
-    $bundle.find('.back>.motive-layer')[0].src
-      = mBack  ? web2print.links.motiveUrl+mBack  : fallbackImgData;
-    $bundle.find('.front>.motive-layer')[0].src
-      = mFront ? web2print.links.motiveUrl+mFront : fallbackImgData;
+    if(mBack)
+      $bundle.find('.back>.motive-layer') [0].src = web2print.links.motiveUrl+mBack;
+    if(mFront)
+      $bundle.find('.front>.motive-layer')[0].src = web2print.links.motiveUrl+mFront;
 
     createRuler(width, height);
 
@@ -868,21 +867,14 @@ const RenderStyles = [{
       }
     }
 
-    const fallbackImgData = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
     if(mFront) {
       $page1.find('.front>.motive-layer').css({ left:           0, width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mFront;
       $page2.find('.front>.motive-layer').css({ left: '-'+w1+'mm', width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mFront;
-    } else {
-      $page1.find('.front>.motive-layer')[0].src = fallbackImgData;
-      $page2.find('.front>.motive-layer')[0].src = fallbackImgData;
     }
 
     if(mBack) {
       $page1.find('.back>.motive-layer').css({ left:           0, width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mBack;
       $page2.find('.back>.motive-layer').css({ left: '-'+w1+'mm', width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mBack;
-    } else {
-      $page1.find('.back>.motive-layer')[0].src = fallbackImgData;
-      $page2.find('.back>.motive-layer')[0].src = fallbackImgData;
     }
 
     this.data.p1r = 0;
