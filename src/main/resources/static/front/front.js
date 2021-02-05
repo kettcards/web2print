@@ -666,12 +666,9 @@ const serializeSide = function($els, xOffs, target) {
 const applyFont = function() {
   const range = getSel().getRangeAt(0);
   const fName = $fontSelect.val();
-  (!FontAttributeMap[fName] ? beginLoadFont(fName) : Promise.resolve())
-    .then(function() {
-      makeNodesFromSelection(range, function(curr) {
-        $(curr).css('font-family', fName);
-      })
-    });
+  makeNodesFromSelection(range, function(curr) {
+    $(curr).css('font-family', fName);
+  })
 };
 
 const $fontSelect = $('#fontSelect')
@@ -685,13 +682,13 @@ $.get(web2print.links.apiUrl+'fonts')
    let $options = new Array(data.length);
    for(let i = 0; i < data.length; i++) {
      const fName = data[i];
-     $options[i] = $('<option value="'+fName+'">'+fName+'</option>');
+     $options[i] = $('<option value="'+fName+'" style="font-family: '+fName+';">'+fName+'</option>');
+     beginLoadFont(fName);
    }
    $fontSelect.append($options);
 
    //(lucas 18.01.21) todo: be more elegant about this, mbe explicitly spec it ?
    defaultFont = data[0];
-   beginLoadFont(defaultFont);
  }).catch(function(e) {
   alert('[fatal] something went wrong loading fonts: '+JSON.stringify(e));
  });
@@ -799,10 +796,11 @@ const RenderStyles = [{
       }
     }
 
-    if(mBack)
-      $bundle.find('.back>.motive-layer')[0].src  = web2print.links.motiveUrl+mBack;
-    if(mFront)
-      $bundle.find('.front>.motive-layer')[0].src = web2print.links.motiveUrl+mFront;
+    const fallbackImgData = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+    $bundle.find('.back>.motive-layer')[0].src
+      = mBack  ? web2print.links.motiveUrl+mBack  : fallbackImgData;
+    $bundle.find('.front>.motive-layer')[0].src
+      = mFront ? web2print.links.motiveUrl+mFront : fallbackImgData;
 
     createRuler(width, height);
 
@@ -870,14 +868,21 @@ const RenderStyles = [{
       }
     }
 
+    const fallbackImgData = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
     if(mFront) {
       $page1.find('.front>.motive-layer').css({ left:           0, width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mFront;
       $page2.find('.front>.motive-layer').css({ left: '-'+w1+'mm', width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mFront;
+    } else {
+      $page1.find('.front>.motive-layer')[0].src = fallbackImgData;
+      $page2.find('.front>.motive-layer')[0].src = fallbackImgData;
     }
 
     if(mBack) {
       $page1.find('.back>.motive-layer').css({ left:           0, width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mBack;
       $page2.find('.back>.motive-layer').css({ left: '-'+w1+'mm', width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mBack;
+    } else {
+      $page1.find('.back>.motive-layer')[0].src = fallbackImgData;
+      $page2.find('.back>.motive-layer')[0].src = fallbackImgData;
     }
 
     this.data.p1r = 0;
