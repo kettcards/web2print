@@ -1,12 +1,14 @@
 package de.kettcards.web2print.pdf;
 
 
+import lombok.Getter;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 
 import java.io.IOException;
 import java.util.List;
 
+@Getter
 public class CardData {
 
     private final float pageWidth, pageHeight; //pt
@@ -46,21 +48,9 @@ public class CardData {
         document.setBoxOffset(pageBorder,pageBorder);
 
         for (var box : boxDataList) {
-            //drawOutline(box,document);
             box.apply(document);
         }
         document.closeCurrentPage();
-    }
-
-    private static void drawOutline(BoxData box, Document document) throws IOException {
-        var content = document.stream();
-        content.setLineWidth(1);
-        content.moveTo(box.getX() + document.getXOffset(), box.getY() + document.getYOffset());
-        content.lineTo(box.width + box.getX() + document.getXOffset(), box.getY() + document.getYOffset());
-        content.lineTo(box.width + box.getX() + document.getXOffset(), box.getY() + document.getYOffset() + box.getHeight());
-        content.lineTo(box.getX() + document.getXOffset(), box.getY() + document.getYOffset() + box.getHeight());
-        content.lineTo(box.getX() + document.getXOffset(), box.getY() + document.getYOffset());
-        content.stroke();
     }
 
     private static void drawCutLine(PDPageContentStream content, PDRectangle page) throws IOException{

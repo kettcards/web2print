@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import de.kettcards.web2print.model.db.CardFormat;
 import de.kettcards.web2print.model.font.FontUtils;
+import de.kettcards.web2print.pdf.textBox.LeftAlignedTextBoxData;
 import de.kettcards.web2print.serialize.CardDataDeserializer;
 import de.kettcards.web2print.service.CardService;
 import de.kettcards.web2print.service.FontService;
@@ -14,6 +15,7 @@ import org.apache.pdfbox.preflight.PreflightDocument;
 import org.apache.pdfbox.preflight.exception.SyntaxValidationException;
 import org.apache.pdfbox.preflight.parser.PreflightParser;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.function.Executable;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -24,15 +26,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class PDFGeneratorTest {
 
     private static final Path outTestDirectory = Paths.get("test_output");
@@ -47,29 +49,40 @@ public class PDFGeneratorTest {
 
     private CardFormat cardFormatStub;
 
-    private PDDocument document;
-
-    public static void makeOutputPdf(CardData cardData, String filename) throws IOException {
-        try (Document doc = new Document()) {
-            doc.embedFontPackage(FontUtils.loadJosefineSlabPackage());
-            doc.setUserContent(storageContext);
-            cardData.apply(doc);
-            String[] split = filename.split("\\.");
-            var file = outTestDirectory.resolve(split[0] + ".pdf").toFile();
-            doc.save(file);
-            System.out.println("document saved: " + file.getAbsolutePath());
-            validate(file);
-        }
-    }
+    private static final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+    private Document document;
 
     @BeforeAll
-    public void beforeAll() throws IOException {
+    public static void beforeAll() throws IOException {
         SimpleModule simpleModule = new SimpleModule();
-        //TODO card data serializer
         simpleModule.addDeserializer(CardData.class, new CardDataDeserializer(cardService));
         objectMapper.registerModule(simpleModule);
+
         FileSystemUtils.deleteRecursively(outTestDirectory);
         Files.createDirectories(outTestDirectory);
+    }
+
+    public void makePdf(CardData cardData, String fileName) throws Throwable {
+        makePdf(cardData, fileName, () -> {
+        });
+    }
+
+    public void makePdf(CardData cardData, String fileName, Executable t) throws Throwable {
+
+        assertDoesNotThrow(() -> {
+            document.embedFontPackage(FontUtils.loadJosefineSlabPackage());
+            document.setUserContent(storageContext);
+            cardData.apply(document);
+        });
+        t.execute();
+        try {
+            var file = outTestDirectory.resolve(fileName).toFile();
+            document.save(file);
+            System.out.println("document saved: " + file.getAbsolutePath());
+            validate(file);
+        } catch (IOException ex) {
+            fail(ex);
+        }
     }
 
     @BeforeEach
@@ -84,8 +97,8 @@ public class PDFGeneratorTest {
                 stub.setWidth(Integer.parseInt(xes[0]));
                 stub.setHeight(Integer.parseInt(xes[1]));
             } catch (Exception ex) {
-                stub.setWidth(800);
-                stub.setHeight(600);
+                stub.setWidth(210);
+                stub.setHeight(297);
             }
             cardFormatStub = stub;
             return stub;
@@ -96,7 +109,7 @@ public class PDFGeneratorTest {
             return content;
         });
 
-        document = new PDDocument();
+        document = new Document();
     }
 
     @AfterEach
@@ -121,20 +134,56 @@ public class PDFGeneratorTest {
         }
     }
 
+
     @TestFactory
-    public List<DynamicTest> generatePDF() throws IOException {
+    public List<DynamicTest> generateFromValidCardData() throws IOException {
+        var source = "classpath:/de/kettcards/web2print/pdf/validCardData/{filename:[^_]*.json}";
         var ret = new LinkedList<DynamicTest>();
-        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        Resource[] resources = resolver.getResources("classpath:/test_data/pdfGen/validCardData/{filename:[^_]*.json}");
+        Resource[] resources = resolver.getResources(source);
         for (var resource : resources) {
-            var name = resource.getFilename();
-            DynamicTest dynamicTest = DynamicTest.dynamicTest(name, () -> {
-                CardData cardData = objectMapper.readValue(resource.getInputStream(), CardData.class);
-                makeOutputPdf(cardData, name);
-            });
-            ret.add(dynamicTest);
+            var filename = resource.getFilename();
+            var name = filename.substring(0, filename.lastIndexOf('.'));
+            ret.add(DynamicTest.dynamicTest(name, () -> {
+                beforeEach();
+                var cardData = objectMapper.readValue(resource.getInputStream(), CardData.class);
+                makePdf(cardData, name.concat(".pdf"));
+                afterEach();
+            }));
+            ret.add(DynamicTest.dynamicTest(name.concat("_grid"), () -> {
+                beforeEach();
+                var cardData = objectMapper.readValue(resource.getInputStream(), CardData.class);
+                makePdf(cardData, name.concat("_grid.pdf"), () -> PDFUtils.drawGrid(document));
+                afterEach();
+            }));
+            ret.add(DynamicTest.dynamicTest(name.concat("_outlined"), () -> {
+                beforeEach();
+                var c = objectMapper.readValue(resource.getInputStream(), CardData.class);
+                makePdf(PDFUtils.enableBoxOutline(document, c), name.concat("_outlined.pdf"));
+                afterEach();
+            }));
+            ret.add(DynamicTest.dynamicTest(name.concat("_outlined_grid"), () -> {
+                beforeEach();
+                var c = objectMapper.readValue(resource.getInputStream(), CardData.class);
+                makePdf(PDFUtils.enableBoxOutline(document, c), name.concat("_outlined_grid.pdf"), () -> {
+                    PDFUtils.drawGrid(document);
+                });
+                afterEach();
+            }));
         }
         return ret;
+    }
+
+    @Test
+    public void emptyPageOnOutside() throws IOException {
+        PDDocument generate;
+        PDDocument generate1 = new PDFGenerator(null, null).generate(PDFUtils.emptyCardData);
+        assertEquals(1, generate1.getNumberOfPages());
+        var hasOutsideElement = new CardData(0, 0, Collections.emptyList(),
+                Collections.singletonList(new LeftAlignedTextBoxData(0, 0, 0, 0, Collections.emptyList())));
+        generate1.close();
+        PDDocument generate2 = new PDFGenerator(null, null).generate(hasOutsideElement);
+        assertEquals(2, generate2.getNumberOfPages());
+
     }
 
 }
