@@ -284,6 +284,7 @@ body {
   font-weight: 400;
 }
 .text .b {
+  font-weight: 700;
   font-weight: bold;
 }
 .text .i {
@@ -327,7 +328,11 @@ body {
   background-color: rgba(200, 200, 200, 0.6);
   white-space: nowrap;
 }
-#toolBox #fontSizeSelect {
+#fontSelect {
+  outline: none;
+}
+#fontSizeSelect {
+  outline: none;
   max-width: 50px;
   float: right;
 }
