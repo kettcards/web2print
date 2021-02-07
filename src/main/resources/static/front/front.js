@@ -251,7 +251,12 @@ const hElKeyDown = function(e) {
   const key = ev.keyCode;
 
   if(ev.shiftKey && key === 13) {
-    // (lucas 25.01.21) todo: dont just block it, resolve it properly
+    // (lucas 25.01.21) shift return
+    // todo: dont just block it, resolve it properly
+    e.preventDefault();
+  } else if(ev.ctrlKey && key === 90) {
+    // (lucas 25.01.21) ctrl z
+    // todo: dont just block it, resolve it properly
     e.preventDefault();
   }
 };
