@@ -261,7 +261,7 @@ const hElKeyUp = function(e) {
   const key = e.originalEvent.keyCode;
 
   const range = getSel().getRangeAt(0);
-  if(range.collapsed) {
+  if(range.collapsed && range.startContainer.isA("#text")) {
     if(range.startContainer.parentNode.isA('P')) {
       const p = range.startContainer.parentNode;
       const insertTarget = range.startContainer.nextSibling;
@@ -270,7 +270,7 @@ const hElKeyUp = function(e) {
       p.insertBefore(w, insertTarget);
       range.setEnd(txt, txt.textContent.length);
       range.collapse();
-    } else if(range.startContainer.isA('#text') && range.startContainer.parentNode.isA('DIV')) {
+    } else if(range.startContainer.parentNode.isA('DIV')) {
       const box = range.startContainer.parentNode;
       const insertTarget = range.startContainer.nextSibling;
       const txt = box.removeChild(range.startContainer);
