@@ -385,61 +385,90 @@ $(".fontTypeButton").click(function(){
 }).mouseup(stopPropagation);
 
 const makeNodesFromSelection = function(range, foreachAction) {
-  const [startEl, startOffs, endEl, endOffs] = getSelectedNodes(range);
+  let [startEl, startOffs, endEl, endOffs] = getSelectedNodes(range);
 
   let par = startEl.parentNode;
+  if(startEl === endEl && startOffs === endOffs) {
+    startEl   = par.firstChild;
+    startOffs = 0;
+    endEl     = par.childNodes[par.childNodes.length - 1];
+    endOffs   = endEl.textContent.length;
+  }
   if(startEl === endEl) {
     const text = startEl.textContent;
-    const before = startEl.cloneNode();
-    before.appendChild(makeT(text.substr(0, startOffs)));
-    par.insertBefore(before, startEl);
-    const after = startEl.cloneNode();
-    after.appendChild(makeT(text.substr(endOffs)));
-    par.insertBefore(after, startEl.nextSibling);
-
-    const txt = makeT(text.substr(startOffs, endOffs - startOffs));
-    startEl.firstChild.replaceWith(txt);
-
-    range.setStart(txt, 0);
-    range.setEnd(txt, endOffs - startOffs);
-
-    if(foreachAction)
-      foreachAction(startEl);
-  } else
-  for(let curr = startEl;;) {
-    console.assert(curr.isA('SPAN') && curr.childNodes.length === 1 && curr.firstChild.isA('#text'), 'illegal p child ', curr, range);
-
-     if(curr === startEl) {
-      const text = startEl.textContent;
+    let sliced = false;
+    if(startOffs > 0) {
       const before = startEl.cloneNode();
       before.appendChild(makeT(text.substr(0, startOffs)));
       par.insertBefore(before, startEl);
-      const txt = makeT(text.substr(startOffs))
+      sliced = true;
+    }
+    if(endOffs < text.length) {
+      const after = startEl.cloneNode();
+      after.appendChild(makeT(text.substr(endOffs)));
+      par.insertBefore(after, startEl.nextSibling);
+      sliced = true;
+    }
+
+    if(sliced) {
+      const txt = makeT(text.substr(startOffs, endOffs - startOffs));
       startEl.firstChild.replaceWith(txt);
 
       range.setStart(txt, 0);
-    } else if(curr === endEl) {
-      const text = endEl.textContent;
-      const after = endEl.cloneNode();
-      after.appendChild(makeT(text.substr(endOffs)));
-      par.insertBefore(after, endEl.nextSibling);
-      const txt = makeT(text.substr(0, endOffs));
-      endEl.firstChild.replaceWith(txt);
-
-      range.setEnd(txt, txt.textContent.length);
+      range.setEnd(txt, endOffs - startOffs);
+    } else {
+      range.setStart(startEl.firstChild, 0);
+      range.setEnd(startEl.firstChild, text.length);
     }
 
     if(foreachAction)
-      foreachAction(curr);
-
-    if(curr === endEl)
-      break;
-    if(curr.nextSibling === null) {
-      curr = curr.parentNode.nextSibling.firstChild;
-      par  = curr.parentNode;
-    } else {
-      curr = curr.nextSibling;
+      foreachAction(startEl);
+  } else {
+    if(startOffs > 0) {
+      const firstText = startEl.textContent;
+      const before = startEl.cloneNode();
+      before.appendChild(makeT(firstText.substr(0, startOffs)));
+      par.insertBefore(before, startEl);
+      const firstTxt = makeT(firstText.substr(startOffs))
+      startEl.firstChild.replaceWith(firstTxt);
     }
+
+    range.setStart(startEl.firstChild, 0);
+
+    if (foreachAction)
+      foreachAction(startEl);
+
+    let curr = startEl;
+    do {
+      if (curr.nextSibling === null) {
+        curr = curr.parentNode.nextSibling.firstChild;
+        par = curr.parentNode;
+      } else {
+        curr = curr.nextSibling;
+      }
+
+      if(curr === endEl)
+        break;
+
+      console.assert(curr.isA('SPAN') && curr.childNodes.length === 1 && curr.firstChild.isA('#text'), 'illegal p child ', curr, range);
+
+      if (foreachAction)
+        foreachAction(curr);
+    } while(true);
+
+    if(endOffs < endEl.textContent.length) {
+      const lastText = endEl.textContent;
+      const after = endEl.cloneNode();
+      after.appendChild(makeT(lastText.substr(endOffs)));
+      par.insertBefore(after, endEl.nextSibling);
+      const lastTxt = makeT(lastText.substr(0, endOffs));
+      endEl.firstChild.replaceWith(lastTxt);
+    }
+
+    range.setEnd(endEl.firstChild, endEl.textContent.length);
+
+    if (foreachAction)
+      foreachAction(endEl);
   }
 
   return [startEl, endEl];
