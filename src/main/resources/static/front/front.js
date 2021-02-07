@@ -777,10 +777,11 @@ const RenderStyles = [{
     const $bundle = $(get('page-template').content.firstElementChild.cloneNode(true));
     $bundle.css({
        width:  width+'mm',
-      height: height+'mm'
+      height: height+'mm',
     });
+
     $bundle.children().css(Object.assign({
-      'background-image': 'url("'+web2print.links.materialUrl+card.material.textureSlug+'")'
+      'background-image': 'url("'+web2print.links.materialUrl+card.material.textureSlug+'")',
     }, this.BgStretchObjs[card.material.tiling]));
 
     for(let fold of card.cardFormat.folds) {
@@ -803,6 +804,9 @@ const RenderStyles = [{
 
     createRuler(width, height);
 
+    this.data.rot     = 0;
+    this.data.$bundle = $bundle;
+
     return $bundle;
   },
   pageLabels: [
@@ -811,8 +815,12 @@ const RenderStyles = [{
   ],
   initialDotIndex: 0,
   hPageChanged: function(direction) {
-    EditorTransform.rotate += direction * 180;
-    EditorTransform.apply();
+    this.data.rot += direction * 180;
+    this.data.$bundle.css('transform', 'rotateY('+this.data.rot+'deg)');
+  },
+  data: {
+    $bundle: undefined,
+    rot: 0
   }
 }, {
   name: 'simple_foldable',
@@ -830,9 +838,6 @@ const RenderStyles = [{
     //todo: add more tiling modes, should work just fine - the fallback is just no special background styling, page dimensions are still correct
   },
   pageGen: function(card) {
-    EditorTransform.rotate = 0;
-    EditorTransform.apply();
-
     const cardWidth = card.cardFormat.width;
     const cardHeight = card.cardFormat.height;
     const w1 = card.cardFormat.folds[0].x1;
@@ -844,13 +849,11 @@ const RenderStyles = [{
       width: w1+'mm',
       height: card.cardFormat.height+'mm',
       'transform-origin': 'right center',
-      transition: 'transform .5s, z-index .5s'
     });
     const $page2 = this.data.$page2 = $(template.cloneNode(true)).css({
       width: w2+'mm',
       height: card.cardFormat.height+'mm',
       'transform-origin': 'left center',
-      transition: 'transform .5s, z-index .5s'
     });
     $page2[0].dataset.xOffset = w1;
 
