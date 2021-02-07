@@ -171,7 +171,7 @@ const hTxtMUp = function(){
   let fontFam  =  $(startEl).css('font-family');
   let fontSize = +$(startEl).css('font-size').slice(0, -2);
   let index;
-  for(let n = startEl;; n = n.nextSibling){
+  for(let n = startEl;;){
     const nextFam  =  $(n).css('font-family');
     const nextSize = +$(n).css('font-size').slice(0, -2);
     if(fontFam !== nextFam){
@@ -180,8 +180,14 @@ const hTxtMUp = function(){
     if(nextSize < fontSize) {
       fontSize = nextSize;
     }
+
     if(n === endEl)
       break;
+    if(n.nextSibling === null) {
+      n = n.parentNode.nextSibling.firstChild;
+    } else {
+      n = n.nextSibling;
+    }
   }
 
   $fontSelect[0].selectedIndex = index || FontNames.indexOf(fontFam);
