@@ -1,26 +1,15 @@
 'use strict';
 
-const make = function(spec, child) {
-  const s = spec.split('.');
-  const e = document.createElement(s[0]);
-  if(s.length > 1){
-    s.shift();
-    e.classList.add(s);
-  }
-  if(child)
-    e.appendChild(child);
-  return e;
-}
-const makeT = document.createTextNode.bind(document);
-const makeR = document.createRange.bind(document);
-const get = document.getElementById.bind(document);
-const getSel = document.getSelection.bind(document);
-const stopPropagation = function(e){e.stopPropagation();};
-const falsify = function() {return false;};
-// (lucas) the remainder function in js does not work like the mathematical modulo,
-//         this function does.
-const mod = function(a, n) {return ((a % n) + n) % n;};
-Node.prototype.isA = function(n) {return this.nodeName === n;};
+import '../types/jquery';
+//import { Web2print } from "../types/web2print";
+//declare const web2print : Web2print;
+
+import '../macros';
+import '../parameters';
+import '../cookie';
+import '../nodesFromSelection';
+import './createFold';
+import RenderStyles from './renderStyles';
 
 const $toolBox       = $('#toolBox');
 const imgTool        = $('#imgTool');
@@ -29,23 +18,6 @@ const $cardContainer = $('#card-container')
 const rsContainer = get('render-styles-container');
 const $navDotsUl  = $('#nav-dots-container>ul');
 const $pageLabel  = $('#nav-dots-container>span');
-
-const createFold = function(fold){
-  if(fold.x1 === fold.x2){
-    //vFold
-    let vFold = $('<div class="vFold"></div>');
-    vFold.css('left', fold.x1+'mm');
-    return vFold;
-  } else
-  if(fold.y1 === fold.y2){
-    //hFold
-    let hFold = $('<div class="hFold"></div>');
-    hFold.css('top', fold.y1+'mm');
-    return hFold;
-  } else {
-    throw new Error("can't display diagonal folds for now");
-  }
-}
 
 const EditorTransform = {
   $transformAnchor: $('#transform-anchor'),
@@ -79,26 +51,15 @@ const loadCard = function(card){
 
   hRenderStyleChanged(0);
 };
-//spawning new elements
-const hElementsLayerClick = function(e, target) {
+// spawning new elements
+// [called inline]
+const hElementsLayerClick = function(e : MouseEvent, target : Node) {
   if(!state.addOnClick)
     return;
   const el = state.addOnClick({left: e.offsetX, top: e.offsetY});
   $(target).append(el);
   state.addOnClick = undefined;
 };
-
-const Parameters = (function(){
-  const ret = {}, url = window.location.search;
-  if(url){
-    let split = url.substr(1).split('&'), subSplit;
-    for(let s of split){
-      subSplit = s.split('=');
-      ret[subSplit[0]] = subSplit[1] || 'no_value';
-    }
-  }
-  return ret;
-})();
 
 $.get(web2print.links.apiUrl+'card/'+Parameters.card)
  .then(function(data) { //(lucas 04.01.20) mbe move this 'check' into loadPage
@@ -184,9 +145,9 @@ const hTxtMUp = function(){
     if(n === endEl)
       break;
     if(n.nextSibling === null) {
-      n = n.parentNode.nextSibling.firstChild;
+      n = n.parentNode.nextSibling.firstChild as Element;
     } else {
-      n = n.nextSibling;
+      n = n.nextSibling as Element;
     }
   }
 
@@ -204,8 +165,7 @@ const hElClick = function(e){
 };
 const hElPaste = async function(e) {
   e.preventDefault();
-  return;
-  const ev  = e.originalEvent;
+  /*const ev  = e.originalEvent;
   const box = e.delegateTarget;
 
   const data = ev.clipboardData.getData('text');
@@ -249,7 +209,7 @@ const hElPaste = async function(e) {
     selection.removeAllRanges();
     selection.addRange(newRange);
   } else
-    console.log('cant paste that', ev.clipboardData.types);
+    console.log('cant paste that', ev.clipboardData.types);*/
 };
 
 const hElKeyDown = function(e) {
@@ -366,7 +326,7 @@ $(".fontTypeButton").click(function(){
   });
 
 
-  let par = startEl.parentNode;
+  let par = startEl.parentNode as Element;
   for(let curr = startEl;;) {
     console.assert(curr.isA('SPAN') && curr.childNodes.length === 1 && curr.firstChild.isA('#text'), 'illegal p child ', curr, range);
 
@@ -375,152 +335,14 @@ $(".fontTypeButton").click(function(){
     if(curr === endEl)
       break;
     if(curr.nextSibling === null) {
-      curr = curr.parentNode.nextSibling.firstChild;
-      par  = curr.parentNode;
+      curr = curr.parentNode.nextSibling.firstChild  as Element;
+      par  = curr.parentNode as Element;
     } else {
-      curr = curr.nextSibling;
+      curr = curr.nextSibling as Element;
     }
   }
 
 }).mouseup(stopPropagation);
-
-const makeNodesFromSelection = function(range, foreachAction) {
-  let [startEl, startOffs, endEl, endOffs] = getSelectedNodes(range);
-
-  let par = startEl.parentNode;
-  if(startEl === endEl && startOffs === endOffs) {
-    startEl   = par.firstChild;
-    startOffs = 0;
-    endEl     = par.childNodes[par.childNodes.length - 1];
-    endOffs   = endEl.textContent.length;
-  }
-  if(startEl === endEl) {
-    const text = startEl.textContent;
-    let sliced = false;
-    if(startOffs > 0) {
-      const before = startEl.cloneNode();
-      before.appendChild(makeT(text.substr(0, startOffs)));
-      par.insertBefore(before, startEl);
-      sliced = true;
-    }
-    if(endOffs < text.length) {
-      const after = startEl.cloneNode();
-      after.appendChild(makeT(text.substr(endOffs)));
-      par.insertBefore(after, startEl.nextSibling);
-      sliced = true;
-    }
-
-    if(sliced) {
-      const txt = makeT(text.substr(startOffs, endOffs - startOffs));
-      startEl.firstChild.replaceWith(txt);
-
-      range.setStart(txt, 0);
-      range.setEnd(txt, endOffs - startOffs);
-    } else {
-      range.setStart(startEl.firstChild, 0);
-      range.setEnd(startEl.firstChild, text.length);
-    }
-
-    if(foreachAction)
-      foreachAction(startEl);
-  } else {
-    if(startOffs > 0) {
-      const firstText = startEl.textContent;
-      const before = startEl.cloneNode();
-      before.appendChild(makeT(firstText.substr(0, startOffs)));
-      par.insertBefore(before, startEl);
-      const firstTxt = makeT(firstText.substr(startOffs))
-      startEl.firstChild.replaceWith(firstTxt);
-    }
-
-    range.setStart(startEl.firstChild, 0);
-
-    if (foreachAction)
-      foreachAction(startEl);
-
-    let curr = startEl;
-    do {
-      if (curr.nextSibling === null) {
-        curr = curr.parentNode.nextSibling.firstChild;
-        par = curr.parentNode;
-      } else {
-        curr = curr.nextSibling;
-      }
-
-      if(curr === endEl)
-        break;
-
-      console.assert(curr.isA('SPAN') && curr.childNodes.length === 1 && curr.firstChild.isA('#text'), 'illegal p child ', curr, range);
-
-      if (foreachAction)
-        foreachAction(curr);
-    } while(true);
-
-    if(endOffs < endEl.textContent.length) {
-      const lastText = endEl.textContent;
-      const after = endEl.cloneNode();
-      after.appendChild(makeT(lastText.substr(endOffs)));
-      par.insertBefore(after, endEl.nextSibling);
-      const lastTxt = makeT(lastText.substr(0, endOffs));
-      endEl.firstChild.replaceWith(lastTxt);
-    }
-
-    range.setEnd(endEl.firstChild, endEl.textContent.length);
-
-    if (foreachAction)
-      foreachAction(endEl);
-  }
-
-  return [startEl, endEl];
-};
-
-const getSelectedNodes = function(range) {
-  console.log('get', range);
-  let startEl  , endEl  ;
-  let startOffs, endOffs;
-
-  if(range.commonAncestorContainer.isA('#text')) {
-    startEl = endEl = range.startContainer.parentNode;
-    startOffs = range.startOffset;
-    endOffs   = range.endOffset;
-  } else if(range.commonAncestorContainer.isA('P') || range.commonAncestorContainer.className === 'text') {
-    if(range.startContainer.isA('#text')){
-      startEl   = range.startContainer.parentNode;
-      startOffs = range.startOffset;
-    } else if(range.startContainer.isA('P')){
-      startEl   = range.startContainer.childNodes[range.startOffset];
-      startOffs = 0;
-    } else if(range.startContainer.isA('SPAN')) {
-      console.assert(range.startOffset === 0, "start offset should be 0 but is ", range.startOffset);
-      startEl   = range.startContainer;
-      startOffs = 0;
-    } else if(range.startContainer.isA('DIV')) {
-      startEl   = range.startContainer.childNodes[range.startOffset].childNodes[0];
-      startOffs = 0;
-    } else
-      console.warn('cant handle start', range);
-
-    if(range.endContainer.isA('#text')){
-      endEl   = range.endContainer.parentNode;
-      endOffs = range.endOffset;
-    } else if(range.endContainer.isA('P')){
-      console.assert(range.endContainer.childNodes.length > 0, 'there must be at least one child', range);
-      endEl   = range.endContainer.childNodes[range.endOffset]
-        || range.endContainer.childNodes[range.endContainer.childNodes.length - 1];
-      endOffs = endEl.textContent.length;
-    } else if(range.endContainer.isA('SPAN')) {
-      console.error('how did we get here', range);
-    } else if(range.endContainer.isA('DIV')) {
-      const pars = range.endContainer.childNodes;
-      endEl    = (pars[range.endOffset] || pars[pars.length - 1]).childNodes[0];
-      endOffs  = endEl.textContent.length;
-    } else
-      console.warn('cant handle end', range);
-  } else
-    console.warn('cant handle', range);
-
-  return [startEl, startOffs, endEl, endOffs];
-};
 
 //function to return transform rotation angle of the state.target
 const getRotation = function(){
@@ -792,185 +614,15 @@ $('.left>.nav-btn-inner').click(function() {
   hPageSwitch(-1);
 });
 
-//changing render style
-const RenderStyles = [{
-  name: 'Simple',
-  condition: function(card){ return true; },
-  BgStretchObjs: {
-    stretch: {
-      'background-size': 'cover',
-      'background-repeat': 'no-repeat ',
-      'background-position': 'center center',
-    },
-    //todo: add more tiling modes, should work just fine - the fallback is just no special background styling, page dimensions are still correct
-  },
-  pageGen: function(card) {
-    const width = card.cardFormat.width;
-    const height = card.cardFormat.height;
-    // 55 additional pixels for the rulers
-    EditorTransform.scale = Math.min(
-      $editorArea.width() * MMPerPx.x / (width + 55),
-      $editorArea.height() * MMPerPx.x / (height + 55)
-    ) * 0.9;
-    EditorTransform.apply();
+declare interface RenderStyleState {
+  style            : RenderStyle;
+  currentDotIndex  : number;
+  dots             : JQuery[];
+  getActiveDot()   : JQuery;
+  getActiveLabel() : string;
+}
 
-    const $bundle = $(get('page-template').content.firstElementChild.cloneNode(true));
-    $bundle.css({
-       width:  width+'mm',
-      height: height+'mm',
-    });
-
-    $bundle.children().css(Object.assign({
-      'background-image': 'url("'+web2print.links.materialUrl+card.material.textureSlug+'")',
-    }, this.BgStretchObjs[card.material.tiling]));
-
-    for(let fold of card.cardFormat.folds) {
-      $bundle.find('.folds-layer').append(createFold(fold));
-    }
-
-    let mFront, mBack;
-    for(const motive of card.motive) {
-      switch(motive.side) {
-        case 'FRONT': mFront = motive.textureSlug; break;
-        case 'BACK':  mBack  = motive.textureSlug; break;
-        default: throw new Error("unknown motive side '"+motive.side+"'");
-      }
-    }
-
-    if(mBack)
-      $bundle.find('.back>.motive-layer') [0].src = web2print.links.motiveUrl+mBack;
-    if(mFront)
-      $bundle.find('.front>.motive-layer')[0].src = web2print.links.motiveUrl+mFront;
-
-    createRuler(width, height);
-
-    this.data.rot     = 0;
-    this.data.$bundle = $bundle;
-
-    return $bundle;
-  },
-  pageLabels: [
-    'Inside',
-    'Outside'
-  ],
-  initialDotIndex: 0,
-  hPageChanged: function(direction) {
-    this.data.rot += direction * 180;
-    this.data.$bundle.css('transform', 'rotateY('+this.data.rot+'deg)');
-  },
-  data: {
-    $bundle: undefined,
-    rot: 0
-  }
-}, {
-  name: 'simple_foldable',
-  condition: function(card){
-    const folds = card.cardFormat.folds;
-    return folds.length === 1 && folds[0].x1 === folds[0].x2;
-  },
-  BgStretchObjs: {
-    stretch: function(xOffset) { return {
-        'background-size': 'cover',
-        'background-repeat': 'no-repeat ',
-        'background-position': 'center center',
-      };
-    },
-    //todo: add more tiling modes, should work just fine - the fallback is just no special background styling, page dimensions are still correct
-  },
-  pageGen: function(card) {
-    const cardWidth = card.cardFormat.width;
-    const cardHeight = card.cardFormat.height;
-    const w1 = card.cardFormat.folds[0].x1;
-    const w2 = cardWidth - w1;
-
-    const template = get('page-template').content.firstElementChild;
-
-    const $page1 = this.data.$page1 = $(template.cloneNode(true)).css({
-      width: w1+'mm',
-      height: card.cardFormat.height+'mm',
-      'transform-origin': 'right center',
-    });
-    const $page2 = this.data.$page2 = $(template.cloneNode(true)).css({
-      width: w2+'mm',
-      height: card.cardFormat.height+'mm',
-      'transform-origin': 'left center',
-    });
-    $page2[0].dataset.xOffset = w1;
-
-    $page1.add($page2).children().css(Object.assign({
-      'background-image': 'url("'+web2print.links.materialUrl+card.material.textureSlug+'")'
-    }, this.BgStretchObjs[card.material.tiling]));
-
-    let mFront, mBack;
-    for(const motive of card.motive) {
-      switch(motive.side) {
-        case 'FRONT': mFront = motive.textureSlug; break;
-        case  'BACK': mBack  = motive.textureSlug; break;
-        default: throw new Error("unknown motive side '"+motive.side+"'");
-      }
-    }
-
-    if(mFront) {
-      $page1.find('.front>.motive-layer').css({ left:           0, width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mFront;
-      $page2.find('.front>.motive-layer').css({ left: '-'+w1+'mm', width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mFront;
-    }
-
-    if(mBack) {
-      $page1.find('.back>.motive-layer').css({ left:           0, width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mBack;
-      $page2.find('.back>.motive-layer').css({ left: '-'+w1+'mm', width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mBack;
-    }
-
-    this.data.p1r = 0;
-    this.data.p2r = 0;
-    this.data.state = 1;
-
-    createRuler(cardWidth, cardHeight);
-
-    return $(document.createDocumentFragment()).append($page1, $page2);
-  },
-  pageLabels: [
-    'Back',
-    'Inside',
-    'Front'
-  ],
-  initialDotIndex: 1,
-  hPageChanged: function(direction) {
-    this.data.state = mod(this.data.state + direction, 3);
-
-    let p1z = 0, p2z = 0;
-
-    if(direction === 1) {
-      switch(this.data.state) {
-        case 0: this.data.p1r += 180; this.data.p2r += 180; p2z = 1; break;
-        case 1:                       this.data.p2r += 180;          break;
-        case 2: this.data.p1r += 180;                       p1z = 1; break;
-      }
-    } else if(direction === -1) {
-      switch(this.data.state) {
-        case 0:                        this.data.p2r += -180; p2z = 1; break;
-        case 1: this.data.p1r += -180;                                 break;
-        case 2: this.data.p1r += -180; this.data.p2r += -180; p1z = 1; break;
-      }
-    }
-    this.data.$page1.css({
-      transform: 'rotateY('+this.data.p1r+'deg)',
-      'z-index': p1z
-    });
-    this.data.$page2.css({
-      transform: 'rotateY('+this.data.p2r+'deg)',
-      'z-index': p2z
-    });
-  },
-  data: {
-    state: 1,
-    $page1: undefined,
-    $page2: undefined,
-    p1r: 0,
-    p2r: 0
-  }
-}];
-
-const renderStyleState = {
+const renderStyleState : RenderStyleState = {
   style:           undefined,
   currentDotIndex: undefined,
   dots:            undefined,
@@ -1015,7 +667,7 @@ const hPageSwitch = function(direction) {
 // tutorial
 if(Cookie.getValue('tutorial') !== 'no') {
   const $tutOver = $('<div style="position:absolute;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.66)"><div class="center" style="max-width:70%;max-height:70%;background-color:gray;padding:5px 5px 15px 5px;"><img src="./tutorial.gif" alt="" style="width:100%;height:100%;display:block;"><input type="checkbox" id="dont-show-again" style="margin:10px 2px 0 0;"><label for="dont-show-again">don\'t show again</label><button style="margin:5px 0 0 0;float: right;">Got It</button></div></div>');
-  const dontShowAgain = $tutOver.find('input')[0];
+  const dontShowAgain = <HTMLInputElement>$tutOver.find('input')[0];
   $tutOver.find('button').click(function(){
     if(dontShowAgain.checked) {
       Cookie.set('tutorial', 'no');

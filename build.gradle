@@ -113,11 +113,14 @@ dependencyManagement {
 }
 
 task buildTs(type:Exec) {
-	def file = "front/front";
-	commandLine "./tools/ts/tsc.exe",
+	def file = 'front/front'
+	commandLine "./tools/ts/4.2.b/tsc.exe",
 			'--allowJs',
+			'-m', 'none',
+			'-t', 'ES2017',
 			'--outFile', "./src/main/resources/static/${file}.js",
 			"./src/main/resources/static/ts/${file}.ts"
+
 	standardOutput = System.out;
 }
 
