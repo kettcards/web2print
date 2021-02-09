@@ -1,16 +1,4 @@
 'use strict';
-
-import '../types/jquery';
-//import { Web2print } from "../types/web2print";
-//declare const web2print : Web2print;
-
-import '../macros';
-import '../parameters';
-import '../cookie';
-import '../nodesFromSelection';
-import './createFold';
-import RenderStyles from './renderStyles';
-
 const $toolBox       = $('#toolBox');
 const imgTool        = $('#imgTool');
 const $editorArea    = $("#editor-area");
@@ -32,13 +20,20 @@ const EditorTransform = {
 
 let cardData;
 // [call once]
-const loadCard = function(card){
+const loadCard = function(card : Card){
   console.log('loading', card);
 
   document.querySelector('#preview-container>img').src
       = web2print.links.thumbnailUrl+card.thumbSlug;
 
   cardData = card;
+
+  // 55 additional pixels for the rulers
+  EditorTransform.scale = Math.min(
+    $editorArea.width() * MMPerPx.x / (card.cardFormat.width + 55),
+    $editorArea.height() * MMPerPx.x / (card.cardFormat.height + 55)
+  ) * 0.9;
+  EditorTransform.apply();
 
   for(let i = 0; i < RenderStyles.length; i++) {
     const renderStyle = RenderStyles[i];
@@ -50,6 +45,8 @@ const loadCard = function(card){
   }
 
   hRenderStyleChanged(0);
+
+  createRuler(card.cardFormat.width, card.cardFormat.height);
 };
 // spawning new elements
 // [called inline]
@@ -62,12 +59,12 @@ const hElementsLayerClick = function(e : MouseEvent, target : Node) {
 };
 
 $.get(web2print.links.apiUrl+'card/'+Parameters.card)
- .then(function(data) { //(lucas 04.01.20) mbe move this 'check' into loadPage
-   return new Promise(function(resolve, reject){
-     if(data) resolve(data);
-     else     reject();
-   })
- })
+  .then(function(data) { //(lucas 04.01.20) mbe move this 'check' into loadPage
+    return new Promise(function(resolve, reject){
+      if(data) resolve(data);
+      else     reject();
+    })
+  })
  .then(loadCard)
  .catch(function(){
 
@@ -112,7 +109,14 @@ const Spawner = {
   GEOM: undefined,
 };
 
-const state = {
+const state : {
+  addOnClick(css : { left : any, top : any }) : void,
+  target       : JQuery,
+  dragging     : boolean,
+  resizing     : boolean,
+  dx           : number,
+  dy           : number,
+} = {
   addOnClick: undefined,
   target: undefined,
   dragging: false,
@@ -350,8 +354,8 @@ const getRotation = function(){
   let angle = 0;
   if(transformMatrix !== "none") {
     let mat = transformMatrix.split('(')[1].split(')')[0].split(',');
-    let a = mat[0];
-    let b = mat[1];
+    let a = +mat[0];
+    let b = +mat[1];
     let radians = Math.atan2(b, a);
     if (radians < 0) {
       radians += (2 * Math.PI);
@@ -370,13 +374,15 @@ $('#moveBtn').mousedown(function(){
 let $body = $('body').mousemove(function(e){
   if(!state.dragging && !state.resizing)
     return;
-  state.dx += e.originalEvent.movementX;
-  state.dy += e.originalEvent.movementY;
+
+  const ev = e.originalEvent as MouseEvent;
+  state.dx += ev.movementX;
+  state.dy += ev.movementY;
 
   if(state.resizing){
     state.target.css({
-      width: '+='+(e.originalEvent.movementX),
-      height: '+='+(e.originalEvent.movementY),
+      width: '+='+(ev.movementX),
+      height: '+='+(ev.movementY),
     });
   }else if(state.dragging) {
     state.target.css('transform', 'translate('+state.dx/EditorTransform.scale+'px, '+state.dy/EditorTransform.scale+'px) rotate('+getRotation()+'deg)');

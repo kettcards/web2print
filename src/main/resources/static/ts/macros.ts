@@ -19,4 +19,7 @@ const falsify = function() : boolean {return false;};
 //         this function does.
 const mod = function(a : number, n : number) : number {return ((a % n) + n) % n;};
 
-Node.prototype.isA = function(n : String) : boolean {return this.nodeName === n;};
+declare interface Node {
+  isA(n: string) : boolean;
+}
+Node.prototype.isA = function(n : string) : boolean {return this.nodeName === n;};

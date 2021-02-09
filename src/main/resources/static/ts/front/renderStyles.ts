@@ -1,9 +1,7 @@
-import type { Card } from '../types/card';
-
 declare interface RenderStyle {
   name: string;
   condition(card : Card): boolean;
-  pageGen(card: Card): DocumentFragment;
+  pageGen(card: Card): DocumentFragment | JQuery;
   pageLabels: string[];
   initialDotIndex: number;
   hPageChanged(direction: -1 | 0 | 1): void;
@@ -23,12 +21,6 @@ const RenderStyles = [{
   pageGen: function(card) {
     const width = card.cardFormat.width;
     const height = card.cardFormat.height;
-    // 55 additional pixels for the rulers
-    EditorTransform.scale = Math.min(
-      $editorArea.width() * MMPerPx.x / (width + 55),
-      $editorArea.height() * MMPerPx.x / (height + 55)
-    ) * 0.9;
-    EditorTransform.apply();
 
     const $bundle = $(get('page-template').content.firstElementChild.cloneNode(true));
     $bundle.css({
@@ -57,8 +49,6 @@ const RenderStyles = [{
       $bundle.find('.back>.motive-layer') [0].src = web2print.links.motiveUrl+mBack;
     if(mFront)
       $bundle.find('.front>.motive-layer')[0].src = web2print.links.motiveUrl+mFront;
-
-    createRuler(width, height);
 
     this.data.rot     = 0;
     this.data.$bundle = $bundle;
@@ -111,7 +101,7 @@ const RenderStyles = [{
       height: card.cardFormat.height+'mm',
       'transform-origin': 'left center',
     });
-    $page2[0].dataset.xOffset = w1;
+    $page2[0].dataset.xOffset = String(w1);
 
     $page1.add($page2).children().css(Object.assign({
       'background-image': 'url("'+web2print.links.materialUrl+card.material.textureSlug+'")'
@@ -139,8 +129,6 @@ const RenderStyles = [{
     this.data.p1r = 0;
     this.data.p2r = 0;
     this.data.state = 1;
-
-    createRuler(cardWidth, cardHeight);
 
     return $(document.createDocumentFragment()).append($page1, $page2);
   },
@@ -185,7 +173,3 @@ const RenderStyles = [{
     p2r: 0
   }
 } as RenderStyle];
-
-declare module "RenderStyles" {
-  export = RenderStyles;
-}

@@ -1,0 +1,31 @@
+{
+  "files": [
+    "../types/jquery.d.ts",
+    "../types/web2print.d.ts",
+    "../types/card.d.ts",
+    "../types/cookie.d.ts",
+
+    "../parameters.ts",
+    "../macros.ts",
+    "../nodesFromSelection.ts",
+    "./createFold.ts",
+    "./renderStyles.ts",
+    "./front.ts"
+  ],
+  "compilerOptions": {
+    "outFile": "../../front/front.js",
+    "module": "None",
+    "target": "ES2017",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "typeRoots": [
+      "../types"
+    ],
+    "lib": [
+      "dom",
+      "ES2017",
+      "scripthost",
+      "es2015.promise"
+    ]
+  }
+}

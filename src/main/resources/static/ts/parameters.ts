@@ -1,4 +1,4 @@
-const Parameters = (function(){
+const Parameters : any = (function() : any {
   const ret = {}, url = window.location.search;
   if(url){
     let split = url.substr(1).split('&'), subSplit;

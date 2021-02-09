@@ -1,23 +1,23 @@
-interface Fold {
+declare interface Fold {
   x1 : number;
   x2 : number;
   y1 : number;
   y2 : number;
 }
 
-interface Card {
+declare interface Card {
+  thumbSlug  : string;
   cardFormat : {
     width  : number;
     height : number;
     folds  : Fold[];
   };
-  material : {
+  material   : {
     textureSlug : string;
     tiling      : 'STRETCH';
   };
-  motive : {
+  motive     : {
     side : 'BACK' | 'FRONT';
     textureSlug : string;
   }[];
 }
-export type { Card, Fold };

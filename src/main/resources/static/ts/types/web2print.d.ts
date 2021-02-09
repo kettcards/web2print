@@ -10,4 +10,7 @@ interface Web2print {
   };
 }
 
-export type { Web2print };
+declare var web2print: Web2print;
+declare module "web2print" {
+  export = web2print;
+}

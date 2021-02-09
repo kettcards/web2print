@@ -113,13 +113,13 @@ dependencyManagement {
 }
 
 task buildTs(type:Exec) {
-	def file = 'front/front'
-	commandLine "./tools/ts/4.2.b/tsc.exe",
-			'--allowJs',
-			'-m', 'none',
-			'-t', 'ES2017',
-			'--outFile', "./src/main/resources/static/${file}.js",
-			"./src/main/resources/static/ts/${file}.ts"
+	task cleanJs(type: Delete) {
+		delete "./src/main/resources/static/front/front.js";
+	}
+	dependsOn tasks.cleanJs
+
+	commandLine 'tools/node/14.15.4/win64/node.exe', "./tools/ts/4.0.b/tsc.js",
+			'-p', './src/main/resources/static/ts/front/tsconfig.json'
 
 	standardOutput = System.out;
 }
