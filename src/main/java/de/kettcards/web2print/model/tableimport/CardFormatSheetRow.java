@@ -5,6 +5,9 @@ import de.kettcards.web2print.model.db.Fold;
 import de.kettcards.web2print.model.db.VirtualId;
 import lombok.AllArgsConstructor;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 
 import java.util.ArrayList;
@@ -13,6 +16,7 @@ import java.util.Objects;
 
 @Value
 @AllArgsConstructor
+@Slf4j
 public class CardFormatSheetRow implements VirtualId {
 
     String nameExplanation;
@@ -23,17 +27,26 @@ public class CardFormatSheetRow implements VirtualId {
 
     public static List<CardFormatSheetRow> parseRows(XSSFSheet cardFormatSheet) {
         var data = new ArrayList<CardFormatSheetRow>();
-        for (int i = 1; i <= cardFormatSheet.getLastRowNum(); i++) {
-            int formatTyp = (int) cardFormatSheet.getRow(i).getCell(0).getNumericCellValue();
-            int heightInMM = (int) cardFormatSheet.getRow(i).getCell(1).getNumericCellValue();
-            int widthInMM = (int) cardFormatSheet.getRow(i).getCell(2).getNumericCellValue();
-            String folded = cardFormatSheet.getRow(i).getCell(3).getStringCellValue();
-            String name = "";
-            if (cardFormatSheet.getRow(i).getCell(5) != null)
-                name = cardFormatSheet.getRow(i).getCell(5).getStringCellValue();
-            if (name == null)
-                name = "";
-            data.add(new CardFormatSheetRow(name, formatTyp, heightInMM, widthInMM, folded));
+        for (Row row : cardFormatSheet) {
+            try {
+                int formatTyp = (int) row.getCell(0).getNumericCellValue();
+                int heightInMM = (int) row.getCell(1).getNumericCellValue();
+                int widthInMM = (int) row.getCell(2).getNumericCellValue();
+                String folded = row.getCell(3).getStringCellValue();
+                String name = "";
+                if (row.getCell(5) != null)
+                    name = row.getCell(5).getStringCellValue();
+                if (name == null)
+                    name = "";
+                data.add(new CardFormatSheetRow(name, formatTyp, heightInMM, widthInMM, folded));
+            } catch (IllegalStateException | NullPointerException e) {
+                log.error("Row of sheet " + cardFormatSheet.getSheetName() + " with following cells wasn't imported:");
+                StringBuilder tmp = new StringBuilder();
+                for (Cell cell : row) {
+                    tmp.append(cell).append("|");
+                }
+                log.error(tmp.toString());
+            }
         }
         return data;
     }
