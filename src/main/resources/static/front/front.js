@@ -1,21 +1,10 @@
 'use strict';
-const Parameters = (function () {
-    const ret = {}, url = window.location.search;
-    if (url) {
-        let split = url.substr(1).split('&'), subSplit;
-        for (let s of split) {
-            subSplit = s.split('=');
-            ret[subSplit[0]] = subSplit[1] || 'no_value';
-        }
-    }
-    return ret;
-})();
 const make = function (spec, child) {
     const s = spec.split('.');
     const e = document.createElement(s[0]);
     if (s.length > 1) {
         s.shift();
-        e.classList.add(s);
+        e.classList.add(...s);
     }
     if (child)
         e.appendChild(child);
@@ -31,6 +20,17 @@ const falsify = function () { return false; };
 //         this function does.
 const mod = function (a, n) { return ((a % n) + n) % n; };
 Node.prototype.isA = function (n) { return this.nodeName === n; };
+const Parameters = (function () {
+    const ret = {}, url = window.location.search;
+    if (url) {
+        let split = url.substr(1).split('&'), subSplit;
+        for (let s of split) {
+            subSplit = s.split('=');
+            ret[subSplit[0]] = subSplit[1] || 'no_value';
+        }
+    }
+    return ret;
+})();
 const getSelectedNodes = function (range) {
     console.log('get', range);
     let startEl, endEl;
@@ -162,6 +162,121 @@ const makeNodesFromSelection = function (range, foreachAction) {
             foreachAction(endEl);
     }
     return [startEl, endEl];
+};
+const Editor = {
+    loadedCard: undefined,
+    $transformAnchor: $('#transform-anchor'),
+    $editorArea: $("#editor-area"),
+    scale: 1,
+    translate: { x: 0, y: 0 },
+    rotate: 0,
+    apply: function () {
+        // (lucas) cant use the proper matrix solution because the browser gets confused with the rotation direction :(
+        this.$transformAnchor.css('transform', 'scale(' + this.scale + ', ' + this.scale + ') translate(' + this.translate.x + 'px,' + this.translate.y + 'px) rotateY(' + this.rotate + 'deg)');
+    },
+    fitToContainer() {
+        // 55 additional pixels for the rulers
+        this.scale = Math.min(this.$editorArea.width() * MMPerPx.x / (this.loadedCard.cardFormat.width + 55), this.$editorArea.height() * MMPerPx.x / (this.loadedCard.cardFormat.height + 55)) * 0.9;
+        this.apply();
+    }
+};
+const serialize = function () {
+    const data = {
+        v: '0.2',
+        card: Parameters.card,
+        outerEls: [],
+        innerEls: []
+    };
+    const $bundles = $cardContainer.children();
+    for (let i = 0; i < $bundles.length; i++) {
+        const $b = $bundles.eq(i);
+        const offs = +$b[0].dataset.xOffset;
+        serializeSide($b.find('.front>.elements-layer').children(), offs, data.outerEls);
+        serializeSide($b.find('.back>.elements-layer').children(), offs, data.innerEls);
+    }
+    console.log("sending", data);
+    const _export = true;
+    $.post(web2print.links.apiUrl + 'save/' + (Parameters.sId || '') + '?export=' + _export, 'data=' + btoa(JSON.stringify(data)))
+        .then(function () {
+        alert('Sent data!');
+    }).catch(function (e) {
+        alert('Send failed: \n' + JSON.stringify(e));
+    });
+};
+const serializeSide = function ($els, xOffs, target) {
+    for (let j = 0; j < $els.length; j++) {
+        const $el = $els.eq(j);
+        const bounds = {
+            x: xOffs + $el[0].offsetLeft * MMPerPx.x,
+            y: ($el.parent().height() - ($el[0].offsetTop + $el.height())) * MMPerPx.y,
+            w: $el.width() * MMPerPx.x,
+            h: $el.height() * MMPerPx.y
+        };
+        switch ($el[0].nodeName) {
+            case 'DIV':
+                {
+                    let align = $el.css('text-align');
+                    switch (align) {
+                        case 'justify':
+                            align = 'j';
+                            break;
+                        case 'right':
+                            align = 'r';
+                            break;
+                        case 'center':
+                            align = 'c';
+                            break;
+                        default: align = 'l';
+                    }
+                    let box = Object.assign({
+                        t: "t",
+                        a: align,
+                        r: []
+                    }, bounds);
+                    let $innerChildren = $el.children();
+                    for (let j = 0; j < $innerChildren.length; j++) {
+                        let $iel = $innerChildren.eq(j);
+                        if ($iel[0].isA('P')) {
+                            const $spans = $iel.children();
+                            for (let k = 0; k < $spans.length; k++) {
+                                const $span = $spans.eq(k);
+                                if ($span[0].isA('SPAN')) {
+                                    let attributes = 0;
+                                    for (const [c, v] of Object.entries(FontStyleValues))
+                                        if ($span.hasClass(c))
+                                            attributes |= v;
+                                    box.r.push({
+                                        f: $span.css('font-family'),
+                                        s: Math.round((+$span.css('font-size').slice(0, -2)) / 96 * 72),
+                                        a: attributes,
+                                        t: $span.text()
+                                    });
+                                }
+                                else {
+                                    console.warn('cannot serialize element', $span[0]);
+                                }
+                            }
+                            box.r.push('br');
+                        }
+                        else {
+                            console.warn('cannot serialize element', $iel[0]);
+                        }
+                    }
+                    target.push(box);
+                }
+                break;
+            case 'IMG':
+                {
+                    let box = Object.assign({
+                        t: "i",
+                        s: $el[0].alt,
+                    }, bounds);
+                    target.push(box);
+                }
+                break;
+            default: console.warn('cannot serialize element', $el[0]);
+        }
+    }
 };
 const createFold = function (fold) {
     if (fold.x1 === fold.x2) {
@@ -357,31 +472,17 @@ const RenderStyles = [{
     }];
 const $toolBox = $('#toolBox');
 const imgTool = $('#imgTool');
-const $editorArea = $("#editor-area");
 const $cardContainer = $('#card-container');
 const rsContainer = get('render-styles-container');
 const $navDotsUl = $('#nav-dots-container>ul');
 const $pageLabel = $('#nav-dots-container>span');
-const EditorTransform = {
-    $transformAnchor: $('#transform-anchor'),
-    scale: 1,
-    translate: { x: 0, y: 0 },
-    rotate: 0,
-    apply: function () {
-        // (lucas) cant use the proper matrix solution because the browser gets confused with the rotation direction :(
-        this.$transformAnchor.css('transform', 'scale(' + this.scale + ', ' + this.scale + ') translate(' + this.translate.x + 'px,' + this.translate.y + 'px) rotateY(' + this.rotate + 'deg)');
-    }
-};
-let cardData;
 // [call once]
 const loadCard = function (card) {
     console.log('loading', card);
     document.querySelector('#preview-container>img').src
         = web2print.links.thumbnailUrl + card.thumbSlug;
-    cardData = card;
-    // 55 additional pixels for the rulers
-    EditorTransform.scale = Math.min($editorArea.width() * MMPerPx.x / (card.cardFormat.width + 55), $editorArea.height() * MMPerPx.x / (card.cardFormat.height + 55)) * 0.9;
-    EditorTransform.apply();
+    Editor.loadedCard = card;
+    Editor.fitToContainer();
     for (let i = 0; i < RenderStyles.length; i++) {
         const renderStyle = RenderStyles[i];
         if (!renderStyle.condition(card))
@@ -459,6 +560,7 @@ const state = {
     resizing: false,
     dx: 0,
     dy: 0,
+    range: undefined
 };
 const hTxtMDown = function (e) {
     state.target = $(e.delegateTarget);
@@ -646,7 +748,6 @@ $(".fontTypeButton").click(function () {
         if (shouldRemoveClass && !$(curr).hasClass(classToAdd))
             shouldRemoveClass = false;
     });
-    let par = startEl.parentNode;
     for (let curr = startEl;;) {
         console.assert(curr.isA('SPAN') && curr.childNodes.length === 1 && curr.firstChild.isA('#text'), 'illegal p child ', curr, range);
         $(curr)[shouldRemoveClass ? 'removeClass' : 'addClass'](classToAdd);
@@ -654,7 +755,6 @@ $(".fontTypeButton").click(function () {
             break;
         if (curr.nextSibling === null) {
             curr = curr.parentNode.nextSibling.firstChild;
-            par = curr.parentNode;
         }
         else {
             curr = curr.nextSibling;
@@ -694,7 +794,7 @@ let $body = $('body').mousemove(function (e) {
         });
     }
     else if (state.dragging) {
-        state.target.css('transform', 'translate(' + state.dx / EditorTransform.scale + 'px, ' + state.dy / EditorTransform.scale + 'px) rotate(' + getRotation() + 'deg)');
+        state.target.css('transform', 'translate(' + state.dx / Editor.scale + 'px, ' + state.dy / Editor.scale + 'px) rotate(' + getRotation() + 'deg)');
         $toolBox.css('transform', 'translate(' + state.dx + 'px, calc(-100% + ' + state.dy + 'px))');
         imgTool.css('transform', 'translate(' + state.dx + 'px, ' + state.dy + 'px)');
     }
@@ -702,8 +802,8 @@ let $body = $('body').mousemove(function (e) {
     if (state.dragging) {
         if (state.dx !== 0 || state.dy !== 0) {
             state.target.css({
-                left: '+=' + state.dx / EditorTransform.scale,
-                top: '+=' + state.dy / EditorTransform.scale,
+                left: '+=' + state.dx / Editor.scale,
+                top: '+=' + state.dy / Editor.scale,
                 transform: 'translate(' + 0 + 'px, ' + 0 + 'px) rotate(' + getRotation() + 'deg)',
             });
             $toolBox.css({
@@ -738,6 +838,7 @@ const MMPerPx = (function () {
     $resTester.remove();
     return ret;
 })();
+$('#submitBtn').click(serialize);
 const FontStyleValues = {
     b: 0b001,
     i: 0b010,
@@ -745,105 +846,6 @@ const FontStyleValues = {
 };
 const FontAttributeMap = {};
 let defaultFont;
-//serialize data
-$('#submitBtn').click(function () {
-    const data = {
-        v: '0.2',
-        card: Parameters.card,
-        outerEls: [],
-        innerEls: []
-    };
-    const $bundles = $cardContainer.children();
-    for (let i = 0; i < $bundles.length; i++) {
-        const $b = $bundles.eq(i);
-        const offs = +$b[0].dataset.xOffset;
-        serializeSide($b.find('.front>.elements-layer').children(), offs, data.outerEls);
-        serializeSide($b.find('.back>.elements-layer').children(), offs, data.innerEls);
-    }
-    console.log("sending", data);
-    const _export = true;
-    $.post(web2print.links.apiUrl + 'save/' + (Parameters.sId || '') + '?export=' + _export, 'data=' + btoa(JSON.stringify(data)))
-        .then(function () {
-        alert('Sent data!');
-    }).catch(function (e) {
-        alert('Send failed: \n' + JSON.stringify(e));
-    });
-});
-const serializeSide = function ($els, xOffs, target) {
-    for (let j = 0; j < $els.length; j++) {
-        const $el = $els.eq(j);
-        const bounds = {
-            x: xOffs + $el[0].offsetLeft * MMPerPx.x,
-            y: ($el.parent().height() - ($el[0].offsetTop + $el.height())) * MMPerPx.y,
-            w: $el.width() * MMPerPx.x,
-            h: $el.height() * MMPerPx.y
-        };
-        switch ($el[0].nodeName) {
-            case 'DIV':
-                {
-                    let align = $el.css('text-align');
-                    switch (align) {
-                        case 'justify':
-                            align = 'j';
-                            break;
-                        case 'right':
-                            align = 'r';
-                            break;
-                        case 'center':
-                            align = 'c';
-                            break;
-                        default: align = 'l';
-                    }
-                    let box = Object.assign({
-                        t: "t",
-                        a: align,
-                        r: []
-                    }, bounds);
-                    let $innerChildren = $el.children();
-                    for (let j = 0; j < $innerChildren.length; j++) {
-                        let $iel = $innerChildren.eq(j);
-                        if ($iel[0].isA('P')) {
-                            const $spans = $iel.children();
-                            for (let k = 0; k < $spans.length; k++) {
-                                const $span = $spans.eq(k);
-                                if ($span[0].isA('SPAN')) {
-                                    let attributes = 0;
-                                    for (const [c, v] of Object.entries(FontStyleValues))
-                                        if ($span.hasClass(c))
-                                            attributes |= v;
-                                    box.r.push({
-                                        f: $span.css('font-family'),
-                                        s: Math.round((+$span.css('font-size').slice(0, -2)) / 96 * 72),
-                                        a: attributes,
-                                        t: $span.text()
-                                    });
-                                }
-                                else {
-                                    console.warn('cannot serialize element', $span[0]);
-                                }
-                            }
-                            box.r.push('br');
-                        }
-                        else {
-                            console.warn('cannot serialize element', $iel[0]);
-                        }
-                    }
-                    target.push(box);
-                }
-                break;
-            case 'IMG':
-                {
-                    let box = Object.assign({
-                        t: "i",
-                        s: $el[0].alt,
-                    }, bounds);
-                    target.push(box);
-                }
-                break;
-            default: console.warn('cannot serialize element', $el[0]);
-        }
-    }
-};
 //font stuff
 const applyFont = function () {
     const range = getSel().getRangeAt(0);
@@ -887,7 +889,7 @@ const loadFont = function (font) {
         const face = font.faces[i];
         promises[i] = new FontFace(font.name, 'url(' + web2print.links.fontUrl + face.s + ')', {
             style: face.fs,
-            weight: face.fw
+            weight: String(face.fw)
         })
             .load()
             .then(function (f) {
@@ -955,7 +957,7 @@ const hRenderStyleChanged = function (index) {
     }
     range.selectNodeContents($cardContainer[0]);
     range.deleteContents();
-    $cardContainer.append(renderStyleState.style.pageGen(cardData));
+    $cardContainer.append(renderStyleState.style.pageGen(Editor.loadedCard));
 };
 const hPageSwitch = function (direction) {
     renderStyleState.style.hPageChanged(direction);

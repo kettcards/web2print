@@ -7,7 +7,7 @@ const getSelectedNodes = function (range: Range) : [Element, number, Element, nu
     startEl = endEl = range.startContainer.parentNode as Element;
     startOffs = range.startOffset;
     endOffs = range.endOffset;
-  } else if (range.commonAncestorContainer.isA('P') || range.commonAncestorContainer.className === 'text') {
+  } else if (range.commonAncestorContainer.isA('P') || (range.commonAncestorContainer as Element).className === 'text') {
     if (range.startContainer.isA('#text')) {
       startEl = range.startContainer.parentNode as Element;
       startOffs = range.startOffset;

@@ -1,13 +1,14 @@
 {
   "files": [
-    "../types/jquery.d.ts",
     "../types/web2print.d.ts",
     "../types/card.d.ts",
     "../types/cookie.d.ts",
 
-    "../parameters.ts",
     "../macros.ts",
+    "../parameters.ts",
     "../nodesFromSelection.ts",
+    "./editor.ts",
+    "./serialization.ts",
     "./createFold.ts",
     "./renderStyles.ts",
     "./front.ts"
@@ -25,7 +26,7 @@
       "dom",
       "ES2017",
       "scripthost",
-      "es2015.promise"
+      "es2020.promise"
     ]
   }
 }

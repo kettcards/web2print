@@ -3,7 +3,7 @@ const make = function(spec : string, child ?: Node) : Element {
   const e = document.createElement(s[0]);
   if(s.length > 1){
     s.shift();
-    e.classList.add(s);
+    e.classList.add(...s);
   }
   if(child)
     e.appendChild(child);
@@ -13,7 +13,7 @@ const makeT = document.createTextNode.bind(document);
 const makeR = document.createRange.bind(document);
 const get = document.getElementById.bind(document);
 const getSel = document.getSelection.bind(document);
-const stopPropagation = function(e : Event) : void {e.stopPropagation();};
+const stopPropagation = function(e : JQuery.Event) : void {e.stopPropagation();};
 const falsify = function() : boolean {return false;};
 // (lucas) the remainder function in js does not work like the mathematical modulo,
 //         this function does.

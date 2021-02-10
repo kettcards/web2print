@@ -1,39 +1,21 @@
 'use strict';
 const $toolBox       = $('#toolBox');
 const imgTool        = $('#imgTool');
-const $editorArea    = $("#editor-area");
 const $cardContainer = $('#card-container')
 const rsContainer = get('render-styles-container');
 const $navDotsUl  = $('#nav-dots-container>ul');
 const $pageLabel  = $('#nav-dots-container>span');
 
-const EditorTransform = {
-  $transformAnchor: $('#transform-anchor'),
-  scale: 1,
-  translate: { x: 0, y: 0 },
-  rotate: 0,
-  apply: function() {
-    // (lucas) cant use the proper matrix solution because the browser gets confused with the rotation direction :(
-    this.$transformAnchor.css('transform', 'scale('+this.scale+', '+this.scale+') translate('+this.translate.x+'px,'+this.translate.y+'px) rotateY('+this.rotate+'deg)');
-  }
-};
-
-let cardData;
 // [call once]
 const loadCard = function(card : Card){
   console.log('loading', card);
 
-  document.querySelector('#preview-container>img').src
+  document.querySelector<HTMLInputElement>('#preview-container>img').src
       = web2print.links.thumbnailUrl+card.thumbSlug;
 
-  cardData = card;
+  Editor.loadedCard = card;
 
-  // 55 additional pixels for the rulers
-  EditorTransform.scale = Math.min(
-    $editorArea.width() * MMPerPx.x / (card.cardFormat.width + 55),
-    $editorArea.height() * MMPerPx.x / (card.cardFormat.height + 55)
-  ) * 0.9;
-  EditorTransform.apply();
+  Editor.fitToContainer();
 
   for(let i = 0; i < RenderStyles.length; i++) {
     const renderStyle = RenderStyles[i];
@@ -109,20 +91,24 @@ const Spawner = {
   GEOM: undefined,
 };
 
-const state : {
-  addOnClick(css : { left : any, top : any }) : void,
+declare interface StateObj {
+  addOnClick(css : { left : any, top : any }) : JQuery,
   target       : JQuery,
   dragging     : boolean,
   resizing     : boolean,
   dx           : number,
   dy           : number,
-} = {
+  range        : Range,
+}
+
+const state : StateObj = {
   addOnClick: undefined,
   target: undefined,
   dragging: false,
   resizing: false,
   dx: 0,
   dy: 0,
+  range: undefined
 };
 
 const hTxtMDown = function(e){
@@ -165,7 +151,7 @@ const hElClick = function(e){
   const $target = $(e.delegateTarget);
   $toolBox.css(Object.assign({
     visibility: 'visible'
-  }, $target.offset()));
+  }, $target.offset()) as JQuery.PlainObject);
 };
 const hElPaste = async function(e) {
   e.preventDefault();
@@ -270,7 +256,7 @@ $('.addElBtn').click(function(e){
   state.addOnClick = Spawner[targetData];
   //trigger Fileupload
   if(targetData === 'IMAGE'){
-    const fileUp = $('#fileUpload');
+    const fileUp = $<HTMLInputElement>('#fileUpload');
     fileUp.change(function (evt){
       //file Upload code
       let file = evt.target.files[0];
@@ -312,15 +298,15 @@ const imgClick = function(e){
   const target = $(e.delegateTarget);
   imgTool.css(Object.assign({
     visibility: 'visible',
-  }, target.offset()));
+  }, target.offset()) as  JQuery.PlainObject);
 }
 
 //changing text alignment
 $(".alignmentBtn").click(function(){
-  state.target.css('text-align', $(this).val());
+  state.target.css('text-align', $(this).val() as string);
 }).mouseup(stopPropagation);
 $(".fontTypeButton").click(function(){
-  const classToAdd = $(this).val();
+  const classToAdd = $(this).val() as string;
   const range = getSel().getRangeAt(0);
 
   let shouldRemoveClass = true;
@@ -329,23 +315,19 @@ $(".fontTypeButton").click(function(){
       shouldRemoveClass = false;
   });
 
-
-  let par = startEl.parentNode as Element;
-  for(let curr = startEl;;) {
-    console.assert(curr.isA('SPAN') && curr.childNodes.length === 1 && curr.firstChild.isA('#text'), 'illegal p child ', curr, range);
+  for(let curr = startEl as Node;;) {
+    console.assert(curr.isA('SPAN') && curr.childNodes.length === 1 && (curr.firstChild as Node).isA('#text'), 'illegal p child ', curr, range);
 
     $(curr)[shouldRemoveClass?'removeClass':'addClass'](classToAdd);
 
     if(curr === endEl)
       break;
     if(curr.nextSibling === null) {
-      curr = curr.parentNode.nextSibling.firstChild  as Element;
-      par  = curr.parentNode as Element;
+      curr = curr.parentNode.nextSibling.firstChild;
     } else {
-      curr = curr.nextSibling as Element;
+      curr = curr.nextSibling;
     }
   }
-
 }).mouseup(stopPropagation);
 
 //function to return transform rotation angle of the state.target
@@ -375,7 +357,7 @@ let $body = $('body').mousemove(function(e){
   if(!state.dragging && !state.resizing)
     return;
 
-  const ev = e.originalEvent as MouseEvent;
+  const ev = e.originalEvent;
   state.dx += ev.movementX;
   state.dy += ev.movementY;
 
@@ -385,7 +367,7 @@ let $body = $('body').mousemove(function(e){
       height: '+='+(ev.movementY),
     });
   }else if(state.dragging) {
-    state.target.css('transform', 'translate('+state.dx/EditorTransform.scale+'px, '+state.dy/EditorTransform.scale+'px) rotate('+getRotation()+'deg)');
+    state.target.css('transform', 'translate('+state.dx/Editor.scale+'px, '+state.dy/Editor.scale+'px) rotate('+getRotation()+'deg)');
     $toolBox.css('transform', 'translate('+state.dx+'px, calc(-100% + '+state.dy+'px))');
     imgTool.css('transform', 'translate('+state.dx+'px, '+state.dy+'px)');
   }
@@ -393,18 +375,18 @@ let $body = $('body').mousemove(function(e){
   if(state.dragging){
     if(state.dx !== 0 || state.dy !== 0){
       state.target.css({
-        left: '+='+state.dx/EditorTransform.scale,
-        top: '+='+state.dy/EditorTransform.scale,
+        left: '+='+state.dx/Editor.scale,
+        top : '+='+state.dy/Editor.scale,
         transform: 'translate('+0+'px, '+0+'px) rotate('+getRotation()+'deg)',
       });
       $toolBox.css({
         left: '+='+state.dx,
-        top: '+='+state.dy,
+        top : '+='+state.dy,
         transform: '',
       });
       imgTool.css({
         left: '+='+state.dx,
-        top: '+='+state.dy,
+        top : '+='+state.dy,
         transform: '',
       });
       state.dx = 0;
@@ -429,6 +411,8 @@ const MMPerPx = (function(){
   return ret;
 })();
 
+$('#submitBtn').click(serialize);
+
 const FontStyleValues = {
   b: 0b001,
   i: 0b010,
@@ -437,109 +421,16 @@ const FontStyleValues = {
 const FontAttributeMap = {};
 let defaultFont;
 
-//serialize data
-$('#submitBtn').click(function(){
-  const data = {
-    v: '0.2',
-    card: Parameters.card,
-    outerEls: [],
-    innerEls: []
-  };
-
-  const $bundles = $cardContainer.children();
-  for(let i = 0; i < $bundles.length; i++) {
-    const $b = $bundles.eq(i);
-    const offs = +$b[0].dataset.xOffset;
-    serializeSide($b.find('.front>.elements-layer').children(), offs, data.outerEls);
-    serializeSide($b.find('.back>.elements-layer').children() , offs, data.innerEls);
-  }
-
-  console.log("sending", data);
-  const _export = true;
-  $.post(web2print.links.apiUrl+'save/'+(Parameters.sId || '')+'?export='+_export, 'data='+btoa(JSON.stringify(data)))
-    .then(function() {
-      alert('Sent data!');
-    }).catch(function(e){
-      alert('Send failed: \n'+JSON.stringify(e));
-    });
-});
-
-const serializeSide = function($els, xOffs, target) {
-  for(let j = 0; j < $els.length; j++) {
-    const $el = $els.eq(j);
-    const bounds = {
-      x: xOffs + $el[0].offsetLeft * MMPerPx.x,
-      y: ($el.parent().height() - ($el[0].offsetTop + $el.height())) * MMPerPx.y,
-      w: $el.width() * MMPerPx.x,
-      h: $el.height() * MMPerPx.y
-    };
-    switch($el[0].nodeName){
-      case 'DIV': {
-        let align = $el.css('text-align');
-        switch (align) {
-          case 'justify': align = 'j'; break;
-          case 'right':   align = 'r'; break;
-          case 'center':  align = 'c'; break;
-          default:        align = 'l';
-        }
-        let box = Object.assign({
-          t: "t",
-          a: align,
-          r: []
-        }, bounds);
-        let $innerChildren = $el.children();
-        for (let j = 0; j < $innerChildren.length; j++) {
-          let $iel = $innerChildren.eq(j);
-          if($iel[0].isA('P')) {
-            const $spans = $iel.children();
-            for(let k = 0; k < $spans.length; k++) {
-              const $span = $spans.eq(k);
-              if($span[0].isA('SPAN')) {
-                let attributes = 0;
-                for(const [c, v] of Object.entries(FontStyleValues))
-                  if ($span.hasClass(c))
-                    attributes |= v;
-                box.r.push({
-                  f: $span.css('font-family'),
-                  s: Math.round((+$span.css('font-size').slice(0,-2)) / 96 * 72),
-                  a: attributes,
-                  t: $span.text()
-                });
-              } else {
-                console.warn('cannot serialize element', $span[0]);
-              }
-            }
-            box.r.push('br');
-          } else {
-            console.warn('cannot serialize element', $iel[0]);
-          }
-        }
-        target.push(box);
-      } break;
-
-      case 'IMG':{
-        let box = Object.assign({
-          t: "i",
-          s: $el[0].alt,
-        }, bounds);
-        target.push(box);
-      } break;
-
-      default: console.warn('cannot serialize element', $el[0]);
-    }
-  }
-};
-
 //font stuff
 const applyFont = function() {
   const range = getSel().getRangeAt(0);
-  const fName = $fontSelect.val();
+  const fName = $fontSelect.val() as string;
   makeNodesFromSelection(range, function(curr) {
     $(curr).css('font-family', fName);
   })
 };
 
-const $fontSelect = $('#fontSelect')
+const $fontSelect = $<HTMLSelectElement>('#fontSelect')
   .mouseup(stopPropagation)
   .change(applyFont);
 let FontNames;
@@ -569,16 +460,28 @@ const beginLoadFont = function(name) {
     });
 };
 
+
+declare interface IFontFace {
+  s  : string;
+  fs : 'normal' | 'italic';
+  fw : number | 'bold';
+  v  : number;
+}
+declare interface Font {
+  name  : string;
+  faces : IFontFace[];
+}
+
 // (lucas 04.01.21)
 // compat: this might need to use another api, coverage is 93% but that has to mean nothing
-const loadFont = function(font) {
+const loadFont = function(font : Font) {
   let attribs = {};
   let promises = new Array(font.faces.length);
   for(let i = 0; i < font.faces.length; i++) {
     const face = font.faces[i];
     promises[i] = new FontFace(font.name, 'url('+web2print.links.fontUrl+face.s+')', {
       style: face.fs,
-      weight: face.fw
+      weight: String(face.fw)
     })
     .load()
     .then(function(f){
@@ -595,7 +498,7 @@ const loadFont = function(font) {
   });
 };
 
-const $fontSizeSelect = $('#fontSizeSelect')
+const $fontSizeSelect = $<HTMLInputElement>('#fontSizeSelect')
 .mousedown(function(e){
   const s = getSel();
   if(s.rangeCount === 1)
@@ -623,7 +526,7 @@ $('.left>.nav-btn-inner').click(function() {
 declare interface RenderStyleState {
   style            : RenderStyle;
   currentDotIndex  : number;
-  dots             : JQuery[];
+  dots             : JQuery<Element>[];
   getActiveDot()   : JQuery;
   getActiveLabel() : string;
 }
@@ -659,7 +562,7 @@ const hRenderStyleChanged = function(index) {
 
   range.selectNodeContents($cardContainer[0]);
   range.deleteContents();
-  $cardContainer.append(renderStyleState.style.pageGen(cardData));
+  $cardContainer.append(renderStyleState.style.pageGen(Editor.loadedCard));
 };
 
 const hPageSwitch = function(direction) {

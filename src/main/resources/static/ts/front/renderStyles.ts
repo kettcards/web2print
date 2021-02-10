@@ -1,7 +1,7 @@
 declare interface RenderStyle {
   name: string;
   condition(card : Card): boolean;
-  pageGen(card: Card): DocumentFragment | JQuery;
+  pageGen(card: Card): DocumentFragment | JQuery<DocumentFragment>;
   pageLabels: string[];
   initialDotIndex: number;
   hPageChanged(direction: -1 | 0 | 1): void;
@@ -33,7 +33,7 @@ const RenderStyles = [{
     }, this.BgStretchObjs[card.material.tiling]));
 
     for(let fold of card.cardFormat.folds) {
-      $bundle.find('.folds-layer').append(createFold(fold));
+      $bundle.find('.folds-layer' as JQuery.Selector).append(createFold(fold));
     }
 
     let mFront, mBack;
@@ -46,9 +46,9 @@ const RenderStyles = [{
     }
 
     if(mBack)
-      $bundle.find('.back>.motive-layer') [0].src = web2print.links.motiveUrl+mBack;
+      $bundle.find<HTMLImageElement>('.back>.motive-layer'  as JQuery.Selector)[0].src = web2print.links.motiveUrl+mBack;
     if(mFront)
-      $bundle.find('.front>.motive-layer')[0].src = web2print.links.motiveUrl+mFront;
+      $bundle.find<HTMLImageElement>('.front>.motive-layer' as JQuery.Selector)[0].src = web2print.links.motiveUrl+mFront;
 
     this.data.rot     = 0;
     this.data.$bundle = $bundle;
@@ -117,13 +117,13 @@ const RenderStyles = [{
     }
 
     if(mFront) {
-      $page1.find('.front>.motive-layer').css({ left:           0, width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mFront;
-      $page2.find('.front>.motive-layer').css({ left: '-'+w1+'mm', width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mFront;
+      $page1.find<HTMLImageElement>('.front>.motive-layer' as JQuery.Selector).css({ left:           0, width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mFront;
+      $page2.find<HTMLImageElement>('.front>.motive-layer' as JQuery.Selector).css({ left: '-'+w1+'mm', width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mFront;
     }
 
     if(mBack) {
-      $page1.find('.back>.motive-layer').css({ left:           0, width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mBack;
-      $page2.find('.back>.motive-layer').css({ left: '-'+w1+'mm', width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mBack;
+      $page1.find<HTMLImageElement>('.back>.motive-layer' as JQuery.Selector).css({ left:           0, width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mBack;
+      $page2.find<HTMLImageElement>('.back>.motive-layer' as JQuery.Selector).css({ left: '-'+w1+'mm', width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mBack;
     }
 
     this.data.p1r = 0;
