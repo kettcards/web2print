@@ -344,6 +344,53 @@ body {
   padding: 0;
   margin: 1px;
   font-size: 13px;
+  border: none;
+  outline: none;
+}
+#boldBtn {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23003F73" d="M0 0h26v26H0z"/><path fill="%23FFF" d="M7.823 4.753h10.713v3.251h-6.734v4.004h6.292v3.224h-6.292v7.046H7.823V4.753z"/></svg>');
+}
+#boldBtn:hover:active {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23E6E6E6" d="M0 0h26v26H0z"/><path d="M7.823 4.753h10.713v3.251h-6.734v4.004h6.292v3.224h-6.292v7.046H7.823V4.753z"/></svg>');
+}
+#boldBtn:hover {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23B8B8B8" d="M0 0h26v26H0z"/><path fill="%23FFF" d="M7.823 4.753h10.713v3.25h-6.734v4.004h6.292v3.225h-6.292v7.047H7.823V4.753z"/></svg>');
+}
+#italicBtn {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23003F73" d="M0 0h26v26H0z"/><path fill="%23FFF" d="M10.336 4.753h2.158l-1.638 8.528.13-.025c.598-.729 1.196-1.353 1.716-1.95l6.162-6.553h2.704l-7.384 7.54 4.524 9.984h-2.366l-3.822-8.605-2.106 1.949-1.273 6.656H7.008l3.328-17.524z"/></svg>');
+}
+#italicBtn:hover:active {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23003F73" d="M0 0h26v26H0z"/><path fill="%23FFF" d="M10.336 4.753h2.158l-1.638 8.528.13-.025c.598-.729 1.196-1.353 1.716-1.95l6.162-6.553h2.704l-7.384 7.54 4.524 9.984h-2.366l-3.822-8.605-2.106 1.949-1.273 6.656H7.008l3.328-17.524z"/></svg>');
+}
+#italicBtn:hover {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23B8B8B8" d="M0 0h26v26H0z"/><path fill="%23FFF" d="M10.336 4.753h2.158l-1.638 8.528.13-.026c.598-.728 1.196-1.352 1.716-1.949l6.162-6.553h2.704l-7.384 7.541 4.524 9.984h-2.366l-3.822-8.607-2.106 1.951-1.273 6.656H7.008l3.328-17.525z"/></svg>');
+}
+#leftAlignBtn {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23003F73" d="M0 0h26v26H0z"/><path fill="none" stroke="%23FFF" stroke-width="2" d="M3.319 5.661h19.362M3.319 10.554h10.794M3.319 15.445h19.362M3.319 20.338h13.444"/></svg>');
+ }
+#leftAlignBtn:hover:active {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23E6E6E6" d="M0 0h26v26H0z"/><path fill="%23FFF" stroke="%23000" stroke-width="2" d="M3.319 5.661h19.362M3.319 10.554h10.794M3.319 15.445h19.362M3.319 20.338h13.444"/></svg>');
+}
+#leftAlignBtn:hover {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23B8B8B8" d="M0 0h26v26H0z"/><path fill="none" stroke="%23FFF" stroke-width="2" d="M3.319 5.661h19.362M3.319 10.554h10.794M3.319 15.445h19.362M3.319 20.338h13.444"/></svg>');
+}
+#centerAlignBtn {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23003F73" d="M0 0h26v26H0z"/><path fill="none" stroke="%23FFF" stroke-width="2" d="M3.319 5.661h19.362M7.603 10.554h10.793M3.319 15.445h19.362M6.278 20.338h13.444"/></svg>');
+}
+#centerAlignBtn:hover:active {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23E6E6E6" d="M0 0h26v26H0z"/><path fill="%23FFF" stroke="%23000" stroke-width="2" d="M3.319 5.661h19.362M7.603 10.554h10.793M3.319 15.445h19.362M6.278 20.338h13.444"/></svg>');
+}
+#centerAlignBtn:hover {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23B8B8B8" d="M0 0h26v26H0z"/><path fill="none" stroke="%23FFF" stroke-width="2" d="M3.319 5.661h19.362M7.603 10.554h10.793M3.319 15.445h19.362M6.278 20.338h13.444"/></svg>');
+}
+#rightAlignBtn {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23003F73" d="M0 0h26v26H0z"/><path fill="none" stroke="%23FFF" stroke-width="2" d="M3.319 5.661h19.362M11.887 10.554h10.794M3.319 15.445h19.362M9.237 20.338h13.444"/></svg>');
+}
+#rightAlignBtn:hover:active {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23E6E6E6" d="M0 0h26v26H0z"/><path fill="%23FFF" stroke="%23000" stroke-width="2" d="M3.319 5.661h19.362M11.887 10.554h10.794M3.319 15.445h19.362M9.237 20.338h13.444"/></svg>');
+}
+#rightAlignBtn:hover {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23B8B8B8" d="M0 0h26v26H0z"/><path fill="none" stroke="%23FFF" stroke-width="2" d="M3.319 5.661h19.362M11.887 10.554h10.794M3.319 15.445h19.362M9.237 20.338h13.444"/></svg>');
 }
 #toolBox #moveBtn {
   position: absolute;
@@ -379,7 +426,7 @@ body {
   position: absolute;
 }
 
-button {
+.addElBtn,#submitBtn,.render-select {
   background-color: #003f73;
   border: #003f73 solid thin;
   color: white;
@@ -387,11 +434,11 @@ button {
   transition: background-color 0.3s,color 0.3s;
   outline: none;
 }
-button:hover {
+.addElBtn:hover,#submitBtn:hover,.render-select:hover {
   background-color: white;
   color: #003f73;
 }
-button:active {
+.addElBtn:active,#submitBtn:active,.render-select:active {
   background-color: #007ae1;
   color: white;
 }
