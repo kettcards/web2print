@@ -10,11 +10,16 @@
     "../MMPerPx.ts",
     "./Editor.ts",
     "./ElementSpawners.ts",
+    "./textHandlers.ts",
+    "./imgHandlers.ts",
     "./Fonts.ts",
     "./serialization.ts",
     "./createFold.ts",
     "./RenderStyles.ts",
-    "./front.ts"
+    "./UI.ts",
+    "./front.ts",
+    "./index.ts",
+    "./tutorial.ts"
   ],
   "compilerOptions": {
     "outFile": "../../front/front.js",

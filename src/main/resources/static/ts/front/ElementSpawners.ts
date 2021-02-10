@@ -5,10 +5,10 @@ const ElementSpawners : { [p: string]: Spawner; } = {
     return $('<div class="text" contenteditable="true"><p><span>Ihr Text Hier!</span></p></div>')
       .mousedown(hTxtMDown)
       .mouseup(hTxtMUp)
-      .click(hElClick)
-      .on('paste', hElPaste)
-      .on('keydown', hElKeyDown)
-      .on('keyup', hElKeyUp)
+      .click(hTxtClick)
+      .on('paste', hTxtPaste)
+      .on('keydown', hTxtKeyDown)
+      .on('keyup', hTxtKeyUp)
       // (lucas 09.01.21)
       // this is a quick fix to disable the glitchy behaviour when dragging selected text.
       // unfortunately this also produces quite the rough experience when a user actually wants do use drag n drop

@@ -181,6 +181,14 @@ const Editor = {
     fitToContainer() {
         this.scale = Math.min(this.$editorArea.width() * MMPerPx.x / (this.loadedCard.cardFormat.width + 55), this.$editorArea.height() * MMPerPx.x / (this.loadedCard.cardFormat.height + 55)) * 0.9;
         this.apply();
+    },
+    createRuler: function () {
+        const $topRuler = $('.ruler.top');
+        for (let i = 0; i < this.loadedCard.cardFormat.width; i += 5)
+            $topRuler.append($(make('li')).css('left', i + 'mm').attr('data-val', i / 10));
+        const $leftRuler = $('.ruler.left');
+        for (let i = 0; i < this.loadedCard.cardFormat.height; i += 5)
+            $leftRuler.append($(make('li')).css('top', i + 'mm').attr('data-val', i / 10));
     }
 };
 const ElementSpawners = {
@@ -188,10 +196,10 @@ const ElementSpawners = {
         return $('<div class="text" contenteditable="true"><p><span>Ihr Text Hier!</span></p></div>')
             .mousedown(hTxtMDown)
             .mouseup(hTxtMUp)
-            .click(hElClick)
-            .on('paste', hElPaste)
-            .on('keydown', hElKeyDown)
-            .on('keyup', hElKeyUp)
+            .click(hTxtClick)
+            .on('paste', hTxtPaste)
+            .on('keydown', hTxtKeyDown)
+            .on('keyup', hTxtKeyUp)
             .on("dragstart", falsify)
             .on("drop", falsify)
             .css(Object.assign({
@@ -212,6 +220,135 @@ const ElementSpawners = {
             .click(imgClick)
             .css(p);
     }
+};
+const hTxtMDown = function (e) {
+    state.target = $(e.delegateTarget);
+    state.addOnClick = undefined;
+};
+const hTxtMUp = function () {
+    const [startEl, _, endEl, __] = getSelectedNodes(getSel().getRangeAt(0));
+    let fontFam = $(startEl).css('font-family');
+    let fontSize = +$(startEl).css('font-size').slice(0, -2);
+    let index;
+    for (let n = startEl;;) {
+        const nextFam = $(n).css('font-family');
+        const nextSize = +$(n).css('font-size').slice(0, -2);
+        if (fontFam !== nextFam) {
+            index = -1;
+        }
+        if (nextSize < fontSize) {
+            fontSize = nextSize;
+        }
+        if (n === endEl)
+            break;
+        if (n.nextSibling === null) {
+            n = n.parentNode.nextSibling.firstChild;
+        }
+        else {
+            n = n.nextSibling;
+        }
+    }
+    $fontSelect[0].selectedIndex = index || Fonts.FontNames.indexOf(fontFam);
+    $fontSizeSelect.val(Math.round(fontSize / 96 * 72));
+};
+const hTxtClick = function (e) {
+    e.stopPropagation();
+    const $target = $(e.delegateTarget);
+    $toolBox.css(Object.assign({
+        visibility: 'visible'
+    }, $target.offset()));
+};
+const hTxtKeyDown = function (e) {
+    const ev = e.originalEvent;
+    const key = ev.keyCode;
+    if (ev.shiftKey && key === 13) {
+        e.preventDefault();
+    }
+    else if (ev.ctrlKey && key === 90) {
+        e.preventDefault();
+    }
+};
+const hTxtKeyUp = function (e) {
+    e.preventDefault();
+    const key = e.originalEvent.keyCode;
+    const range = getSel().getRangeAt(0);
+    if (range.collapsed && range.startContainer.isA("#text")) {
+        if (range.startContainer.parentNode.isA('P')) {
+            const p = range.startContainer.parentNode;
+            const insertTarget = range.startContainer.nextSibling;
+            const txt = p.removeChild(range.startContainer);
+            const w = make('span', txt);
+            p.insertBefore(w, insertTarget);
+            range.setEnd(txt, txt.textContent.length);
+            range.collapse();
+        }
+        else if (range.startContainer.parentNode.isA('DIV')) {
+            const box = range.startContainer.parentNode;
+            const insertTarget = range.startContainer.nextSibling;
+            const txt = box.removeChild(range.startContainer);
+            const span = make('span', txt);
+            box.insertBefore(make('p', span), insertTarget);
+            if (insertTarget && insertTarget.isA('BR'))
+                box.removeChild(insertTarget);
+            range.setEnd(txt, txt.textContent.length);
+            range.collapse();
+        }
+    }
+    if ((key >= 37 && key <= 40) || (key >= 33 && key <= 36)) {
+        hTxtMUp();
+    }
+};
+const hTxtPaste = async function (e) {
+    e.preventDefault();
+};
+const hFontChanged = function (e) {
+    const range = getSel().getRangeAt(0);
+    const fName = $fontSelect.val();
+    makeNodesFromSelection(range, function (curr) {
+        $(curr).css('font-family', fName);
+    });
+};
+let logoContentId;
+const hFileUploadChanged = function (e) {
+    let file = e.target.files[0];
+    console.log(file.type);
+    let fd = new FormData();
+    fd.append("file", file);
+    let req = jQuery.ajax({
+        url: web2print.links.apiUrl + "content",
+        method: "POST",
+        data: fd,
+        processData: false,
+        contentType: false
+    });
+    req.then(function (response) {
+        logoContentId = JSON.parse(response).contentId;
+    }, function (xhr) {
+        console.error('failed to fetch xhr', xhr);
+    });
+};
+const $fileUpBtn = $('#fileUpload').change(hFileUploadChanged);
+const imgClick = function (e) {
+    e.stopPropagation();
+    const target = $(e.delegateTarget);
+    imgTool.css(Object.assign({
+        visibility: 'visible',
+    }, target.offset()));
+};
+const getRotation = function () {
+    let transformMatrix = state.target.css('transform');
+    let angle = 0;
+    if (transformMatrix !== "none") {
+        let mat = transformMatrix.split('(')[1].split(')')[0].split(',');
+        let a = +mat[0];
+        let b = +mat[1];
+        let radians = Math.atan2(b, a);
+        if (radians < 0) {
+            radians += (2 * Math.PI);
+        }
+        angle = Math.round(radians * (180 / Math.PI));
+    }
+    return angle;
 };
 const Fonts = {
     FontNames: undefined,
@@ -558,11 +695,11 @@ const rsContainer = get('render-styles-container');
 const $navDotsUl = $('#nav-dots-container>ul');
 const $pageLabel = $('#nav-dots-container>span');
 const loadCard = function (card) {
+    if (!card)
+        return false;
     console.log('loading', card);
     document.querySelector('#preview-container>img').src
         = web2print.links.thumbnailUrl + card.thumbSlug;
-    Editor.loadedCard = card;
-    Editor.fitToContainer();
     for (let i = 0; i < RenderStyles.length; i++) {
         const renderStyle = RenderStyles[i];
         if (!renderStyle.condition(card))
@@ -571,8 +708,10 @@ const loadCard = function (card) {
         $(frag).text(renderStyle.name).attr('onclick', 'hRenderStyleChanged(' + i + ');');
         rsContainer.appendChild(frag);
     }
+    Editor.loadedCard = card;
+    Editor.fitToContainer();
+    Editor.createRuler();
     hRenderStyleChanged(0);
-    createRuler(card.cardFormat.width, card.cardFormat.height);
 };
 const hElementsLayerClick = function (e, target) {
     if (!state.addOnClick)
@@ -581,22 +720,6 @@ const hElementsLayerClick = function (e, target) {
     $(target).append(el);
     state.addOnClick = undefined;
 };
-$.get(web2print.links.apiUrl + 'card/' + Parameters.card)
-    .then(function (data) {
-    return new Promise(function (resolve, reject) {
-        if (data)
-            resolve(data);
-        else
-            reject();
-    });
-})
-    .then(loadCard)
-    .catch(function () {
-    alert(Parameters.card
-        ? 'Die Karte "' + Parameters.card + '" konnte nicht gefunden werden!'
-        : 'Es wurde keine Karte gefunden!');
-    location.href = web2print.links.basePath + 'tileview/tileview.html';
-});
 const state = {
     addOnClick: undefined,
     target: undefined,
@@ -606,132 +729,16 @@ const state = {
     dy: 0,
     range: undefined
 };
-const hTxtMDown = function (e) {
-    state.target = $(e.delegateTarget);
-    state.addOnClick = undefined;
+const hAddElClick = function (e) {
+    spawnNewEl($(e.target).attr('data-enum'));
 };
-const hTxtMUp = function () {
-    const [startEl, _, endEl, __] = getSelectedNodes(getSel().getRangeAt(0));
-    let fontFam = $(startEl).css('font-family');
-    let fontSize = +$(startEl).css('font-size').slice(0, -2);
-    let index;
-    for (let n = startEl;;) {
-        const nextFam = $(n).css('font-family');
-        const nextSize = +$(n).css('font-size').slice(0, -2);
-        if (fontFam !== nextFam) {
-            index = -1;
-        }
-        if (nextSize < fontSize) {
-            fontSize = nextSize;
-        }
-        if (n === endEl)
-            break;
-        if (n.nextSibling === null) {
-            n = n.parentNode.nextSibling.firstChild;
-        }
-        else {
-            n = n.nextSibling;
-        }
-    }
-    $fontSelect[0].selectedIndex = index || Fonts.FontNames.indexOf(fontFam);
-    $fontSizeSelect.val(Math.round(fontSize / 96 * 72));
-};
-const hElClick = function (e) {
-    e.stopPropagation();
-    const $target = $(e.delegateTarget);
-    $toolBox.css(Object.assign({
-        visibility: 'visible'
-    }, $target.offset()));
-};
-const hElPaste = async function (e) {
-    e.preventDefault();
-};
-const hElKeyDown = function (e) {
-    const ev = e.originalEvent;
-    const key = ev.keyCode;
-    if (ev.shiftKey && key === 13) {
-        e.preventDefault();
-    }
-    else if (ev.ctrlKey && key === 90) {
-        e.preventDefault();
+const spawnNewEl = function (objectType) {
+    state.addOnClick = ElementSpawners[objectType];
+    if (objectType === 'IMAGE') {
+        $fileUpBtn.click();
     }
 };
-const hElKeyUp = function (e) {
-    e.preventDefault();
-    const key = e.originalEvent.keyCode;
-    const range = getSel().getRangeAt(0);
-    if (range.collapsed && range.startContainer.isA("#text")) {
-        if (range.startContainer.parentNode.isA('P')) {
-            const p = range.startContainer.parentNode;
-            const insertTarget = range.startContainer.nextSibling;
-            const txt = p.removeChild(range.startContainer);
-            const w = make('span', txt);
-            p.insertBefore(w, insertTarget);
-            range.setEnd(txt, txt.textContent.length);
-            range.collapse();
-        }
-        else if (range.startContainer.parentNode.isA('DIV')) {
-            const box = range.startContainer.parentNode;
-            const insertTarget = range.startContainer.nextSibling;
-            const txt = box.removeChild(range.startContainer);
-            const span = make('span', txt);
-            box.insertBefore(make('p', span), insertTarget);
-            if (insertTarget && insertTarget.isA('BR'))
-                box.removeChild(insertTarget);
-            range.setEnd(txt, txt.textContent.length);
-            range.collapse();
-        }
-    }
-    if ((key >= 37 && key <= 40) || (key >= 33 && key <= 36)) {
-        hTxtMUp();
-    }
-};
-var logoContentId;
-$('.addElBtn').click(function (e) {
-    let targetData = $(e.target).data('enum');
-    state.addOnClick = ElementSpawners[targetData];
-    if (targetData === 'IMAGE') {
-        const fileUp = $('#fileUpload');
-        fileUp.change(function (evt) {
-            let file = evt.target.files[0];
-            console.log(file.type);
-            let fd = new FormData();
-            fd.append("file", file);
-            let req = jQuery.ajax({
-                url: web2print.links.apiUrl + "content",
-                method: "POST",
-                data: fd,
-                processData: false,
-                contentType: false
-            });
-            req.then(function (response) {
-                logoContentId = JSON.parse(response).contentId;
-            }, function (xhr) {
-                console.error('failed to fetch xhr', xhr);
-            });
-        });
-        fileUp.click();
-    }
-});
-$("#resize").mousedown(function (e) {
-    state.resizing = true;
-});
-$("#logoRotation").change(function (e) {
-    state.target.css('transform', 'rotate(' + $(this).val() + 'deg)');
-}).mouseup(function (e) {
-    e.stopPropagation();
-});
-const imgClick = function (e) {
-    e.stopPropagation();
-    const target = $(e.delegateTarget);
-    imgTool.css(Object.assign({
-        visibility: 'visible',
-    }, target.offset()));
-};
-$(".alignmentBtn").click(function () {
-    state.target.css('text-align', $(this).val());
-}).mouseup(stopPropagation);
-$(".fontTypeButton").click(function () {
+const hChangeFontType = function () {
     const classToAdd = $(this).val();
     const range = getSel().getRangeAt(0);
     let shouldRemoveClass = true;
@@ -751,25 +758,7 @@ $(".fontTypeButton").click(function () {
             curr = curr.nextSibling;
         }
     }
-}).mouseup(stopPropagation);
-const getRotation = function () {
-    let transformMatrix = state.target.css('transform');
-    let angle = 0;
-    if (transformMatrix !== "none") {
-        let mat = transformMatrix.split('(')[1].split(')')[0].split(',');
-        let a = +mat[0];
-        let b = +mat[1];
-        let radians = Math.atan2(b, a);
-        if (radians < 0) {
-            radians += (2 * Math.PI);
-        }
-        angle = Math.round(radians * (180 / Math.PI));
-    }
-    return angle;
 };
-$('#moveBtn').mousedown(function () {
-    state.dragging = true;
-});
 let $body = $('body').mousemove(function (e) {
     if (!state.dragging && !state.resizing)
         return;
@@ -817,49 +806,8 @@ let $body = $('body').mousemove(function (e) {
     }
     else {
         $toolBox.css('visibility', 'collapse');
-        imgTool.css('visibility', 'hidden');
+        imgTool.css('visibility', 'collapse');
     }
-});
-$('#submitBtn').click(serialize);
-const applyFont = function () {
-    const range = getSel().getRangeAt(0);
-    const fName = $fontSelect.val();
-    makeNodesFromSelection(range, function (curr) {
-        $(curr).css('font-family', fName);
-    });
-};
-const $fontSelect = $('#fontSelect')
-    .mouseup(stopPropagation)
-    .change(applyFont);
-$.get(web2print.links.apiUrl + 'fonts')
-    .then(Fonts.loadFonts)
-    .then(function (fonts) {
-    $fontSelect.append(fonts);
-})
-    .catch(function (e) {
-    alert('[fatal] something went wrong loading fonts: ' + JSON.stringify(e));
-});
-const $fontSizeSelect = $('#fontSizeSelect')
-    .mousedown(function (e) {
-    const s = getSel();
-    if (s.rangeCount === 1)
-        state.range = s.getRangeAt(0).cloneRange();
-})
-    .mouseup(stopPropagation)
-    .change(function (e) {
-    const fontSize = e.target.value;
-    const sel = getSel();
-    sel.removeAllRanges();
-    sel.addRange(state.range);
-    makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
-        $(curr).css('font-size', fontSize + 'pt');
-    });
-});
-$('.right>.nav-btn-inner').click(function () {
-    hPageSwitch(+1);
-});
-$('.left>.nav-btn-inner').click(function () {
-    hPageSwitch(-1);
 });
 const renderStyleState = {
     style: undefined,
@@ -899,6 +847,62 @@ const hPageSwitch = function (direction) {
     renderStyleState.getActiveDot().addClass('active');
     $pageLabel.text(renderStyleState.getActiveLabel());
 };
+$('.addElBtn').click(hAddElClick);
+$("#resize").mousedown(function (e) {
+    state.resizing = true;
+});
+$("#logoRotation").change(function (e) {
+    state.target.css('transform', 'rotate(' + $(this).val() + 'deg)');
+}).mouseup(stopPropagation);
+$(".alignmentBtn").click(function () {
+    state.target.css('text-align', $(this).val());
+}).mouseup(stopPropagation);
+$(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
+$('#moveBtn').mousedown(function () {
+    state.dragging = true;
+});
+$('#submitBtn').click(serialize);
+const $fontSelect = $('#fontSelect')
+    .mouseup(stopPropagation)
+    .change(hFontChanged);
+const $fontSizeSelect = $('#fontSizeSelect')
+    .mousedown(function (e) {
+    const s = getSel();
+    if (s.rangeCount === 1)
+        state.range = s.getRangeAt(0).cloneRange();
+})
+    .mouseup(stopPropagation)
+    .change(function (e) {
+    const fontSize = e.target.value;
+    const sel = getSel();
+    sel.removeAllRanges();
+    sel.addRange(state.range);
+    makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
+        $(curr).css('font-size', fontSize + 'pt');
+    });
+});
+$('.right>.nav-btn-inner').click(function () {
+    hPageSwitch(+1);
+});
+$('.left>.nav-btn-inner').click(function () {
+    hPageSwitch(-1);
+});
+$.get(web2print.links.apiUrl + 'card/' + Parameters.card)
+    .then(loadCard)
+    .catch(function () {
+    alert(Parameters.card
+        ? 'Die Karte "' + Parameters.card + '" konnte nicht geladen werden!'
+        : 'Es wurde keine Karte gefunden!');
+    location.href = web2print.links.basePath + 'tileview/tileview.html';
+});
+$.get(web2print.links.apiUrl + 'fonts')
+    .then(Fonts.loadFonts)
+    .then(function (fonts) {
+    $fontSelect.append(fonts);
+})
+    .catch(function (e) {
+    alert('[fatal] something went wrong loading fonts: ' + JSON.stringify(e));
+});
 if (Cookie.getValue('tutorial') !== 'no') {
     const $tutOver = $('<div style="position:absolute;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.66)"><div class="center" style="max-width:70%;max-height:70%;background-color:gray;padding:5px 5px 15px 5px;"><img src="./tutorial.gif" alt="" style="width:100%;height:100%;display:block;"><input type="checkbox" id="dont-show-again" style="margin:10px 2px 0 0;"><label for="dont-show-again">don\'t show again</label><button style="margin:5px 0 0 0;float: right;">Got It</button></div></div>');
     const dontShowAgain = $tutOver.find('input')[0];
@@ -909,16 +913,4 @@ if (Cookie.getValue('tutorial') !== 'no') {
         $tutOver.remove();
     });
     $body.append($tutOver);
-}
-let rulerRendered = false;
-function createRuler(width, height) {
-    if (!rulerRendered) {
-        const $topRuler = $('.ruler.top');
-        for (let i = 0; i < width; i += 5)
-            $topRuler.append($(make('li')).css('left', i + 'mm').attr('data-val', i / 10));
-        const $leftRuler = $('.ruler.left');
-        for (let i = 0; i < height; i += 5)
-            $leftRuler.append($(make('li')).css('top', i + 'mm').attr('data-val', i / 10));
-        rulerRendered = true;
-    }
 }

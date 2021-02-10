@@ -5,6 +5,7 @@ declare interface EditorObj {
   rotate     : number;
   apply()    : void;
   fitToContainer() : void;
+  createRuler() : void;
 }
 
 const Editor = {
@@ -25,5 +26,15 @@ const Editor = {
       this.$editorArea.height() * MMPerPx.x / (this.loadedCard.cardFormat.height + 55)
     ) * 0.9;
     this.apply();
+  },
+  createRuler: function() {
+    const $topRuler = $('.ruler.top');
+    //sadly the stepping needs to be done in js because the cumulative error of stacking css is noticeable
+    for(let i = 0; i < this.loadedCard.cardFormat.width; i += 5)
+      $topRuler.append($(make('li')).css('left', i + 'mm').attr('data-val', i / 10));
+
+    const $leftRuler = $('.ruler.left');
+    for(let i = 0; i < this.loadedCard.cardFormat.height; i += 5)
+      $leftRuler.append($(make('li')).css('top', i + 'mm').attr('data-val', i / 10));
   }
 } as EditorObj;
