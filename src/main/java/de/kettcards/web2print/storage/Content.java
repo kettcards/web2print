@@ -1,5 +1,8 @@
 package de.kettcards.web2print.storage;
 
+import de.kettcards.web2print.exceptions.content.ContentException;
+import de.kettcards.web2print.storage.contraint.MediaTypeFileExtension;
+import lombok.NonNull;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
@@ -175,6 +178,92 @@ public final class Content implements Resource {
 
     public List<StorageConstraint> getConstraints() {
         return Collections.unmodifiableList(constraints);
+    }
+
+    /*
+     * assertions
+     */
+
+    /**
+     * asserts that at least one ContentExtension is matchinf file extension and content type
+     *
+     * @param contentExtensions allowed content extensions
+     * @return matching content extension
+     * @throws ContentException if theres no match
+     */
+    public MediaTypeFileExtension assertContentExtension(@NonNull MediaTypeFileExtension... contentExtensions) throws ContentException {
+        if (this.contentType == null)
+            throw new ContentException("Media-Typ ist nicht gesetzt");
+        if (this.originalFilename == null)
+            throw new ContentException("keine gültige Dateiendung feststellbar");
+        for (var contentExtension : contentExtensions) {
+            for (var contentType : contentExtension.getContentTypes()) {
+                if (contentType.equals(this.contentType)) {
+                    for (var fileExtension : contentExtension.getFileExtensions()) {
+                        if (fileExtension.equals(originalFilename.substring(originalFilename.lastIndexOf('.')))) {
+                            return contentExtension;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        throw new ContentException("die Dateiendung \"" +
+                originalFilename.substring(originalFilename.lastIndexOf('.')) +
+                " \" wird nicht unterstützt");
+    }
+
+    /**
+     * asserts that content type matches at least one of the given
+     *
+     * @param contentTypes expected content types
+     * @return the matching content type
+     * @throws ContentException if content type doesn't match
+     */
+    public String assertContentType(@NonNull String... contentTypes) throws ContentException {
+        if (this.contentType == null)
+            throw new ContentException("Media-Typ ist nicht gesetzt");
+        for (var contentType : contentTypes) {
+            if (contentType.equals(this.contentType))
+                return contentType;
+        }
+        throw new ContentException("gewünschter Media-Typ wird nicht unterstützt: " + this.contentType);
+    }
+
+    /**
+     * asserts that the original file type matches at least one of the given extensions
+     *
+     * @param extensions expected file extensions
+     * @return the matching file extension
+     * @throws ContentException if file extension doesn't match
+     */
+    public String assertFileExtension(@NonNull String... extensions) throws ContentException {
+        if (this.originalFilename == null)
+            throw new ContentException("keine gültige Dateiendung feststellbar");
+        var thisExtension = originalFilename.substring(originalFilename.lastIndexOf('.'));
+        for (var extension : extensions) {
+            if (extension.equals(thisExtension)) {
+                return extension;
+            }
+        }
+        throw new ContentException("die Dateiendung \"" + thisExtension + " \" wird nicht unterstützt");
+    }
+
+    /**
+     * assert that file size is equals or below the given size
+     *
+     * @param maxBytes max file size in bytes
+     * @throws ContentException if the file size exceeds the given maximum
+     */
+    public void assertMaxFileSize(@NonNull Long maxBytes) throws ContentException {
+        long actualSize;
+        try {
+            actualSize = contentLength();
+        } catch (IOException ex) {
+            throw new ContentException("die Dateigröße kann nicht bestimmt werden");
+        }
+        if (actualSize > maxBytes)
+            throw new ContentException("Datei darf maximal " + maxBytes / (1024L * 1024L) + " MB groß sein");
     }
 
 }
