@@ -539,6 +539,15 @@ const getRotation = function(){
   return angle;
 };
 
+//colorchange
+const $colorpicker = $('#colorpicker').change(function(){
+  console.log($('#colorpicker').val());
+  const range = getSel().getRangeAt(0);
+  const color = $colorpicker.val();
+  makeNodesFromSelection(range, function(curr) {
+    $(curr).css('color', color);
+  })
+});
 
 //dragging
 $('#moveBtn').mousedown(function(){
@@ -675,7 +684,8 @@ const serializeSide = function($els, xOffs, target) {
                   f: $span.css('font-family'),
                   s: Math.round((+$span.css('font-size').slice(0,-2)) / 96 * 72),
                   a: attributes,
-                  t: $span.text()
+                  t: $span.text(),
+                  c: $span.css('color')
                 });
               } else {
                 console.warn('cannot serialize element', $span[0]);

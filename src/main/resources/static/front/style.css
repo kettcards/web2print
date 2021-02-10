@@ -282,6 +282,7 @@ body {
 .text span {
   font-style: normal;
   font-weight: 400;
+  color: black;
 }
 .text .b {
   font-weight: 700;
