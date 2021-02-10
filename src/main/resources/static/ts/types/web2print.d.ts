@@ -1,4 +1,4 @@
-interface Web2print {
+declare interface Web2print {
   links: {
         basePath : string;
 
@@ -10,7 +10,4 @@ interface Web2print {
   };
 }
 
-declare var web2print: Web2print;
-declare module "web2print" {
-  export = web2print;
-}
+declare const web2print: Web2print;

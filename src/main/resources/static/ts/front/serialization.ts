@@ -86,7 +86,7 @@ const serializeSide = function($els : JQuery, xOffs : number, target : Box[]) {
               const $span = $spans.eq(k);
               if(($span[0] as Node).isA('SPAN')) {
                 let attributes = 0;
-                for(const [c, v] of Object.entries(FontStyleValues))
+                for(const [c, v] of Object.entries(Fonts.FontStyleValues))
                   if ($span.hasClass(c))
                     attributes |= v;
                 box.r.push({

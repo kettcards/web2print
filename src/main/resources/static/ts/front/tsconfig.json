@@ -7,10 +7,13 @@
     "../macros.ts",
     "../parameters.ts",
     "../nodesFromSelection.ts",
-    "./editor.ts",
+    "../MMPerPx.ts",
+    "./Editor.ts",
+    "./ElementSpawners.ts",
+    "./Fonts.ts",
     "./serialization.ts",
     "./createFold.ts",
-    "./renderStyles.ts",
+    "./RenderStyles.ts",
     "./front.ts"
   ],
   "compilerOptions": {
@@ -19,6 +22,7 @@
     "target": "ES2017",
     "allowJs": true,
     "esModuleInterop": true,
+    "removeComments": true,
     "typeRoots": [
       "../types"
     ],

@@ -1,3 +1,5 @@
+/// <reference path="./macros.ts" />
+
 const getSelectedNodes = function (range: Range) : [Element, number, Element, number] {
   console.log('get', range);
   let startEl : Element, endEl : Element;

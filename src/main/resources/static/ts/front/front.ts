@@ -14,7 +14,6 @@ const loadCard = function(card : Card){
       = web2print.links.thumbnailUrl+card.thumbSlug;
 
   Editor.loadedCard = card;
-
   Editor.fitToContainer();
 
   for(let i = 0; i < RenderStyles.length; i++) {
@@ -56,43 +55,8 @@ $.get(web2print.links.apiUrl+'card/'+Parameters.card)
    location.href = web2print.links.basePath+'tileview/tileview.html';
  });
 
-const Spawner = {
-  TEXT: function(p){
-    return $('<div class="text" contenteditable="true"><p><span>Ihr Text Hier!</span></p></div>')
-      .mousedown(hTxtMDown)
-      .mouseup(hTxtMUp)
-      .click(hElClick)
-      .on('paste', hElPaste)
-      .on('keydown', hElKeyDown)
-      .on('keyup', hElKeyUp)
-        // (lucas 09.01.21)
-        // this is a quick fix to disable the glitchy behaviour when dragging selected text.
-        // unfortunately this also produces quite the rough experience when a user actually wants do use drag n drop
-      .on("dragstart", falsify)
-      .on("drop", falsify)
-      .css(Object.assign({
-        'font-family': defaultFont,
-        'font-size': '16pt'
-      }, p));
-  },
-  IMAGE: function(p){
-    return $("<img class='logo' src='"+web2print.links.apiUrl+"content/"+logoContentId+"' alt='"+logoContentId+"' draggable='false'>")
-        .mousedown(function(e){
-          state.target = $(e.delegateTarget);
-          state.addOnClick = undefined;
-          state.dragging = true;
-          $toolBox.css(Object.assign({
-            visibility: 'hidden',
-          }));
-        })
-        .click(imgClick)
-        .css(p);
-  },
-  GEOM: undefined,
-};
-
-declare interface StateObj {
-  addOnClick(css : { left : any, top : any }) : JQuery,
+interface StateObj {
+  addOnClick(css : JQuery.Coordinates) : JQuery,
   target       : JQuery,
   dragging     : boolean,
   resizing     : boolean,
@@ -141,7 +105,7 @@ const hTxtMUp = function(){
     }
   }
 
-  $fontSelect[0].selectedIndex = index || FontNames.indexOf(fontFam);
+  $fontSelect[0].selectedIndex = index || Fonts.FontNames.indexOf(fontFam);
 
   $fontSizeSelect.val(Math.round(fontSize / 96 * 72));
 };
@@ -253,7 +217,7 @@ const hElKeyUp = function(e) {
 var logoContentId;
 $('.addElBtn').click(function(e){
   let targetData = $(e.target).data('enum');
-  state.addOnClick = Spawner[targetData];
+  state.addOnClick = ElementSpawners[targetData];
   //trigger Fileupload
   if(targetData === 'IMAGE'){
     const fileUp = $<HTMLInputElement>('#fileUpload');
@@ -399,27 +363,11 @@ let $body = $('body').mousemove(function(e){
     state.dy = 0;
   }else {
     $toolBox.css('visibility', 'collapse');
-    imgTool.css('visibility', 'hidden');
+    imgTool .css('visibility', 'collapse');
   }
 });
 
-const MMPerPx = (function(){
-  const $resTester = $('<div style="height:100mm;width:100mm;visibility:collapse;"></div>')
-  $body.append($resTester);
-  const ret = { x: 100/$resTester.width(), y: 100/$resTester.height() };
-  $resTester.remove();
-  return ret;
-})();
-
 $('#submitBtn').click(serialize);
-
-const FontStyleValues = {
-  b: 0b001,
-  i: 0b010,
-  u: 0b100
-};
-const FontAttributeMap = {};
-let defaultFont;
 
 //font stuff
 const applyFont = function() {
@@ -433,70 +381,15 @@ const applyFont = function() {
 const $fontSelect = $<HTMLSelectElement>('#fontSelect')
   .mouseup(stopPropagation)
   .change(applyFont);
-let FontNames;
 
 $.get(web2print.links.apiUrl+'fonts')
- .then(function(data) {
-   FontNames = data;
-   let $options = new Array(data.length);
-   for(let i = 0; i < data.length; i++) {
-     const fName = data[i];
-     $options[i] = $('<option value="'+fName+'" style="font-family: '+fName+';">'+fName+'</option>');
-     beginLoadFont(fName);
-   }
-   $fontSelect.append($options);
-
-   //(lucas 18.01.21) todo: be more elegant about this, mbe explicitly spec it ?
-   defaultFont = data[0];
- }).catch(function(e) {
-  alert('[fatal] something went wrong loading fonts: '+JSON.stringify(e));
- });
-
-const beginLoadFont = function(name) {
-  return $.get(web2print.links.apiUrl+'font/'+name)
-    .then(loadFont)
-    .catch(function(e) {
-      alert('[error] could not load font: '+JSON.stringify(e));
-    });
-};
-
-
-declare interface IFontFace {
-  s  : string;
-  fs : 'normal' | 'italic';
-  fw : number | 'bold';
-  v  : number;
-}
-declare interface Font {
-  name  : string;
-  faces : IFontFace[];
-}
-
-// (lucas 04.01.21)
-// compat: this might need to use another api, coverage is 93% but that has to mean nothing
-const loadFont = function(font : Font) {
-  let attribs = {};
-  let promises = new Array(font.faces.length);
-  for(let i = 0; i < font.faces.length; i++) {
-    const face = font.faces[i];
-    promises[i] = new FontFace(font.name, 'url('+web2print.links.fontUrl+face.s+')', {
-      style: face.fs,
-      weight: String(face.fw)
-    })
-    .load()
-    .then(function(f){
-      document.fonts.add(f);
-      //todo dont just use b = bold, set the fontweights explicitly
-      attribs[face.v] = face.fw;
-    })
-    .catch(function(e) {
-      alert('[error] could not load font: '+JSON.stringify(e));
-    });
-  }
-  return Promise.allSettled(promises).then(function() {
-    FontAttributeMap[font.name] = attribs;
+  .then(Fonts.loadFonts)
+  .then(function(fonts : JQuery[]) {
+    $fontSelect.append(fonts);
+  })
+  .catch(function(e) {
+    alert('[fatal] something went wrong loading fonts: '+JSON.stringify(e));
   });
-};
 
 const $fontSizeSelect = $<HTMLInputElement>('#fontSizeSelect')
 .mousedown(function(e){
@@ -542,7 +435,7 @@ const renderStyleState : RenderStyleState = {
     return this.style.pageLabels[this.currentDotIndex];
   }
 };
-const hRenderStyleChanged = function(index) {
+const hRenderStyleChanged = function(index : number) {
   renderStyleState.style = RenderStyles[index];
   renderStyleState.currentDotIndex = renderStyleState.style.initialDotIndex;
   renderStyleState.dots = new Array(renderStyleState.style.pageLabels.length);
