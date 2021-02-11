@@ -1,10 +1,12 @@
 'use strict';
+import ScrollEvent = JQuery.ScrollEvent;
+
 const $toolBox       = $('#toolBox');
 const imgTool        = $('#imgTool');
 const $cardContainer = $('#card-container')
 const rsContainer = get('render-styles-container');
-const $navDotsUl  = $('#nav-dots-container>ul');
-const $pageLabel  = $('#nav-dots-container>span');
+const $navDotsUl  = $('.floater.bottom>ul');
+const $pageLabel  = $('.floater.bottom>span');
 
 // [call once]
 const loadCard = function(card : Card) : false | void {
@@ -99,55 +101,108 @@ const hChangeFontType = function() {
   }
 };
 
-let $body = $('body').mousemove(function(e){
-  if(!state.dragging && !state.resizing)
-    return;
+let $body = $('body')
+  .mousedown(function(e) {
+    // (lucas 11.02.21) I know e.which is deprecated, but there is no suitable replacement as of now
+    if(e.which === 2) {
+      Editor.beginDrag();
+      return false;
+    }
+  })
+  .mousemove(function(e) {
+    const ev = e.originalEvent;
+    const dx = ev.movementX;
+    const dy = ev.movementY;
 
-  const ev = e.originalEvent;
-  state.dx += ev.movementX;
-  state.dy += ev.movementY;
+    if(Editor.isDragging) {
+      Editor.drag(dx, dy);
+      Editor.apply();
+    }
 
-  if(state.resizing) {
-    state.target.css({
-      width: '+='+(ev.movementX),
-      height: '+='+(ev.movementY),
-    });
-  } else if(state.dragging) {
-    state.target.css('transform', 'translate('+state.dx/Editor.scale+'px, '+state.dy/Editor.scale+'px) rotate('+getRotation()+'deg)');
-    $toolBox.css('transform', 'translate('+state.dx+'px, calc(-100% + '+state.dy+'px))');
-    imgTool.css('transform', 'translate('+state.dx+'px, '+state.dy+'px)');
-  }
-}).mouseup(function() {
-  if(state.dragging){
-    if(state.dx !== 0 || state.dy !== 0){
+    if(!state.dragging && !state.resizing)
+      return;
+
+    state.dx += dx;
+    state.dy += dy;
+
+    if(state.resizing) {
       state.target.css({
-        left: '+='+state.dx/Editor.scale,
-        top : '+='+state.dy/Editor.scale,
-        transform: 'translate('+0+'px, '+0+'px) rotate('+getRotation()+'deg)',
+        width: '+='+dx,
+        height: '+='+dy,
       });
-      $toolBox.css({
-        left: '+='+state.dx,
-        top : '+='+state.dy,
-        transform: '',
-      });
-      imgTool.css({
-        left: '+='+state.dx,
-        top : '+='+state.dy,
-        transform: '',
-      });
+    } else if(state.dragging) {
+      state.target.css('transform', 'translate('+state.dx/Editor.scale+'px, '+state.dy/Editor.scale+'px) rotate('+getRotation()+'deg)');
+      $toolBox.css('transform', 'translate('+state.dx+'px, calc(-100% + '+state.dy+'px))');
+      imgTool.css('transform', 'translate('+state.dx+'px, '+state.dy+'px)');
+    }
+  }).mouseup(function() {
+    if(Editor.isDragging) {
+      Editor.endDrag();
+    } else if(state.dragging){
+      if(state.dx !== 0 || state.dy !== 0){
+        state.target.css({
+          left: '+='+state.dx/Editor.scale,
+          top : '+='+state.dy/Editor.scale,
+          transform: 'translate('+0+'px, '+0+'px) rotate('+getRotation()+'deg)',
+        });
+        $toolBox.css({
+          left: '+='+state.dx,
+          top : '+='+state.dy,
+          transform: '',
+        });
+        imgTool.css({
+          left: '+='+state.dx,
+          top : '+='+state.dy,
+          transform: '',
+        });
+        state.dx = 0;
+        state.dy = 0;
+      }
+      state.dragging = false;
+    } else if(state.resizing){
+      state.resizing = false;
       state.dx = 0;
       state.dy = 0;
+    } else {
+      $toolBox.css('visibility', 'collapse');
+      imgTool .css('visibility', 'collapse');
     }
-    state.dragging = false;
-  } else if(state.resizing){
-    state.resizing = false;
-    state.dx = 0;
-    state.dy = 0;
-  } else {
-    $toolBox.css('visibility', 'collapse');
-    imgTool .css('visibility', 'collapse');
+  });
+  // disable default browser scroll
+$(document)
+  .keydown(function(e) {
+    if(e.ctrlKey) {
+      if(e.key === '-') {
+        e.preventDefault();
+
+        Editor.scroll( 10);
+        Editor.apply();
+      } else if(e.key === '+') {
+        e.preventDefault();
+
+        Editor.scroll( -10);
+        Editor.apply();
+      }
+    }
+  });
+
+function preventScroll(e : WheelEvent) {
+  if(e.ctrlKey) {
+    e.preventDefault();
+
+    // (lucas 11.02.21) todo: find a better way to actually use the mouse wheel movement
+    // this sadly has to be done this way because the deltaY is inconsistent between browsers
+    Editor.scroll(Math.sign(e.deltaY) * 10);
+    Editor.apply();
+
+    return false;
   }
-});
+}
+// haha chrome, very funny.... cant prevent default on passive target...
+document.addEventListener('wheel',          preventScroll, {passive: false});
+document.addEventListener('mousewheel',     preventScroll, {passive: false});
+document.addEventListener('DOMMouseScroll', preventScroll, {passive: false});
+
 
 interface RenderStyleState {
   style            : RenderStyle;

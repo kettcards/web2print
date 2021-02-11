@@ -172,24 +172,53 @@ const Editor = {
     loadedCard: undefined,
     $transformAnchor: $('#transform-anchor'),
     $editorArea: $("#editor-area"),
+    $zoomLabel: $('#zoom-val'),
     scale: 1,
     translate: { x: 0, y: 0 },
     rotate: 0,
-    apply: function () {
-        this.$transformAnchor.css('transform', 'scale(' + this.scale + ', ' + this.scale + ') translate(' + this.translate.x + 'px,' + this.translate.y + 'px) rotateY(' + this.rotate + 'deg)');
+    apply() {
+        this.$zoomLabel.text(Math.round(this.scale * 100));
+        this.$transformAnchor.css('transform', `scale(${this.scale}, ${this.scale}) translate(${this.translate.x}px,${this.translate.y}px) rotateY(${this.rotate}deg)`);
     },
     fitToContainer() {
         this.scale = Math.min(this.$editorArea.width() * MMPerPx.x / (this.loadedCard.cardFormat.width + 55), this.$editorArea.height() * MMPerPx.x / (this.loadedCard.cardFormat.height + 55)) * 0.9;
+        this.translate.x = 0;
+        this.translate.y = 0;
+        this.rotate = 0;
         this.apply();
     },
-    createRuler: function () {
+    createRuler() {
         const $topRuler = $('.ruler.top');
         for (let i = 0; i < this.loadedCard.cardFormat.width; i += 5)
             $topRuler.append($(make('li')).css('left', i + 'mm').attr('data-val', i / 10));
         const $leftRuler = $('.ruler.left');
         for (let i = 0; i < this.loadedCard.cardFormat.height; i += 5)
             $leftRuler.append($(make('li')).css('top', i + 'mm').attr('data-val', i / 10));
-    }
+    },
+    isDragging: false,
+    translateStore: { x: 0, y: 0 },
+    deltaStore: { x: 0, y: 0 },
+    beginDrag() {
+        this.deltaStore.x = 0;
+        this.deltaStore.y = 0;
+        this.translateStore.x = this.translate.x;
+        this.translateStore.y = this.translate.y;
+        this.isDragging = true;
+        document.body.style.cursor = 'move';
+    },
+    drag(dx, dy) {
+        this.deltaStore.x += dx;
+        this.deltaStore.y += dy;
+        this.translate.x = this.translateStore.x + this.deltaStore.x / this.scale;
+        this.translate.y = this.translateStore.y + this.deltaStore.y / this.scale;
+    },
+    endDrag() {
+        this.isDragging = false;
+        document.body.style.cursor = 'default';
+    },
+    scroll(steps) {
+        this.scale += this.scale * steps * -0.01;
+    },
 };
 const ElementSpawners = {
     TEXT: function (p) {
@@ -692,8 +721,8 @@ const $toolBox = $('#toolBox');
 const imgTool = $('#imgTool');
 const $cardContainer = $('#card-container');
 const rsContainer = get('render-styles-container');
-const $navDotsUl = $('#nav-dots-container>ul');
-const $pageLabel = $('#nav-dots-container>span');
+const $navDotsUl = $('.floater.bottom>ul');
+const $pageLabel = $('.floater.bottom>span');
 const loadCard = function (card) {
     if (!card)
         return false;
@@ -759,16 +788,29 @@ const hChangeFontType = function () {
         }
     }
 };
-let $body = $('body').mousemove(function (e) {
+let $body = $('body')
+    .mousedown(function (e) {
+    if (e.which === 2) {
+        Editor.beginDrag();
+        return false;
+    }
+})
+    .mousemove(function (e) {
+    const ev = e.originalEvent;
+    const dx = ev.movementX;
+    const dy = ev.movementY;
+    if (Editor.isDragging) {
+        Editor.drag(dx, dy);
+        Editor.apply();
+    }
     if (!state.dragging && !state.resizing)
         return;
-    const ev = e.originalEvent;
-    state.dx += ev.movementX;
-    state.dy += ev.movementY;
+    state.dx += dx;
+    state.dy += dy;
     if (state.resizing) {
         state.target.css({
-            width: '+=' + (ev.movementX),
-            height: '+=' + (ev.movementY),
+            width: '+=' + dx,
+            height: '+=' + dy,
         });
     }
     else if (state.dragging) {
@@ -777,7 +819,10 @@ let $body = $('body').mousemove(function (e) {
         imgTool.css('transform', 'translate(' + state.dx + 'px, ' + state.dy + 'px)');
     }
 }).mouseup(function () {
-    if (state.dragging) {
+    if (Editor.isDragging) {
+        Editor.endDrag();
+    }
+    else if (state.dragging) {
         if (state.dx !== 0 || state.dy !== 0) {
             state.target.css({
                 left: '+=' + state.dx / Editor.scale,
@@ -809,6 +854,32 @@ let $body = $('body').mousemove(function (e) {
         imgTool.css('visibility', 'collapse');
     }
 });
+$(document)
+    .keydown(function (e) {
+    if (e.ctrlKey) {
+        if (e.key === '-') {
+            e.preventDefault();
+            Editor.scroll(10);
+            Editor.apply();
+        }
+        else if (e.key === '+') {
+            e.preventDefault();
+            Editor.scroll(-10);
+            Editor.apply();
+        }
+    }
+});
+function preventScroll(e) {
+    if (e.ctrlKey) {
+        e.preventDefault();
+        Editor.scroll(Math.sign(e.deltaY) * 10);
+        Editor.apply();
+        return false;
+    }
+}
+document.addEventListener('wheel', preventScroll, { passive: false });
+document.addEventListener('mousewheel', preventScroll, { passive: false });
+document.addEventListener('DOMMouseScroll', preventScroll, { passive: false });
 const renderStyleState = {
     style: undefined,
     currentDotIndex: undefined,
@@ -886,6 +957,9 @@ $('.right>.nav-btn-inner').click(function () {
 });
 $('.left>.nav-btn-inner').click(function () {
     hPageSwitch(-1);
+});
+$('#recenter-btn').click(function () {
+    Editor.fitToContainer();
 });
 $.get(web2print.links.apiUrl + 'card/' + Parameters.card)
     .then(loadCard)
