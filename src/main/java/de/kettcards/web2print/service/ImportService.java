@@ -33,17 +33,14 @@ public class ImportService {
      * @throws IOException if import was unsuccessful
      */
     public String importContent(Content content) throws IOException {
-        String response = "200"; //TODO response code should be int
         String originalName = content.getOriginalFilename();
 
         if (originalName == null) {
-            log.warn("file isn't defined or unavailable");
-            return "500";
+            throw new IOException("file isn't defined or unavailable");
         }
 
         if (content.getContentType() == null) {
-            log.warn("file doesn't have a content type");
-            return "500";
+            throw new IOException("file doesn't have a content type");
         }
 
         switch (content.getContentType()) {
@@ -52,17 +49,15 @@ public class ImportService {
                 break;
             case "image/jpeg":
             case "image/png":
-                response = textureImportService.importTexture(content);
+                textureImportService.importTexture(content);
                 break;
             case "application/pdf":
-                response = motiveImportService.importMotive(content);
+                motiveImportService.importMotive(content);
                 break;
             default:
-                response = "415";
-                log.warn(content.getContentType() + " is not a valid content type");
-                break;
+                throw new IOException(content.getContentType() + " is not a valid content type");
         }
-        return response;
+        return originalName;
     }
 
 

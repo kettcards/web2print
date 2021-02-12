@@ -1,5 +1,6 @@
 package de.kettcards.web2print.service;
 
+import de.kettcards.web2print.exceptions.importer.DatabaseEntryNotFoundException;
 import de.kettcards.web2print.model.db.Card;
 import de.kettcards.web2print.model.db.CardFormat;
 import de.kettcards.web2print.model.db.Motive;
@@ -11,6 +12,7 @@ import de.kettcards.web2print.repository.MotiveRepository;
 import de.kettcards.web2print.storage.Content;
 import de.kettcards.web2print.storage.StorageContextAware;
 import de.kettcards.web2print.storage.WebContextAware;
+import de.kettcards.web2print.storage.contraint.MediaTypeFileExtension;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -51,18 +53,19 @@ public class MotiveImportService extends StorageContextAware implements WebConte
         this.cardFormatRepository = cardFormatRepository;
     }
 
-    public String importMotive(Content content) {
+    public void importMotive(Content content) throws IOException {
         String name = content.getOriginalFilename();
         log.info("importing " + name);
         int lastDotIndex = name.lastIndexOf(".");
+        String extension = name.substring(lastDotIndex);
         name = name.substring(0, lastDotIndex);
+        Card card = cardRepository.findCardByOrderId(name);
 
-        try {
-            Card card = cardRepository.findCardByOrderId(name);
+        if (MediaTypeFileExtension.PDF.isValidFileExtension(extension)) {
             float scaleFactor = getScaleFactor();
             List<ByteArrayOutputStream> outputStreams = printPdfToImage(content.getInputStream(), scaleFactor);
             for (int i = 0; i < outputStreams.size(); i++) {
-                String out = null;
+                String out;
                 ByteArrayOutputStream stream = outputStreams.get(i);
                 if (stream.size() == 0)
                     continue;
@@ -76,30 +79,34 @@ public class MotiveImportService extends StorageContextAware implements WebConte
                         updateDatabase(out, card, "BACK");
                         break;
                     default:
-                        log.warn("unexpected page for document \"" + name + "\"");
+                        throw new IOException("unexpected page for document \"" + name + "\"");
                 }
-                if (out == null)
-                    continue;
-                save(new Content(new InMemoryResource(stream.toByteArray())), out);
+                try {
+                    save(new Content(new InMemoryResource(stream.toByteArray())), out);
+                } catch (IOException exception) {
+                    throw new IOException("failed to save " + name);
+                }
             }
-
-        } catch (IOException e) {
-            log.warn("unable to save motive \"" + name + "\"");
-            return "500";
+        } else {
+            //TODO: implement JPG(probably convert to PNG and also image quality probably not good enough for
+            // pdf generator), PNG
+            throw new IllegalArgumentException("Importing PNG and JPG (" + name + ")isn't implemented yet.");
         }
-        return "200";
     }
 
     public void importDefaultMotive(Content content) throws IOException {
         String originalFilename = content.getOriginalFilename();
-        String id = originalFilename.substring(0, originalFilename.lastIndexOf('.'));
+        int lastDotIndex = originalFilename.lastIndexOf('.');
+        String id = originalFilename.substring(0, lastDotIndex);
+        String extension = originalFilename.substring(lastDotIndex);
         var format = cardFormatRepository.findById(Integer.parseInt(id)).orElseThrow();
 
-        var streams = printPdfToImage(content.getInputStream(), getScaleFactor());
-
-        if (streams.get(0) != null) {
-            saveDefaultFormat(format, streams.get(0), "-front.png");
-        }
+        if (MediaTypeFileExtension.PDF.isValidFileExtension(extension)) {
+            try {
+                var streams = printPdfToImage(content.getInputStream(), getScaleFactor());
+                if (streams.get(0) != null) {
+                    saveDefaultFormat(format, streams.get(0), "-front.png");
+                }
 
         if (streams.get(1) != null) {
             saveDefaultFormat(format, streams.get(1), "-back.png");
@@ -123,7 +130,7 @@ public class MotiveImportService extends StorageContextAware implements WebConte
     }
 
 
-    private void updateDatabase(String motiveName, Card card, String side) {
+    private void updateDatabase(String motiveName, Card card, String side) throws DatabaseEntryNotFoundException {
         Motive frontMotive = new Motive();
         frontMotive.setTextureSlug(motiveName);
 
@@ -145,7 +152,7 @@ public class MotiveImportService extends StorageContextAware implements WebConte
             map.setMotiveMapId(mapId);
             motiveMapRepository.save(map);
         } else {
-            log.warn("couldn't map " + motiveName + " to a card because there is no database entry for it");
+            throw new DatabaseEntryNotFoundException("couldn't map " + motiveName + " to a card because there is no database entry for it");
         }
     }
 
