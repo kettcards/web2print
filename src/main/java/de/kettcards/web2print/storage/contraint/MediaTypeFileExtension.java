@@ -50,4 +50,11 @@ public class MediaTypeFileExtension {
 
     String[] contentTypes, fileExtensions;
 
+    public boolean isValidFileExtension(String extension) {
+        for (String fileExtension : fileExtensions) {
+            if (fileExtension.equals(extension)) return true;
+        }
+        return false;
+    }
+
 }
