@@ -29,9 +29,6 @@ public class ImageBoxData extends BoxData {
         PDImageXObject img = embedImage(doc, content);
         Matrix m = new Matrix(this.width,0,0,this.height,doc.getXOffset()+this.x,doc.getYOffset()+this.y);
         doc.stream().drawImage(img,m);
-        //int[] scaledDim = getScaledDimension(img.getWidth(), img.getHeight(), (int) width, (int) height);
-        //doc.stream().drawImage(img, x + doc.getXOffset(), y + doc.getYOffset(), scaledDim[0], scaledDim[1]);
-
     }
 
     /**
@@ -55,35 +52,4 @@ public class ImageBoxData extends BoxData {
                 throw new IOException("unsupported image type: " + type);
         }
     }
-
-    /**
-     *
-     * @param originalWidth image width
-     * @param originalHeight image height
-     * @param boundWidth bound width
-     * @param boundHeight bound height
-     * @return x, y coords for scaled image
-     */
-    private static int[] getScaledDimension(int originalWidth, int originalHeight, int boundWidth, int boundHeight) {
-        int newWidth = originalWidth;
-        int newHeight = originalHeight;
-
-        // first check if we need to scale width
-        if (originalWidth > boundWidth) {
-            //scale width to fit
-            newWidth = boundWidth;
-            //scale height to maintain aspect ratio
-            newHeight = (newWidth * originalHeight) / originalWidth;
-        }
-
-        // then check if we need to scale even with the new height
-        if (newHeight > boundHeight) {
-            //scale height to fit instead
-            newHeight = boundHeight;
-            //scale width to maintain aspect ratio
-            newWidth = (newHeight * originalWidth) / originalHeight;
-        }
-        return new int[]{newWidth, newHeight};
-    }
-
 }
