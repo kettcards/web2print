@@ -369,6 +369,7 @@ body {
 
 #imgTool {
   position: absolute;
+  transform: translateY(-100%);
 }
 
 #fileUpload {

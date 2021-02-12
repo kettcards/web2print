@@ -142,7 +142,7 @@ const Spawner = {
           state.addOnClick = undefined;
           state.dragging = true;
           $toolBox.css(Object.assign({
-            visibility: 'hidden',
+            visibility: 'collapse',
           }));
         })
         .click(imgClick)
@@ -559,7 +559,7 @@ let $body = $('body').mousemove(function(e){
   }else if(state.dragging) {
     state.target.css('transform', 'translate('+state.dx/EditorTransform.scale+'px, '+state.dy/EditorTransform.scale+'px) rotate('+getRotation()+'deg)');
     $toolBox.css('transform', 'translate('+state.dx+'px, calc(-100% + '+state.dy+'px))');
-    imgTool.css('transform', 'translate('+state.dx+'px, '+state.dy+'px)');
+    imgTool.css('transform', 'translate('+state.dx+'px, calc(-100% + '+state.dy+'px))');
   }
 }).mouseup(function(){
   if(state.dragging){
@@ -589,7 +589,7 @@ let $body = $('body').mousemove(function(e){
     state.dy = 0;
   }else {
     $toolBox.css('visibility', 'collapse');
-    imgTool.css('visibility', 'hidden');
+    imgTool.css('visibility', 'collapse');
   }
 });
 
