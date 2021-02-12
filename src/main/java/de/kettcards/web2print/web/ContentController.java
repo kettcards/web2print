@@ -2,7 +2,9 @@ package de.kettcards.web2print.web;
 
 
 import de.kettcards.web2print.storage.Content;
+import de.kettcards.web2print.storage.StorageConstraint;
 import de.kettcards.web2print.storage.StorageContextAware;
+import de.kettcards.web2print.storage.contraint.MediaTypeFileExtensionFilter;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -11,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 //TODO allow multiple multipart file resources,
 // bulk actions,
@@ -43,5 +47,10 @@ public class ContentController extends StorageContextAware {
     @Override
     public boolean keepExtension() {
         return true;
+    }
+
+    @Override
+    public List<StorageConstraint> getStorageConstraints() {
+        return Collections.singletonList(MediaTypeFileExtensionFilter.IMAGE);
     }
 }
