@@ -30,6 +30,7 @@ const loadCard = function(card : Card) : false | void {
   Editor.loadedCard = card;
   Editor.fitToContainer();
   Editor.createRuler();
+  Editor.enableTransition(true);
 
   hRenderStyleChanged(0);
 };
@@ -105,6 +106,7 @@ let $body = $('body')
   .mousedown(function(e) {
     // (lucas 11.02.21) I know e.which is deprecated, but there is no suitable replacement as of now
     if(e.which === 2) {
+      Editor.enableTransition(false);
       Editor.beginDrag();
       return false;
     }
@@ -138,6 +140,7 @@ let $body = $('body')
   }).mouseup(function() {
     if(Editor.isDragging) {
       Editor.endDrag();
+      Editor.enableTransition(true);
     } else if(state.dragging){
       if(state.dx !== 0 || state.dy !== 0){
         state.target.css({

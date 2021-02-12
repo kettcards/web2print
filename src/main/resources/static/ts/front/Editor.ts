@@ -12,6 +12,7 @@ declare interface EditorObj {
   drag(dx : number, dy : number) : void;
   endDrag()   : void;
   scroll(steps : number) : void;
+  enableTransition(enable : boolean) : void;
 }
 
 const Editor = {
@@ -25,7 +26,7 @@ const Editor = {
   apply() {
     // (lucas) cant use the proper matrix solution because the browser gets confused with the rotation direction :(
     this.$zoomLabel.text(Math.round(this.scale * 100));
-    this.$transformAnchor.css('transform', `scale(${this.scale}, ${this.scale}) translate(${this.translate.x}px,${this.translate.y}px) rotateY(${this.rotate}deg)`);
+    this.$transformAnchor.css('transform', `scale(${this.scale}) translate(${this.translate.x}px,${this.translate.y}px) rotateY(${this.rotate}deg)`);
   },
   fitToContainer() {
     // 55 additional pixels for the rulers
@@ -74,4 +75,8 @@ const Editor = {
   scroll(steps) {
     this.scale += this.scale * steps * -0.01;
   },
+  enableTransition(enable) {
+    this.$transformAnchor.css('transition', enable ? 'transform 1s' : '');
+  }
+
 } as EditorObj;

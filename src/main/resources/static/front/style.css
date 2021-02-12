@@ -157,10 +157,6 @@ body {
   float: right;
 }
 
-#transform-anchor {
-  transition: transform 1s;
-}
-
 .ruler {
   background-color: #d1d5d4;
   position: absolute;

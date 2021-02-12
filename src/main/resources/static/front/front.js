@@ -178,7 +178,7 @@ const Editor = {
     rotate: 0,
     apply() {
         this.$zoomLabel.text(Math.round(this.scale * 100));
-        this.$transformAnchor.css('transform', `scale(${this.scale}, ${this.scale}) translate(${this.translate.x}px,${this.translate.y}px) rotateY(${this.rotate}deg)`);
+        this.$transformAnchor.css('transform', `scale(${this.scale}) translate(${this.translate.x}px,${this.translate.y}px) rotateY(${this.rotate}deg)`);
     },
     fitToContainer() {
         this.scale = Math.min(this.$editorArea.width() * MMPerPx.x / (this.loadedCard.cardFormat.width + 55), this.$editorArea.height() * MMPerPx.x / (this.loadedCard.cardFormat.height + 55)) * 0.9;
@@ -219,6 +219,9 @@ const Editor = {
     scroll(steps) {
         this.scale += this.scale * steps * -0.01;
     },
+    enableTransition(enable) {
+        this.$transformAnchor.css('transition', enable ? 'transform 1s' : '');
+    }
 };
 const ElementSpawners = {
     TEXT: function (p) {
@@ -740,6 +743,7 @@ const loadCard = function (card) {
     Editor.loadedCard = card;
     Editor.fitToContainer();
     Editor.createRuler();
+    Editor.enableTransition(true);
     hRenderStyleChanged(0);
 };
 const hElementsLayerClick = function (e, target) {
@@ -791,6 +795,7 @@ const hChangeFontType = function () {
 let $body = $('body')
     .mousedown(function (e) {
     if (e.which === 2) {
+        Editor.enableTransition(false);
         Editor.beginDrag();
         return false;
     }
@@ -821,6 +826,7 @@ let $body = $('body')
 }).mouseup(function () {
     if (Editor.isDragging) {
         Editor.endDrag();
+        Editor.enableTransition(true);
     }
     else if (state.dragging) {
         if (state.dx !== 0 || state.dy !== 0) {
