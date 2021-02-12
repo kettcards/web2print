@@ -189,10 +189,11 @@ public final class Content implements Resource {
      * asserts that at least one ContentExtension is matching file extension and content type
      *
      * @param extensionFilter allowed content extensions
+     * @return matching content extension
      * @throws ContentException if theres no match
      */
-    public void assertContentExtension(@NonNull MediaTypeFileExtensionFilter extensionFilter) throws ContentException {
-        assertContentExtension(extensionFilter.getContentExtensions());
+    public MediaTypeFileExtension assertContentExtension(@NonNull MediaTypeFileExtensionFilter extensionFilter) throws ContentException {
+        return assertContentExtension(extensionFilter.getContentExtensions());
     }
 
     /**

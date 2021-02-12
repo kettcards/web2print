@@ -14,6 +14,8 @@ public class MediaTypeFileExtensionFilter implements StorageConstraint {
 
     public static final MediaTypeFileExtensionFilter IMAGE = new MediaTypeFileExtensionFilter(PNG, JPG, SVG, EPS);
 
+    public static final MediaTypeFileExtensionFilter BITMAP = new MediaTypeFileExtensionFilter(PNG, JPG);
+
     public static final MediaTypeFileExtensionFilter EXCEL = new MediaTypeFileExtensionFilter(XLSX);
 
     MediaTypeFileExtension[] contentExtensions;
