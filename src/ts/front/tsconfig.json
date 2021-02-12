@@ -22,7 +22,7 @@
     "./tutorial.ts"
   ],
   "compilerOptions": {
-    "outFile": "../../front/front.js",
+    "outFile": "../../main/resources/static/front/front.js",
     "module": "None",
     "target": "ES2017",
     "allowJs": true,
