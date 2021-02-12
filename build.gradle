@@ -124,6 +124,10 @@ task buildTs(type:Exec) {
 	standardOutput = System.out;
 }
 
+build {
+	dependsOn buildTs;
+}
+
 tasks.register("bootRunDebug") {
 	group = "application"
 	doFirst {
