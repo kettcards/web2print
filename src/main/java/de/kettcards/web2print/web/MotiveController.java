@@ -21,13 +21,9 @@ public final class MotiveController {
     private MotiveImportService motiveImportService;
 
     @PostMapping("/defaultMotive")
-    public ResponseEntity<String> saveStandardMotive(@RequestParam("file") MultipartFile file) {
-        try {
-            motiveImportService.importDefaultMotive(Content.from(file));
-            return ResponseEntity.ok("");
-        } catch (IOException ex) {
-            return ResponseEntity.badRequest().build();
-        }
+    public ResponseEntity<String> saveStandardMotive(@RequestParam("file") MultipartFile file) throws IOException {
+        motiveImportService.importDefaultMotive(Content.from(file));
+        return ResponseEntity.ok("");
     }
 
 
