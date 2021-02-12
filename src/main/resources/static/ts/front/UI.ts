@@ -52,3 +52,7 @@ $('.right>.nav-btn-inner').click(function() {
 $('.left>.nav-btn-inner').click(function() {
   hPageSwitch(-1);
 });
+
+$('#recenter-btn').click(function() {
+  Editor.fitToContainer();
+});
