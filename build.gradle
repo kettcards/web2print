@@ -119,7 +119,7 @@ task buildTs(type:Exec) {
 	dependsOn tasks.cleanJs
 
 	commandLine 'tools/node/14.15.4/win64/node.exe', "./tools/ts/4.0.b/tsc.js",
-			'-p', './src/ts/front/tsconfig.json'
+			'-p', './src/ts_front/front/tsconfig.json'
 
 	standardOutput = System.out;
 }
