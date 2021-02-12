@@ -217,7 +217,7 @@ const Editor = {
         document.body.style.cursor = 'default';
     },
     scroll(steps) {
-        this.scale += this.scale * steps * -0.01;
+        this.scale = Math.min(Math.max(this.scale + this.scale * steps * -0.01, 0.1), 5);
     },
     enableTransition(enable) {
         this.$transformAnchor.css('transition', enable ? 'transform 1s' : '');
