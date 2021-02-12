@@ -108,11 +108,18 @@ public class MotiveImportService extends StorageContextAware implements WebConte
                     saveDefaultFormat(format, streams.get(0), "-front.png");
                 }
 
-        if (streams.get(1) != null) {
-            saveDefaultFormat(format, streams.get(1), "-back.png");
+                if (streams.get(1) != null) {
+                    saveDefaultFormat(format, streams.get(1), "-back.png");
+                }
+                save(content, defaultPrefix.concat(originalFilename));
+            } catch (IOException exception) {
+                throw new IOException("500: encountered IOException while importing " + originalFilename);
+            }
+        } else {
+            //TODO: implement JPG(probably convert to PNG and also image quality probably not good enough for
+            // pdf generator), PNG
+            throw new IllegalArgumentException("Importing PNG and JPG (" + originalFilename + ")isn't implemented yet.");
         }
-
-        save(content, defaultPrefix.concat(originalFilename));
         Motive motive = new Motive();
         motive.setTextureSlug(originalFilename);
 
