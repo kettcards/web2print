@@ -275,6 +275,7 @@ body {
   margin: 0;
   transition: background-color 1s;
   outline: none;
+  line-height: 1.2;
 }
 .text:focus,
 .text:hover {
@@ -284,7 +285,6 @@ body {
 .text p {
   margin: 0;
   padding: 0;
-  line-height: 1;
 }
 
 .text span {

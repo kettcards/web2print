@@ -76,4 +76,6 @@ public class FontFace {
         return source;
     }
 
+    public TrueTypeFont getFont() { return font; }
+
 }
