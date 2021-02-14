@@ -2,6 +2,9 @@ type FontAttribs = { [key: number]: number; }
 interface FontsObj {
   defaultFont : string;
   FontNames   : string[];
+  $options    : JQuery;
+  $label      : JQuery;
+  currentSelection  : string;
   loadFonts(fontNames : string[]);
   FontStyleValues  : { [p: string]: number; };
   FontAttributeMap : { [key: string]: FontAttribs; };
@@ -24,6 +27,9 @@ interface Font {
 const Fonts = {
   FontNames: undefined,
   defaultFont: undefined,
+  $options: $('#font-options'),
+  $label: $('#font-label'),
+  currentSelection: undefined,
   FontStyleValues: {
     b: 0b001,
     i: 0b010,
@@ -34,7 +40,7 @@ const Fonts = {
     Fonts.FontNames = fontNames;
     for(let i = 0; i < fontNames.length; i++) {
       const fName = fontNames[i];
-      $options.append($(`<p style="font-family: ${fName};">${fName}</p>`));
+      Fonts.$options.append($(`<p style="font-family: ${fName};">${fName}</p>`));
       Fonts.beginLoadFont(fName);
     }
 

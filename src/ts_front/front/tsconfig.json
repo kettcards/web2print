@@ -19,8 +19,7 @@
     "./UI.ts",
     "./front.ts",
     "./index.ts",
-    "./tutorial.ts",
-    "./fontSelect.ts"
+    "./tutorial.ts"
   ],
   "compilerOptions": {
     "outFile": "../../main/resources/static/front/front.js",
