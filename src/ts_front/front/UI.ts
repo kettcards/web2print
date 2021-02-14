@@ -24,7 +24,7 @@ $('#moveBtn').mousedown(function(){
 
 $('#submitBtn').click(serialize);
 
-const $fontSelect = $<HTMLSelectElement>('#fontSelect')
+const $fontSelect = $<HTMLSelectElement>('#font-select')
   .mouseup(stopPropagation)
   .change(hFontChanged);
 

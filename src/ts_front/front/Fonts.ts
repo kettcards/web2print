@@ -2,7 +2,7 @@ type FontAttribs = { [key: number]: number; }
 interface FontsObj {
   defaultFont : string;
   FontNames   : string[];
-  loadFonts(fontNames : string[]) : JQuery[];
+  loadFonts(fontNames : string[]);
   FontStyleValues  : { [p: string]: number; };
   FontAttributeMap : { [key: string]: FontAttribs; };
 
@@ -32,17 +32,14 @@ const Fonts = {
   FontAttributeMap: {},
   loadFonts(fontNames) {
     Fonts.FontNames = fontNames;
-    let $options = new Array(fontNames.length);
     for(let i = 0; i < fontNames.length; i++) {
       const fName = fontNames[i];
-      $options[i] = $('<option value="'+fName+'" style="font-family: '+fName+';">'+fName+'</option>');
+      $options.append($(`<p style="font-family: ${fName};">${fName}</p>`));
       Fonts.beginLoadFont(fName);
     }
 
     //(lucas 18.01.21) todo: be more elegant about this, mbe explicitly spec it ?
     Fonts.defaultFont = fontNames[0];
-
-    return $options;
   },
   beginLoadFont: function(name : string) {
     return $.get(web2print.links.apiUrl+'font/'+name)

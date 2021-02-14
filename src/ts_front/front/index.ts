@@ -14,9 +14,6 @@ $.get(web2print.links.apiUrl+'card/'+Parameters.card)
 
 $.get(web2print.links.apiUrl+'fonts')
   .then(Fonts.loadFonts)
-  .then(function(fonts) {
-    $fontSelect.append(fonts);
-  })
   .catch(function(e) {
     alert('[fatal] something went wrong loading fonts: '+JSON.stringify(e));
   });

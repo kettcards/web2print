@@ -103,6 +103,9 @@ const hChangeFontType = function() {
 };
 
 let $body = $('body')
+  .click(function() {
+    $options.css('visibility', 'collapse');
+  })
   .mousedown(function(e) {
     // (lucas 11.02.21) I know e.which is deprecated, but there is no suitable replacement as of now
     if(e.which === 2) {
