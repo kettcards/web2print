@@ -19,7 +19,7 @@
       <div id="editor-container">
         <div id="toolbar">
           <div class="toolbar-row" >
-            <textSpan class="toolbar-label">Add Elements</textSpan>
+            <span class="toolbar-label">Add Elements</span>
             <div class="toolbar-buttons">
               <button class="addElBtn" data-enum="TEXT">Text</button>
               <button class="addElBtn" data-enum="IMAGE">Image</button>
@@ -27,8 +27,28 @@
               <button class="addElBtn" data-enum="GEOM" style="display: none">Geometry</button>
             </div>
           </div>
-          <div class="toolbar-row" data-name="dbg" style="display: none;">
+          <div class="toolbar-row" style="display: none;">
             <button onclick="debugger;"> test </button>
+          </div>
+          <div class="toolbar-row">
+            <span class="toolbar-label">Text</span>
+            <div>
+              <div class="text-tools-block">
+                <select id="fontSelect"></select><!--
+             --><label for="fontSizeSelect">Schriftgrö&szlig;e:&nbsp;</label><input type="number" id="fontSizeSelect" min="0" value="99">Pt
+              </div>
+              <div class="text-tools-block" id="text-btns">
+                <div class="toolbar-buttons">
+                  <button class="fontTypeButton" style="font-weight: bold" value="b">B</button><!--
+               --><button class="fontTypeButton" style="font-style: italic" value="i">I</button>
+                </div>
+                <div class="toolbar-buttons">
+                  <button class="alignmentBtn" value="left">L</button><!--
+               --><button class="alignmentBtn" value="center">C</button><!--
+               --><button class="alignmentBtn" value="right">R</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div id="editor-area">
@@ -77,24 +97,6 @@
         <button id="submitBtn">Submit</button>
       </div>
     </div>
-    <menu id="toolBox" style="visibility: collapse;">
-      <div>
-        <select id="fontSelect"></select><!--
-     --></div>
-      <div>
-        <input type="number" id="fontSizeSelect" min="0" value="99">
-      </div>
-      <div>
-        <button class="fontTypeButton" style="font-weight: bold" value="b">B</button><!--
-     --><button class="fontTypeButton" style="font-style: italic" value="i">I</button>
-      </div>
-      <div>
-        <button id="moveBtn"></button><!--
-     --><button class="alignmentBtn" value="left">L</button><!--
-     --><button class="alignmentBtn" value="center">C</button><!--
-     --><button class="alignmentBtn" value="right">R</button>
-      </div>      
-    </menu>
     </div>
     <div id="imgTool" style="visibility: collapse;">
       <button id="resize">Resize</button>

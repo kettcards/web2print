@@ -38,11 +38,6 @@ const hTxtMUp = function() {
 
 const hTxtClick = function(e : JQuery.ClickEvent) {
   e.stopPropagation();
-
-  const $target = $(e.delegateTarget);
-  $toolBox.css(Object.assign({
-    visibility: 'visible'
-  }, $target.offset()) as JQuery.PlainObject);
 };
 
 const hTxtKeyDown = function(e : JQuery.KeyDownEvent) {

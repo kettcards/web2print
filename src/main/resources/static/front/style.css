@@ -64,19 +64,21 @@ body {
 #toolbar {
   position: relative;
   z-index: 1;
-  /* using flex here removes the small spaces between the toolbar-rows */
-  display: flex;
   background-color: lightgray;
   overflow: hidden;
-  padding-top: 5px;
-  padding-left: 10px;
+  padding: 5px 0;
 }
 .toolbar-row {
   position: relative;
-  min-width: max-content;
+  display: inline-block;
+  vertical-align: top;
+  padding: 0 5px;
 }
 .toolbar-row:nth-child(n+2) {
   border-left: solid gray 1px;
+}
+.toolbar-row>* {
+  padding: 4px 0;
 }
 .toolbar-label {
   display: block;
@@ -84,6 +86,7 @@ body {
   text-align: center;
   white-space: nowrap;
   background-color: lightgray;
+  border-bottom: solid black 1px;
 }
 .toolbar-buttons {
   display: flex;
@@ -92,7 +95,37 @@ body {
 #toolbar button {
   padding: 8px 16px;
   font-size: 13px;
-  margin: 4px 2px;
+  margin: 2px;
+}
+
+#fontSelect {
+  outline: none;
+  display: block;
+  width: 100%;
+}
+#fontSizeSelect {
+  outline: none;
+  max-width: 6ex;
+  background: inherit;
+  font-size: inherit;
+  text-align: right;
+  box-sizing: border-box;
+  border: solid transparent 1px;
+}
+#fontSizeSelect:hover,
+#fontSizeSelect:active {
+  border-color: black;
+  background-color: white;
+}
+
+.text-tools-block {
+  display: inline-block;
+}
+
+#text-btns button {
+  width: 25px;
+  height: 25px;
+  padding: 0;
 }
 
 #editor-area {
@@ -338,39 +371,6 @@ body {
 }
 .floater.bottom li.active {
   background-color: #8c8585;
-}
-
-#toolBox {
-  position: absolute;
-  padding: 0;
-  margin: 0;
-  transform: translateY(-100%);
-  background-color: rgba(200, 200, 200, 0.6);
-  white-space: nowrap;
-}
-#fontSelect {
-  outline: none;
-}
-#fontSizeSelect {
-  outline: none;
-  max-width: 50px;
-  float: right;
-}
-#toolBox button {
-  position: relative;
-  width:  20pt;
-  height: 20pt;
-  box-sizing: border-box;
-  padding: 0;
-  margin: 1px;
-  font-size: 13px;
-}
-#toolBox #moveBtn {
-  position: absolute;
-  background: url(Move_Anchor.png);
-  border: none;
-  transform: translateX(-100%);
-  outline: none ;
 }
 
 .hFold{

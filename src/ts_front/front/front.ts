@@ -1,7 +1,5 @@
 'use strict';
-import ScrollEvent = JQuery.ScrollEvent;
 
-const $toolBox       = $('#toolBox');
 const imgTool        = $('#imgTool');
 const $cardContainer = $('#card-container')
 const rsContainer = get('render-styles-container');
@@ -134,7 +132,6 @@ let $body = $('body')
       });
     } else if(state.dragging) {
       state.target.css('transform', 'translate('+state.dx/Editor.scale+'px, '+state.dy/Editor.scale+'px) rotate('+getRotation()+'deg)');
-      $toolBox.css('transform', 'translate('+state.dx+'px, calc(-100% + '+state.dy+'px))');
       imgTool.css('transform', 'translate('+state.dx+'px, '+state.dy+'px)');
     }
   }).mouseup(function() {
@@ -147,11 +144,6 @@ let $body = $('body')
           left: '+='+state.dx/Editor.scale,
           top : '+='+state.dy/Editor.scale,
           transform: 'translate('+0+'px, '+0+'px) rotate('+getRotation()+'deg)',
-        });
-        $toolBox.css({
-          left: '+='+state.dx,
-          top : '+='+state.dy,
-          transform: '',
         });
         imgTool.css({
           left: '+='+state.dx,
@@ -167,7 +159,6 @@ let $body = $('body')
       state.dx = 0;
       state.dy = 0;
     } else {
-      $toolBox.css('visibility', 'collapse');
       imgTool .css('visibility', 'collapse');
     }
   });

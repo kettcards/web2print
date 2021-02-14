@@ -25,9 +25,6 @@ const ElementSpawners : { [p: string]: Spawner; } = {
         state.target = $(e.delegateTarget);
         state.addOnClick = undefined;
         state.dragging = true;
-        $toolBox.css(Object.assign({
-          visibility: 'hidden'
-        }));
       })
       .click(imgClick)
       .css(p as JQuery.PlainObject);
