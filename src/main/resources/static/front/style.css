@@ -50,6 +50,10 @@ body {
   position: absolute;
 }
 
+.render-select{
+  margin-left: 2px;
+}
+
 #submitBtn {
   position: absolute;
   bottom: 30px;
@@ -446,7 +450,7 @@ body {
   position: absolute;
 }
 
-.addElBtn,#submitBtn,.render-select {
+.addElBtn,#submitBtn,.render-select,#recenter-btn,#tutorial-btn {
   background-color: #003f73;
   border: #003f73 solid thin;
   color: white;
@@ -454,11 +458,11 @@ body {
   transition: background-color 0.3s,color 0.3s;
   outline: none;
 }
-.addElBtn:hover,#submitBtn:hover,.render-select:hover {
+.addElBtn:hover,#submitBtn:hover,.render-select:hover,#recenter-btn:hover,#tutorial-btn:hover {
   background-color: white;
   color: #003f73;
 }
-.addElBtn:active,#submitBtn:active,.render-select:active {
+.addElBtn:active,#submitBtn:active,.render-select:active,#recenter-btn:active,#tutorial-btn:active {
   background-color: #007ae1;
   color: white;
 }

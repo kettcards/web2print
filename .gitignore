@@ -118,3 +118,4 @@ src/main/resources/application-*Dev.properties
 /pdf_output/*
 /data/**
 !/data/fonts/**
+src/main/resources/static/front/front.js
