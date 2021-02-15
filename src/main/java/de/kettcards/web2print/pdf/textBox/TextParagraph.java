@@ -1,5 +1,10 @@
 package de.kettcards.web2print.pdf.textBox;
 
+import de.kettcards.web2print.model.fonts.SpanDimension;
+import de.kettcards.web2print.pdf.Document;
+import org.apache.fontbox.ttf.TrueTypeFont;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -11,34 +16,26 @@ public class TextParagraph {
 
     private final List<TextSpan> textSpans;
 
-    private final transient float largestFontSize;
-
-    public TextParagraph(List<TextSpan> textSpans) {
+    public TextParagraph(List<TextSpan> textSpans) throws IOException {
         this.textSpans = new ArrayList<>(textSpans);
-        this.largestFontSize = getLargestFontSize(textSpans);
     }
 
     /**
      *
-     * @return the largest font size present inside the current paragraph
-     */
-    public float getLargestFontSize() {
-        return largestFontSize;
-    }
-
-    /**
-     *
-     * @param textSpans spans
+     * @param doc document to obtain the Fonts
      * @return the largest font size present in the given spans
      */
-    public static float getLargestFontSize(List<TextSpan> textSpans) {
-        float size = 0;
+    public SpanDimension getLargestFontSize(Document doc) throws IOException {
+        SpanDimension largestDim = SpanDimension.getZeroInstance();
         for (var textSpan : textSpans) {
-            var newSize = textSpan.getFontSize();
-            if (newSize > size)
-                size = newSize;
+            TrueTypeFont ttf = doc.getFont(textSpan.getFontName(),textSpan.getFontStyle()).getValue();
+            var hhea = ttf.getHorizontalHeader();
+            var head = ttf.getHeader();
+            SpanDimension currentDim = new SpanDimension(hhea.getAscender(), hhea.getDescender(), head.getUnitsPerEm(), textSpan.getFontSize());
+            if (currentDim.getActualClientHeight() * SpanDimension.LINE_HEIGHT > largestDim.getActualClientHeight() * SpanDimension.LINE_HEIGHT)
+                largestDim = currentDim;
         }
-        return size;
+        return largestDim;
     }
 
     /**
