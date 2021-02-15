@@ -34,7 +34,7 @@ const imgClick = function(e){
 
 //function to return transform rotation angle of the state.target
 const getRotation = function(){
-  let transformMatrix = state.target.css('transform');
+  let transformMatrix = Editor.storage.$target.css('transform');
   let angle = 0;
   if(transformMatrix !== "none") {
     let mat = transformMatrix.split('(')[1].split(')')[0].split(',');

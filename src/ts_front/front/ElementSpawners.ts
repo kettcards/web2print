@@ -1,10 +1,10 @@
 type Spawner = (css : JQuery.Coordinates) => JQuery;
 
 const ElementSpawners : { [p: string]: Spawner; } = {
-  TEXT: function(p){
+  TEXT: function(p) {
     return $('<div class="text" contenteditable="true"><p><span>Ihr Text Hier!</span></p></div>')
-      .mousedown(hTxtMDown)
-      .mouseup(hTxtMUp)
+      .mousedown(TextEl.hMDown)
+      .mouseup(TextEl.hMUp)
       .click(hTxtClick)
       .on('paste', hTxtPaste)
       .on('keydown', hTxtKeyDown)
@@ -19,12 +19,11 @@ const ElementSpawners : { [p: string]: Spawner; } = {
         'font-size': '16pt'
       }, p) as JQuery.PlainObject);
   },
-  IMAGE: function(p){
+  IMAGE: function(p) {
     return $("<img class='logo' src='"+web2print.links.apiUrl+"content/"+logoContentId+"' alt='"+logoContentId+"' draggable='false'>")
-      .mousedown(function(e){
-        state.target = $(e.delegateTarget);
-        state.addOnClick = undefined;
-        state.dragging = true;
+      .mousedown(function(e) {
+        Editor.setTarget(e.delegateTarget);
+        Editor.state.isDraggingEl = true;
       })
       .click(imgClick)
       .css(p as JQuery.PlainObject);

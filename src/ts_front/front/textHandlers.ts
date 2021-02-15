@@ -1,40 +1,62 @@
 /// <reference path="../macros.ts" />
 /// <reference path="../nodesFromSelection.ts" />
 
-const hTxtMDown = function(e : JQuery.MouseDownEvent) {
-  state.target = $(e.delegateTarget);
-  state.addOnClick = undefined;
-};
-
-const hTxtMUp = function() {
-  const [startEl, _, endEl, __] = getSelectedNodes(getSel().getRangeAt(0));
-
-  let fontFam  =  $(startEl).css('font-family');
-  let fontSize = +$(startEl).css('font-size').slice(0, -2);
-  let index;
-  for(let n = startEl;;){
-    const nextFam  =  $(n).css('font-family');
-    const nextSize = +$(n).css('font-size').slice(0, -2);
-    if(fontFam !== nextFam){
-      index = -1;
-    }
-    if(nextSize < fontSize) {
-      fontSize = nextSize;
-    }
-
-    if(n === endEl)
-      break;
-    if(n.nextSibling === null) {
-      n = n.parentNode.nextSibling.firstChild as Element;
+class TextEl {
+  static hMDown(e : JQuery.MouseDownEvent) : void {
+    if(Editor.storage.target === e.delegateTarget) {
+      if(Editor.state.focusLvl === 1)
+        Editor.state.focusLvl = 2;
     } else {
-      n = n.nextSibling as Element;
+      Editor.storage.target   = e.delegateTarget;
+      Editor.state.focusLvl = 1;
+      e.preventDefault();
+      e.stopPropagation();
     }
   }
+  static hMUp(e : JQuery.MouseUpEvent) : void {
+    if(Editor.storage.target !== e.delegateTarget) {
+      Editor.setTarget(e.delegateTarget);
+      Editor.state.focusLvl = 1;
+    }
+    switch(Editor.state.focusLvl) {
+      case 1: TextEl.showHandlesFor(Editor.storage.target); break;
+      case 2: TextEl.displaySelectedProperties();           break;
+    }
+    e.stopPropagation();
+  }
+  static showHandlesFor(textEl : Element) : void {
+    console.log("[stub] - [showHandlesFor]");
+  }
+  static displaySelectedProperties() : void {
+    const [startEl, _, endEl, __] = getSelectedNodes(getSel().getRangeAt(0));
 
-  $fontSelect[0].selectedIndex = index || Fonts.FontNames.indexOf(fontFam);
+    let fontFam  =  $(startEl).css('font-family');
+    let fontSize = +$(startEl).css('font-size').slice(0, -2);
+    let index;
+    for(let n = startEl;;){
+      const nextFam  =  $(n).css('font-family');
+      const nextSize = +$(n).css('font-size').slice(0, -2);
+      if(fontFam !== nextFam){
+        index = -1;
+      }
+      if(nextSize < fontSize) {
+        fontSize = nextSize;
+      }
 
-  $fontSizeSelect.val(Math.round(fontSize / 96 * 72));
-};
+      if(n === endEl)
+        break;
+      if(n.nextSibling === null) {
+        n = n.parentNode.nextSibling.firstChild as Element;
+      } else {
+        n = n.nextSibling as Element;
+      }
+    }
+
+    $fontSelect[0].selectedIndex = index || Fonts.FontNames.indexOf(fontFam);
+
+    $fontSizeSelect.val(Math.round(fontSize / 96 * 72));
+  }
+}
 
 const hTxtClick = function(e : JQuery.ClickEvent) {
   e.stopPropagation();
@@ -84,7 +106,7 @@ const hTxtKeyUp = function(e : JQuery.KeyUpEvent) {
   }
 
   if((key >= 37 && key <= 40) || (key >= 33 && key <= 36)) {
-    hTxtMUp();
+    TextEl.displaySelectedProperties();
   }
 };
 

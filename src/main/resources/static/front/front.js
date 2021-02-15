@@ -168,66 +168,125 @@ const MMPerPx = (function () {
     $resTester.remove();
     return ret;
 })();
-const Editor = {
-    loadedCard: undefined,
-    $transformAnchor: $('#transform-anchor'),
-    $editorArea: $("#editor-area"),
-    $zoomLabel: $('#zoom-val'),
-    scale: 1,
-    translate: { x: 0, y: 0 },
-    rotate: 0,
-    apply() {
-        this.$zoomLabel.text(Math.round(this.scale * 100));
-        this.$transformAnchor.css('transform', `scale(${this.scale}) translate(${this.translate.x}px,${this.translate.y}px) rotateY(${this.rotate}deg)`);
-    },
-    fitToContainer() {
-        this.scale = Math.min(this.$editorArea.width() * MMPerPx.x / (this.loadedCard.cardFormat.width + 55), this.$editorArea.height() * MMPerPx.x / (this.loadedCard.cardFormat.height + 55)) * 0.9;
-        this.translate.x = 0;
-        this.translate.y = 0;
-        this.rotate = 0;
-        this.apply();
-    },
-    createRuler() {
-        const $topRuler = $('.ruler.top');
-        for (let i = 0; i < this.loadedCard.cardFormat.width; i += 5)
-            $topRuler.append($(make('li')).css('left', i + 'mm').attr('data-val', i / 10));
-        const $leftRuler = $('.ruler.left');
-        for (let i = 0; i < this.loadedCard.cardFormat.height; i += 5)
-            $leftRuler.append($(make('li')).css('top', i + 'mm').attr('data-val', i / 10));
-    },
-    isDragging: false,
-    translateStore: { x: 0, y: 0 },
-    deltaStore: { x: 0, y: 0 },
-    beginDrag() {
-        this.deltaStore.x = 0;
-        this.deltaStore.y = 0;
-        this.translateStore.x = this.translate.x;
-        this.translateStore.y = this.translate.y;
-        this.isDragging = true;
+class Editor {
+    static setTarget(t) {
+        Editor.storage.target = t;
+        Editor.storage.$target = $(t);
+    }
+    static clearTarget() {
+        Editor.storage.target = undefined;
+        Editor.storage.$target = undefined;
+        Editor.state.focusLvl = 0;
+        console.log('clear target');
+    }
+    static beginDragEl() {
+        Editor.storage.dx = 0;
+        Editor.storage.dy = 0;
+    }
+    static dragEl(dx, dy) {
+        Editor.storage.dx += dx;
+        Editor.storage.dy += dy;
+        Editor.storage.$target.css('transform', `translate(${Editor.storage.dx / Editor.transform.scale}px, ${Editor.storage.dy / Editor.transform.scale}px)`);
+    }
+    static endDragEl() {
+        Editor.state.isDraggingEl = false;
+        const storage = Editor.storage;
+        if (storage.dx === 0 && storage.dy === 0)
+            return;
+        Editor.storage.$target.css({
+            top: `+=${storage.dy / Editor.transform.scale}`,
+            left: `+=${storage.dx / Editor.transform.scale}`,
+            transform: 'rotate(' + getRotation() + 'deg)',
+        });
+        storage.dx = 0;
+        storage.dy = 0;
+    }
+    static beginDragSelf() {
+        const storage = Editor.storage;
+        storage.x = 0;
+        storage.y = 0;
+        storage.dx = 0;
+        storage.dy = 0;
+        Editor.state.isDraggingSelf = true;
         document.body.style.cursor = 'move';
-    },
-    drag(dx, dy) {
-        this.deltaStore.x += dx;
-        this.deltaStore.y += dy;
-        this.translate.x = this.translateStore.x + this.deltaStore.x / this.scale;
-        this.translate.y = this.translateStore.y + this.deltaStore.y / this.scale;
-    },
-    endDrag() {
-        this.isDragging = false;
+    }
+    static dragSelf(dx, dy) {
+        const storage = Editor.storage;
+        storage.dx += dx;
+        storage.dy += dy;
+        const transform = Editor.transform;
+        transform.translateX = storage.x + storage.dx / transform.scale;
+        transform.translateY = storage.y + storage.dy / transform.scale;
+        Editor.applyTransform();
+    }
+    static endDragSelf() {
+        Editor.state.isDraggingSelf = false;
         document.body.style.cursor = 'default';
-    },
-    scroll(steps) {
-        this.scale = Math.min(Math.max(this.scale + this.scale * steps * -0.01, 0.1), 5);
-    },
-    enableTransition(enable) {
+    }
+    static zoom(steps) {
+        const scale = Editor.transform.scale;
+        Editor.transform.scale = Math.min(Math.max(scale + scale * steps * -0.01, 0.1), 5);
+        Editor.applyTransform();
+        Editor.displayZoom();
+    }
+    static fitToContainer() {
+        Editor.transform.scale = Math.min(Editor.$editorArea.width() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.width + 55), Editor.$editorArea.height() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.height + 55)) * 0.9;
+        Editor.transform.translateX = 0;
+        Editor.transform.translateY = 0;
+        Editor.transform.rotate = 0;
+        Editor.applyTransform();
+        Editor.displayZoom();
+    }
+    static applyTransform() {
+        const transform = Editor.transform;
+        Editor.$transformAnchor.css('transform', `scale(${transform.scale}) translate(${transform.translateX}px,${transform.translateY}px) rotateY(${transform.rotate}deg)`);
+    }
+    static displayZoom() {
+        Editor.$zoomLabel.text(Math.round(Editor.transform.scale * 100));
+    }
+    static enableTransition(enable) {
         this.$transformAnchor.css('transition', enable ? 'transform 1s' : '');
     }
+    static createRuler() {
+        const $topRuler = $('.ruler.top');
+        for (let i = 0; i < Editor.storage.loadedCard.cardFormat.width; i += 5)
+            $topRuler.append($(make('li')).css('left', i + 'mm').attr('data-val', i / 10));
+        const $leftRuler = $('.ruler.left');
+        for (let i = 0; i < Editor.storage.loadedCard.cardFormat.height; i += 5)
+            $leftRuler.append($(make('li')).css('top', i + 'mm').attr('data-val', i / 10));
+    }
+}
+Editor.$transformAnchor = $('#transform-anchor');
+Editor.$editorArea = $('#editor-area');
+Editor.$zoomLabel = $('#zoom-val');
+Editor.transform = {
+    scale: 1,
+    translateX: 0,
+    translateY: 1,
+    rotate: 0
+};
+Editor.state = {
+    focusLvl: 0,
+    isDraggingEl: false,
+    isDraggingSelf: false,
+    isResizingEl: false,
+};
+Editor.storage = {
+    loadedCard: undefined,
+    x: 0,
+    y: 0,
+    dx: 0,
+    dy: 0,
+    target: undefined,
+    $target: undefined,
+    addOnClick: undefined,
+    range: undefined,
 };
 const ElementSpawners = {
     TEXT: function (p) {
         return $('<div class="text" contenteditable="true"><p><span>Ihr Text Hier!</span></p></div>')
-            .mousedown(hTxtMDown)
-            .mouseup(hTxtMUp)
+            .mousedown(TextEl.hMDown)
+            .mouseup(TextEl.hMUp)
             .click(hTxtClick)
             .on('paste', hTxtPaste)
             .on('keydown', hTxtKeyDown)
@@ -242,44 +301,71 @@ const ElementSpawners = {
     IMAGE: function (p) {
         return $("<img class='logo' src='" + web2print.links.apiUrl + "content/" + logoContentId + "' alt='" + logoContentId + "' draggable='false'>")
             .mousedown(function (e) {
-            state.target = $(e.delegateTarget);
-            state.addOnClick = undefined;
-            state.dragging = true;
+            Editor.setTarget(e.delegateTarget);
+            Editor.state.isDraggingEl = true;
         })
             .click(imgClick)
             .css(p);
     }
 };
-const hTxtMDown = function (e) {
-    state.target = $(e.delegateTarget);
-    state.addOnClick = undefined;
-};
-const hTxtMUp = function () {
-    const [startEl, _, endEl, __] = getSelectedNodes(getSel().getRangeAt(0));
-    let fontFam = $(startEl).css('font-family');
-    let fontSize = +$(startEl).css('font-size').slice(0, -2);
-    let index;
-    for (let n = startEl;;) {
-        const nextFam = $(n).css('font-family');
-        const nextSize = +$(n).css('font-size').slice(0, -2);
-        if (fontFam !== nextFam) {
-            index = -1;
-        }
-        if (nextSize < fontSize) {
-            fontSize = nextSize;
-        }
-        if (n === endEl)
-            break;
-        if (n.nextSibling === null) {
-            n = n.parentNode.nextSibling.firstChild;
+class TextEl {
+    static hMDown(e) {
+        if (Editor.storage.target === e.delegateTarget) {
+            if (Editor.state.focusLvl === 1)
+                Editor.state.focusLvl = 2;
         }
         else {
-            n = n.nextSibling;
+            Editor.storage.target = e.delegateTarget;
+            Editor.state.focusLvl = 1;
+            e.preventDefault();
+            e.stopPropagation();
         }
     }
-    $fontSelect[0].selectedIndex = index || Fonts.FontNames.indexOf(fontFam);
-    $fontSizeSelect.val(Math.round(fontSize / 96 * 72));
-};
+    static hMUp(e) {
+        if (Editor.storage.target !== e.delegateTarget) {
+            Editor.setTarget(e.delegateTarget);
+            Editor.state.focusLvl = 1;
+        }
+        switch (Editor.state.focusLvl) {
+            case 1:
+                TextEl.showHandlesFor(Editor.storage.target);
+                break;
+            case 2:
+                TextEl.displaySelectedProperties();
+                break;
+        }
+        e.stopPropagation();
+    }
+    static showHandlesFor(textEl) {
+        console.log("[stub] - [showHandlesFor]");
+    }
+    static displaySelectedProperties() {
+        const [startEl, _, endEl, __] = getSelectedNodes(getSel().getRangeAt(0));
+        let fontFam = $(startEl).css('font-family');
+        let fontSize = +$(startEl).css('font-size').slice(0, -2);
+        let index;
+        for (let n = startEl;;) {
+            const nextFam = $(n).css('font-family');
+            const nextSize = +$(n).css('font-size').slice(0, -2);
+            if (fontFam !== nextFam) {
+                index = -1;
+            }
+            if (nextSize < fontSize) {
+                fontSize = nextSize;
+            }
+            if (n === endEl)
+                break;
+            if (n.nextSibling === null) {
+                n = n.parentNode.nextSibling.firstChild;
+            }
+            else {
+                n = n.nextSibling;
+            }
+        }
+        $fontSelect[0].selectedIndex = index || Fonts.FontNames.indexOf(fontFam);
+        $fontSizeSelect.val(Math.round(fontSize / 96 * 72));
+    }
+}
 const hTxtClick = function (e) {
     e.stopPropagation();
 };
@@ -320,7 +406,7 @@ const hTxtKeyUp = function (e) {
         }
     }
     if ((key >= 37 && key <= 40) || (key >= 33 && key <= 36)) {
-        hTxtMUp();
+        TextEl.displaySelectedProperties();
     }
 };
 const hTxtPaste = async function (e) {
@@ -361,7 +447,7 @@ const imgClick = function (e) {
     }, target.offset()));
 };
 const getRotation = function () {
-    let transformMatrix = state.target.css('transform');
+    let transformMatrix = Editor.storage.$target.css('transform');
     let angle = 0;
     if (transformMatrix !== "none") {
         let mat = transformMatrix.split('(')[1].split(')')[0].split(',');
@@ -732,33 +818,25 @@ const loadCard = function (card) {
         $(frag).text(renderStyle.name).attr('onclick', 'hRenderStyleChanged(' + i + ');');
         rsContainer.appendChild(frag);
     }
-    Editor.loadedCard = card;
+    Editor.storage.loadedCard = card;
     Editor.fitToContainer();
     Editor.createRuler();
     Editor.enableTransition(true);
     hRenderStyleChanged(0);
 };
 const hElementsLayerClick = function (e, target) {
-    if (!state.addOnClick)
+    if (!Editor.storage.addOnClick)
         return;
-    const el = state.addOnClick({ left: e.offsetX, top: e.offsetY });
+    e.stopPropagation();
+    const el = Editor.storage.addOnClick({ left: e.offsetX, top: e.offsetY });
     $(target).append(el);
-    state.addOnClick = undefined;
-};
-const state = {
-    addOnClick: undefined,
-    target: undefined,
-    dragging: false,
-    resizing: false,
-    dx: 0,
-    dy: 0,
-    range: undefined
+    Editor.storage.addOnClick = undefined;
 };
 const hAddElClick = function (e) {
     spawnNewEl($(e.target).attr('data-enum'));
 };
 const spawnNewEl = function (objectType) {
-    state.addOnClick = ElementSpawners[objectType];
+    Editor.storage.addOnClick = ElementSpawners[objectType];
     if (objectType === 'IMAGE') {
         $fileUpBtn.click();
     }
@@ -788,83 +866,71 @@ let $body = $('body')
     .mousedown(function (e) {
     if (e.which === 2) {
         Editor.enableTransition(false);
-        Editor.beginDrag();
+        Editor.beginDragSelf();
         return false;
     }
-})
-    .mousemove(function (e) {
+}).mousemove(function (e) {
     const ev = e.originalEvent;
     const dx = ev.movementX;
     const dy = ev.movementY;
-    if (Editor.isDragging) {
-        Editor.drag(dx, dy);
-        Editor.apply();
-    }
-    if (!state.dragging && !state.resizing)
+    if (Editor.state.isDraggingSelf) {
+        Editor.dragSelf(dx, dy);
         return;
-    state.dx += dx;
-    state.dy += dy;
-    if (state.resizing) {
-        state.target.css({
+    }
+    if (Editor.state.isDraggingEl) {
+        Editor.dragEl(dx, dy);
+        imgTool.css('transform', 'translate(' + Editor.storage.dx + 'px, ' + Editor.storage.dy + 'px)');
+        return;
+    }
+    if (Editor.state.isResizingEl) {
+        Editor.storage.dx += dx;
+        Editor.storage.dy += dy;
+        Editor.storage.$target.css({
             width: '+=' + dx,
             height: '+=' + dy,
         });
     }
-    else if (state.dragging) {
-        state.target.css('transform', 'translate(' + state.dx / Editor.scale + 'px, ' + state.dy / Editor.scale + 'px) rotate(' + getRotation() + 'deg)');
-        imgTool.css('transform', 'translate(' + state.dx + 'px, ' + state.dy + 'px)');
-    }
 }).mouseup(function () {
-    if (Editor.isDragging) {
-        Editor.endDrag();
+    const storage = Editor.storage;
+    const state = Editor.state;
+    if (state.isDraggingSelf) {
+        Editor.endDragSelf();
         Editor.enableTransition(true);
     }
-    else if (state.dragging) {
-        if (state.dx !== 0 || state.dy !== 0) {
-            state.target.css({
-                left: '+=' + state.dx / Editor.scale,
-                top: '+=' + state.dy / Editor.scale,
-                transform: 'translate(' + 0 + 'px, ' + 0 + 'px) rotate(' + getRotation() + 'deg)',
-            });
+    if (state.isDraggingEl) {
+        if (storage.dx !== 0 || storage.dy !== 0) {
             imgTool.css({
-                left: '+=' + state.dx,
-                top: '+=' + state.dy,
+                left: '+=' + storage.dx,
+                top: '+=' + storage.dy,
                 transform: '',
             });
-            state.dx = 0;
-            state.dy = 0;
         }
-        state.dragging = false;
+        Editor.endDragEl();
     }
-    else if (state.resizing) {
-        state.resizing = false;
-        state.dx = 0;
-        state.dy = 0;
+    if (state.isResizingEl) {
+        state.isResizingEl = false;
+        storage.dx = 0;
+        storage.dy = 0;
     }
-    else {
-        imgTool.css('visibility', 'collapse');
-    }
-});
+    imgTool.css('visibility', 'collapse');
+}).click(Editor.clearTarget);
 $(document)
     .keydown(function (e) {
     if (e.ctrlKey) {
         if (e.key === '-') {
             e.preventDefault();
-            Editor.scroll(10);
-            Editor.apply();
+            Editor.zoom(10);
         }
         else if (e.key === '+') {
             e.preventDefault();
-            Editor.scroll(-10);
-            Editor.apply();
+            Editor.zoom(-10);
         }
     }
 });
 function preventScroll(e) {
     if (e.ctrlKey) {
         e.preventDefault();
-        Editor.scroll(Math.sign(e.deltaY) * 10);
-        Editor.apply();
+        Editor.zoom(Math.sign(e.deltaY) * 10);
         return false;
     }
 }
@@ -900,7 +966,7 @@ const hRenderStyleChanged = function (index) {
     }
     range.selectNodeContents($cardContainer[0]);
     range.deleteContents();
-    $cardContainer.append(renderStyleState.style.pageGen(Editor.loadedCard));
+    $cardContainer.append(renderStyleState.style.pageGen(Editor.storage.loadedCard));
 };
 const hPageSwitch = function (direction) {
     renderStyleState.style.hPageChanged(direction);
@@ -911,18 +977,15 @@ const hPageSwitch = function (direction) {
 };
 $('.addElBtn').click(hAddElClick);
 $("#resize").mousedown(function (e) {
-    state.resizing = true;
+    Editor.state.isResizingEl = true;
 });
 $("#logoRotation").change(function (e) {
-    state.target.css('transform', 'rotate(' + $(this).val() + 'deg)');
+    Editor.storage.$target.css('transform', 'rotate(' + $(this).val() + 'deg)');
 }).mouseup(stopPropagation);
 $(".alignmentBtn").click(function () {
-    state.target.css('text-align', $(this).val());
+    Editor.storage.$target.css('text-align', $(this).val());
 }).mouseup(stopPropagation);
 $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
-$('#moveBtn').mousedown(function () {
-    state.dragging = true;
-});
 $('#submitBtn').click(serialize);
 const $fontSelect = $('#fontSelect')
     .mouseup(stopPropagation)
@@ -931,14 +994,14 @@ const $fontSizeSelect = $('#fontSizeSelect')
     .mousedown(function (e) {
     const s = getSel();
     if (s.rangeCount === 1)
-        state.range = s.getRangeAt(0).cloneRange();
+        Editor.storage.range = s.getRangeAt(0).cloneRange();
 })
     .mouseup(stopPropagation)
     .change(function (e) {
     const fontSize = e.target.value;
     const sel = getSel();
     sel.removeAllRanges();
-    sel.addRange(state.range);
+    sel.addRange(Editor.storage.range);
     makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
         $(curr).css('font-size', fontSize + 'pt');
     });

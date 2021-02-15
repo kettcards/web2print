@@ -5,22 +5,18 @@
 $('.addElBtn').click(hAddElClick);
 
 $("#resize").mousedown(function(e){
-  state.resizing = true;
+  Editor.state.isResizingEl = true;
 });
 
 $("#logoRotation").change(function(e){
-  state.target.css('transform', 'rotate('+ $(this).val()+'deg)');
+  Editor.storage.$target.css('transform', 'rotate('+ $(this).val()+'deg)');
 }).mouseup(stopPropagation);
 
 $(".alignmentBtn").click(function(){
-  state.target.css('text-align', $(this).val() as string);
+  Editor.storage.$target.css('text-align', $(this).val() as string);
 }).mouseup(stopPropagation);
 
 $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
-
-$('#moveBtn').mousedown(function(){
-  state.dragging = true;
-});
 
 $('#submitBtn').click(serialize);
 
@@ -32,14 +28,14 @@ const $fontSizeSelect = $<HTMLInputElement>('#fontSizeSelect')
   .mousedown(function(e){
     const s = getSel();
     if(s.rangeCount === 1)
-      state.range = s.getRangeAt(0).cloneRange();
+      Editor.storage.range = s.getRangeAt(0).cloneRange();
   })
   .mouseup(stopPropagation)
   .change(function(e) {
     const fontSize = e.target.value;
     const sel = getSel();
     sel.removeAllRanges();
-    sel.addRange(state.range);
+    sel.addRange(Editor.storage.range);
     makeNodesFromSelection(sel.getRangeAt(0), function(curr) {
       $(curr).css('font-size', fontSize+'pt');
     });

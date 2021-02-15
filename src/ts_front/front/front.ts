@@ -25,7 +25,7 @@ const loadCard = function(card : Card) : false | void {
     rsContainer.appendChild(frag);
   }
 
-  Editor.loadedCard = card;
+  Editor.storage.loadedCard = card;
   Editor.fitToContainer();
   Editor.createRuler();
   Editor.enableTransition(true);
@@ -36,31 +36,13 @@ const loadCard = function(card : Card) : false | void {
 // spawning new elements
 // [called inline]
 const hElementsLayerClick = function(e : MouseEvent, target : Node) {
-  if(!state.addOnClick)
+  if(!Editor.storage.addOnClick)
     return;
-  const el = state.addOnClick({left: e.offsetX, top: e.offsetY});
+  e.stopPropagation();
+
+  const el = Editor.storage.addOnClick({left: e.offsetX, top: e.offsetY});
   $(target).append(el);
-  state.addOnClick = undefined;
-};
-
-interface StateObj {
-  addOnClick(css : JQuery.Coordinates) : JQuery,
-  target       : JQuery,
-  dragging     : boolean,
-  resizing     : boolean,
-  dx           : number,
-  dy           : number,
-  range        : Range,
-}
-
-const state : StateObj = {
-  addOnClick: undefined,
-  target: undefined,
-  dragging: false,
-  resizing: false,
-  dx: 0,
-  dy: 0,
-  range: undefined
+  Editor.storage.addOnClick = undefined;
 };
 
 //(lucas 10.02.21) todo: rework this to generated elements and inline calls
@@ -68,7 +50,7 @@ const hAddElClick = function(e) {
   spawnNewEl($(e.target).attr('data-enum') as string);
 }
 const spawnNewEl = function(objectType : string) {
-  state.addOnClick = ElementSpawners[objectType];
+  Editor.storage.addOnClick = ElementSpawners[objectType];
   // (lucas 10.02.21) todo: dont do this
   if(objectType === 'IMAGE') {
     $fileUpBtn.click();
@@ -105,77 +87,70 @@ let $body = $('body')
     // (lucas 11.02.21) I know e.which is deprecated, but there is no suitable replacement as of now
     if(e.which === 2) {
       Editor.enableTransition(false);
-      Editor.beginDrag();
+      Editor.beginDragSelf();
       return false;
     }
-  })
-  .mousemove(function(e) {
+  }).mousemove(function(e) {
     const ev = e.originalEvent;
     const dx = ev.movementX;
     const dy = ev.movementY;
 
-    if(Editor.isDragging) {
-      Editor.drag(dx, dy);
-      Editor.apply();
+    if(Editor.state.isDraggingSelf) {
+      Editor.dragSelf(dx, dy);
+      return;
     }
 
-    if(!state.dragging && !state.resizing)
+    if(Editor.state.isDraggingEl) {
+      Editor.dragEl(dx, dy);
+      imgTool.css('transform', 'translate('+Editor.storage.dx+'px, '+Editor.storage.dy+'px)');
       return;
+    }
 
-    state.dx += dx;
-    state.dy += dy;
+    if(Editor.state.isResizingEl) {
+      Editor.storage.dx += dx;
+      Editor.storage.dy += dy;
 
-    if(state.resizing) {
-      state.target.css({
-        width: '+='+dx,
+      Editor.storage.$target.css({
+        width:  '+='+dx,
         height: '+='+dy,
       });
-    } else if(state.dragging) {
-      state.target.css('transform', 'translate('+state.dx/Editor.scale+'px, '+state.dy/Editor.scale+'px) rotate('+getRotation()+'deg)');
-      imgTool.css('transform', 'translate('+state.dx+'px, '+state.dy+'px)');
     }
   }).mouseup(function() {
-    if(Editor.isDragging) {
-      Editor.endDrag();
+    const storage = Editor.storage;
+    const state   = Editor.state;
+    if(state.isDraggingSelf) {
+      Editor.endDragSelf();
       Editor.enableTransition(true);
-    } else if(state.dragging){
-      if(state.dx !== 0 || state.dy !== 0){
-        state.target.css({
-          left: '+='+state.dx/Editor.scale,
-          top : '+='+state.dy/Editor.scale,
-          transform: 'translate('+0+'px, '+0+'px) rotate('+getRotation()+'deg)',
-        });
+    }
+    if(state.isDraggingEl) {
+      if(storage.dx !== 0 || storage.dy !== 0){
         imgTool.css({
-          left: '+='+state.dx,
-          top : '+='+state.dy,
+          left: '+='+storage.dx,
+          top : '+='+storage.dy,
           transform: '',
         });
-        state.dx = 0;
-        state.dy = 0;
       }
-      state.dragging = false;
-    } else if(state.resizing){
-      state.resizing = false;
-      state.dx = 0;
-      state.dy = 0;
-    } else {
-      imgTool .css('visibility', 'collapse');
+      Editor.endDragEl();
     }
-  });
-  // disable default browser scroll
+    if(state.isResizingEl) {
+      state.isResizingEl = false;
+      storage.dx = 0;
+      storage.dy = 0;
+    }
+
+    imgTool.css('visibility', 'collapse');
+  }).click(Editor.clearTarget);
+
+// disable default browser scroll
 $(document)
   .keydown(function(e) {
     if(e.ctrlKey) {
       if(e.key === '-') {
         e.preventDefault();
-
-        Editor.scroll( 10);
-        Editor.apply();
+        Editor.zoom( 10);
       } else if(e.key === '+') {
         e.preventDefault();
-
-        Editor.scroll( -10);
-        Editor.apply();
+        Editor.zoom(-10);
       }
     }
   });
@@ -183,19 +158,16 @@ $(document)
 function preventScroll(e : WheelEvent) {
   if(e.ctrlKey) {
     e.preventDefault();
-
     // (lucas 11.02.21) todo: find a better way to actually use the mouse wheel movement
-    // this sadly has to be done this way because the deltaY is inconsistent between browsers
-    Editor.scroll(Math.sign(e.deltaY) * 10);
-    Editor.apply();
-
+    // this sadly have to just be hardcoded steps because the deltaY is inconsistent between browsers
+    Editor.zoom(Math.sign(e.deltaY) * 10);
     return false;
   }
 }
 // haha chrome, very funny.... cant prevent default on passive target...
-document.addEventListener('wheel',          preventScroll, {passive: false});
-document.addEventListener('mousewheel',     preventScroll, {passive: false});
-document.addEventListener('DOMMouseScroll', preventScroll, {passive: false});
+document.addEventListener('wheel',          preventScroll, { passive: false });
+document.addEventListener('mousewheel',     preventScroll, { passive: false });
+document.addEventListener('DOMMouseScroll', preventScroll, { passive: false });
 
 
 interface RenderStyleState {
@@ -238,7 +210,7 @@ const hRenderStyleChanged = function(index : number) {
 
   range.selectNodeContents($cardContainer[0]);
   range.deleteContents();
-  $cardContainer.append(renderStyleState.style.pageGen(Editor.loadedCard));
+  $cardContainer.append(renderStyleState.style.pageGen(Editor.storage.loadedCard));
 };
 
 const hPageSwitch = function(direction) {
