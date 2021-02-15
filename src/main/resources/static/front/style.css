@@ -387,10 +387,6 @@ body {
   height: 100%;
 }
 
-#imgTool {
-  position: absolute;
-}
-
 #fileUpload {
   display: none;
 }

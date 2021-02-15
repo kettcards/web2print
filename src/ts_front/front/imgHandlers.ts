@@ -23,15 +23,6 @@ const hFileUploadChanged = function(e) {
 
 const $fileUpBtn = $<HTMLInputElement>('#fileUpload').change(hFileUploadChanged);
 
-const imgClick = function(e){
-  e.stopPropagation();
-
-  const target = $(e.delegateTarget);
-  imgTool.css(Object.assign({
-    visibility: 'visible',
-  }, target.offset()) as  JQuery.PlainObject);
-}
-
 //function to return transform rotation angle of the state.target
 const getRotation = function(){
   let transformMatrix = Editor.storage.$target.css('transform');

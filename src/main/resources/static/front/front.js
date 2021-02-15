@@ -304,7 +304,7 @@ const ElementSpawners = {
             Editor.setTarget(e.delegateTarget);
             Editor.state.isDraggingEl = true;
         })
-            .click(imgClick)
+            .click(stopPropagation)
             .css(p);
     }
 };
@@ -439,13 +439,6 @@ const hFileUploadChanged = function (e) {
     });
 };
 const $fileUpBtn = $('#fileUpload').change(hFileUploadChanged);
-const imgClick = function (e) {
-    e.stopPropagation();
-    const target = $(e.delegateTarget);
-    imgTool.css(Object.assign({
-        visibility: 'visible',
-    }, target.offset()));
-};
 const getRotation = function () {
     let transformMatrix = Editor.storage.$target.css('transform');
     let angle = 0;
@@ -799,7 +792,6 @@ const RenderStyles = [{
             p2r: 0
         }
     }];
-const imgTool = $('#imgTool');
 const $cardContainer = $('#card-container');
 const rsContainer = get('render-styles-container');
 const $navDotsUl = $('.floater.bottom>ul');
@@ -879,7 +871,6 @@ let $body = $('body')
     }
     if (Editor.state.isDraggingEl) {
         Editor.dragEl(dx, dy);
-        imgTool.css('transform', 'translate(' + Editor.storage.dx + 'px, ' + Editor.storage.dy + 'px)');
         return;
     }
     if (Editor.state.isResizingEl) {
@@ -898,13 +889,6 @@ let $body = $('body')
         Editor.enableTransition(true);
     }
     if (state.isDraggingEl) {
-        if (storage.dx !== 0 || storage.dy !== 0) {
-            imgTool.css({
-                left: '+=' + storage.dx,
-                top: '+=' + storage.dy,
-                transform: '',
-            });
-        }
         Editor.endDragEl();
     }
     if (state.isResizingEl) {
@@ -912,7 +896,6 @@ let $body = $('body')
         storage.dx = 0;
         storage.dy = 0;
     }
-    imgTool.css('visibility', 'collapse');
 }).click(Editor.clearTarget);
 $(document)
     .keydown(function (e) {

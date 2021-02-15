@@ -25,7 +25,7 @@ const ElementSpawners : { [p: string]: Spawner; } = {
         Editor.setTarget(e.delegateTarget);
         Editor.state.isDraggingEl = true;
       })
-      .click(imgClick)
+      .click(stopPropagation)
       .css(p as JQuery.PlainObject);
   }
 };

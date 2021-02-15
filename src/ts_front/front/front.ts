@@ -1,6 +1,5 @@
 'use strict';
 
-const imgTool        = $('#imgTool');
 const $cardContainer = $('#card-container')
 const rsContainer = get('render-styles-container');
 const $navDotsUl  = $('.floater.bottom>ul');
@@ -102,7 +101,6 @@ let $body = $('body')
 
     if(Editor.state.isDraggingEl) {
       Editor.dragEl(dx, dy);
-      imgTool.css('transform', 'translate('+Editor.storage.dx+'px, '+Editor.storage.dy+'px)');
       return;
     }
 
@@ -123,13 +121,6 @@ let $body = $('body')
       Editor.enableTransition(true);
     }
     if(state.isDraggingEl) {
-      if(storage.dx !== 0 || storage.dy !== 0){
-        imgTool.css({
-          left: '+='+storage.dx,
-          top : '+='+storage.dy,
-          transform: '',
-        });
-      }
       Editor.endDragEl();
     }
     if(state.isResizingEl) {
@@ -137,8 +128,6 @@ let $body = $('body')
       storage.dx = 0;
       storage.dy = 0;
     }
-
-    imgTool.css('visibility', 'collapse');
   }).click(Editor.clearTarget);
 
 // disable default browser scroll
