@@ -1013,10 +1013,27 @@ function showTutorial() {
         '</div>' +
         '<br style="clear: left">' +
         '<div>' +
-        '<h3>Zoomen und Bewegen der Karte:</h3>' +
+        '<h3>Bewegen und Zoomen der Karte:</h3>' +
+        '<img src="./CardMoveTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">' +
         '<p>Durch gedrückt halten vom Mausrad (Maustaste 3) kann die Karte im Editor bewegt werden.<br>' +
-        'Halten Sie die Steuerungstaste (STRG/CTRL) und scrollen Sie gleichzeitig, so können Sie in der Karte zoomen.<br>' +
         'Um auf den Anfangszustand zu kommen können Sie auf "Zentrieren" drücken.</p>' +
+        '<br style="clear: left">' +
+        '<img src="./ScrollTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">' +
+        '<p>Halten Sie die Steuerungstaste (STRG/CTRL) und scrollen Sie gleichzeitig, so können Sie in der Karte zoomen.<br>' +
+        'Um auf den Anfangszustand zu kommen können Sie auf "Zentrieren" drücken.</p>' +
+        '</div>' +
+        '<br style="clear: left">' +
+        '<div>' +
+        '<h3>Ändern der Ansicht:</h3>' +
+        '<img src="./ViewsTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">' +
+        '<p>Mit den dem entsprechenden Knöpfen können Sie die Ansicht ändern.<br>' +
+        '"Druckbogen" - Die Seite wird als Druckbogen angezeigt (Innen- und Außenseite)<br>' +
+        '"einzelne Seiten" - Die Karte kann im Editor auf geklappt werden.</p>' +
+        '</div><br style="clear: left">' +
+        '<div>' +
+        '<h3>Abschließen des Editierens</h3>' +
+        '<p>Wenn Sie mit dem Editieren der Karte fertig sind können Sie mit dem "PDF erzeugen" Knopf ihr Nutzer-Design' +
+        'zu Kettcards abschicken.</p>' +
         '</div>' +
         '<input type="checkbox" id="dont-show-again" style="margin:10px 2px 0 0;">' +
         '<label for="dont-show-again">nicht erneut anzeigen</label>' +
