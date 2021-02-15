@@ -1,3 +1,17 @@
+class ImageEl {
+  static hMDown(e : JQuery.MouseDownEvent) : void {
+    switch(Editor.state) {
+      case EditorStates.EL_FOCUSED:
+        if(Editor.storage.target === e.delegateTarget) {
+          Editor.beginDragEl();
+          break;
+        }
+      default:
+        El.hMDown(e);
+    }
+  }
+}
+
 let logoContentId;
 
 const hFileUploadChanged = function(e) {

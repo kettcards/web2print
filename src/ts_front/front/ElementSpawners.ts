@@ -5,7 +5,7 @@ const ElementSpawners : { [p: string]: Spawner; } = {
     return $('<div class="text" contenteditable="true"><p><span>Ihr Text Hier!</span></p></div>')
       .mousedown(TextEl.hMDown)
       .mouseup(TextEl.hMUp)
-      .click(hTxtClick)
+      .click(stopPropagation)
       .on('paste', hTxtPaste)
       .on('keydown', hTxtKeyDown)
       .on('keyup', hTxtKeyUp)
@@ -21,11 +21,8 @@ const ElementSpawners : { [p: string]: Spawner; } = {
   },
   IMAGE: function(p) {
     return $("<img class='logo' src='"+web2print.links.apiUrl+"content/"+logoContentId+"' alt='"+logoContentId+"' draggable='false'>")
-      .mousedown(function(e) {
-        Editor.setTarget(e.delegateTarget);
-        ResizeBars.show();
-        Editor.beginDragEl();
-      })
+      .mousedown(ImageEl.hMDown)
+      .mouseup(El.hMUp)
       .click(stopPropagation)
       .css(p as JQuery.PlainObject);
   }

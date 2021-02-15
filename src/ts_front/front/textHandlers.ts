@@ -3,29 +3,24 @@
 
 class TextEl {
   static hMDown(e : JQuery.MouseDownEvent) : void {
-    if(Editor.state.focusLvl === 0 || Editor.storage.target !== e.delegateTarget) {
-      Editor.setTarget(e.delegateTarget);
-      if(ResizeBars.visible)
-        ResizeBars.show();
-      Editor.state.focusLvl = 1;
-      Editor.beginDragEl();
-      e.preventDefault();
-      e.stopPropagation();
+    switch(Editor.state) {
+      case EditorStates.EL_FOCUSED:
+      case EditorStates.TXT_EDITING:
+        if(Editor.storage.target === e.delegateTarget) {
+          Editor.state = EditorStates.TXT_EDITING;
+          break;
+        }
+      default:
+        El.hMDown(e);
     }
   }
   static hMUp(e : JQuery.MouseUpEvent) : void {
-    if(Editor.storage.target !== e.delegateTarget)
-      return;
-
-    switch(Editor.state.focusLvl) {
-      case 1: {
-        Editor.state.focusLvl = 2;
-        ResizeBars.show();
-      } break;
-      case 2: {
-        TextEl.displaySelectedProperties();
+    switch(Editor.state) {
+      case EditorStates.TXT_EDITING:
         e.stopPropagation();
-      } break;
+        break;
+      default:
+        El.hMUp(e);
     }
   }
   static displaySelectedProperties() : void {
@@ -58,10 +53,6 @@ class TextEl {
     $fontSizeSelect.val(Math.round(fontSize / 96 * 72));
   }
 }
-
-const hTxtClick = function(e : JQuery.ClickEvent) {
-  e.stopPropagation();
-};
 
 const hTxtKeyDown = function(e : JQuery.KeyDownEvent) {
   const ev = e.originalEvent;

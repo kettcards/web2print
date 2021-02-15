@@ -6,6 +6,7 @@ type ResizeBarsStorage = {
     height : number;
   };
   lockDir : number;
+  $target : JQuery;
 }
 
 class ResizeBars {
@@ -19,31 +20,37 @@ class ResizeBars {
       height: 0
     },
     lockDir : 0,
+    $target : undefined,
   };
 
   static setBoundsToTarget() {
-    const $target = Editor.storage.$target;
-    const scale   = Editor.transform.scale;
-    ResizeBars.storage.bounds = Object.assign({
-      width :  $target.width()  * scale,
-      height:  $target.height() * scale
-    }, $target.offset());
+    const eStorage = Editor.storage;
+    const $target = eStorage.$target;
+    eStorage.x  = +$target.css('left').slice(0, -2);
+    eStorage.y  = +$target.css('top') .slice(0, -2);
+    eStorage.dx = 0;
+    eStorage.dy = 0;
+    ResizeBars.storage.bounds = {
+      left  : eStorage.x,
+      width : $target.width(),
+      top   : eStorage.y,
+      height: $target.height()
+    };
   }
   static show() : void {
     ResizeBars.setBoundsToTarget();
     ResizeBars.$handles.css(
-      Object.assign({ visibility: 'visible' }, ResizeBars.storage.bounds) as JQuery.PlainObject);
+      Object.assign({
+        visibility: 'visible',
+        transform: ''
+      }, ResizeBars.storage.bounds) as JQuery.PlainObject);
     ResizeBars.visible = true;
+    ResizeBars.storage.$target = ResizeBars.$handles.add(Editor.storage.$target);
   }
   static hBarMDown(e : JQuery.MouseDownEvent) : void {
-    Editor.state.isResizingEl = true;
+    Editor.state = EditorStates.EL_RESIZING;
     ResizeBars.setBoundsToTarget();
-    Editor.storage.x  = +Editor.storage.$target.css('left').slice(0, -2);
-    Editor.storage.y  = +Editor.storage.$target.css('top') .slice(0, -2);
-    Editor.storage.dx = 0;
-    Editor.storage.dy = 0;
     const rStorage = ResizeBars.storage;
-
     switch($(e.delegateTarget).attr('id')) {
       case 'handle-top'   : rStorage.lockDir = 0b1010; Editor.setCursor('ns-resize'); break;
       case 'handle-right' : rStorage.lockDir = 0b0001; Editor.setCursor('ew-resize'); break;
@@ -58,39 +65,29 @@ class ResizeBars {
     const bounds  = rStorage.bounds;
     if(rStorage.lockDir & 0b0100) {
       eStorage.dx += dx;
-      ResizeBars.$handles.css({
-        left : bounds.left  + eStorage.dx,
-        width: bounds.width - eStorage.dx
-      });
-      Editor.storage.$target.css({
-        left : eStorage.x    + eStorage.dx  / scale,
-        width: (bounds.width - eStorage.dx) / scale
+      ResizeBars.storage.$target.css({
+        left : eStorage.x   + eStorage.dx / scale,
+        width: bounds.width - eStorage.dx / scale
       });
     } else if(rStorage.lockDir & 0b0001) {
       eStorage.dx += dx;
-      ResizeBars.$handles   .css('width', bounds.width + eStorage.dx);
-      Editor.storage.$target.css('width', (bounds.width + eStorage.dx) / scale);
+      ResizeBars.storage.$target.css('width', bounds.width + eStorage.dx / scale);
     }
 
     if(rStorage.lockDir & 0b1000) {
       eStorage.dy += dy;
-      ResizeBars.$handles.css({
-        top   : bounds.top    + eStorage.dy,
-        height: bounds.height - eStorage.dy
-      });
-      Editor.storage.$target.css({
-        top   : eStorage.y     + eStorage.dy  / scale,
-        height: (bounds.height - eStorage.dy) / scale
+      ResizeBars.storage.$target.css({
+        top   : eStorage.y    + eStorage.dy / scale,
+        height: bounds.height - eStorage.dy / scale
       });
     } else if(rStorage.lockDir & 0b0010) {
       eStorage.dy += dy;
-      ResizeBars.$handles   .css('height', bounds.height + eStorage.dy);
-      Editor.storage.$target.css('height', (bounds.height + eStorage.dy) / scale);
+      ResizeBars.storage.$target.css('height', bounds.height + eStorage.dy / scale);
     }
   }
   static endResizeEl() : void {
     Editor.setCursor('auto');
-    Editor.state.isResizingEl = false;
+    Editor.state = EditorStates.EL_FOCUSED;
   }
   static hide() : void {
     ResizeBars.$handles.css('visibility', 'collapse');

@@ -16,6 +16,16 @@ type EditorStorage = {
   range      : Range;
 };
 
+enum EditorStates {
+  NONE,
+  SELF_DRAGGING,
+  EL_BEGIN_FOCUS,
+  EL_FOCUSED,
+  EL_DRAGGING,
+  EL_RESIZING,
+  TXT_EDITING,
+}
+
 class Editor {
   static $transformAnchor = $('#transform-anchor');
   static $editorArea      = $('#editor-area');
@@ -26,12 +36,7 @@ class Editor {
     translateY: 1,
     rotate    : 0
   };
-  static state : EditorState = {
-    focusLvl       : 0,
-    isDraggingEl   : false,
-    isDraggingSelf : false,
-    isResizingEl   : false,
-  };
+  static state : EditorStates = EditorStates.NONE;
   static storage : EditorStorage = {
     loadedCard : undefined,
     x          : 0,
@@ -51,8 +56,8 @@ class Editor {
   static clearTarget() : void {
     Editor.storage.target  = undefined;
     Editor.storage.$target = undefined;
-    Editor.state.focusLvl  = 0;
     ResizeBars.hide();
+    Editor.state = EditorStates.NONE;
 
     console.log('clear target');
   }
@@ -60,26 +65,25 @@ class Editor {
   static beginDragEl() : void {
     Editor.storage.dx = 0;
     Editor.storage.dy = 0;
-    Editor.state.isDraggingEl = true;
+    Editor.state = EditorStates.EL_DRAGGING;
+    Editor.setCursor('move');
   }
   static dragEl(dx : number, dy : number) : void {
     Editor.storage.dx += dx;
     Editor.storage.dy += dy;
 
-    Editor.storage.$target.css('transform',
+    ResizeBars.storage.$target.css('transform',
       `translate(${Editor.storage.dx / Editor.transform.scale}px, ${Editor.storage.dy / Editor.transform.scale}px)`);
-    if(ResizeBars.visible)
-      ResizeBars.$handles.css('transform', `translate(${Editor.storage.dx}px, ${Editor.storage.dy}px)`);
   }
   static endDragEl() : void {
-    Editor.state.isDraggingEl = false;
+    Editor.state = EditorStates.EL_FOCUSED;
     Editor.setCursor('auto');
 
     const storage = Editor.storage;
     if(storage.dx === 0 && storage.dy === 0)
       return;
 
-    Editor.storage.$target.css({
+    ResizeBars.storage.$target.css({
       top : `+=${storage.dy / Editor.transform.scale}`,
       left: `+=${storage.dx / Editor.transform.scale}`,
       transform: 'rotate('+getRotation()+'deg)',
@@ -95,7 +99,7 @@ class Editor {
     storage.y  = 0;
     storage.dx = 0;
     storage.dy = 0;
-    Editor.state.isDraggingSelf = true;
+    Editor.state = EditorStates.SELF_DRAGGING;
 
     Editor.setCursor('move');
   }
@@ -110,7 +114,7 @@ class Editor {
     Editor.applyTransform();
   }
   static endDragSelf() : void {
-    Editor.state.isDraggingSelf = false;
+    Editor.state = EditorStates.NONE;
     Editor.setCursor('auto');
   }
   static zoom(steps) : void {

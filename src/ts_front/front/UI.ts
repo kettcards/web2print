@@ -4,10 +4,6 @@
 
 $('.addElBtn').click(hAddElClick);
 
-$("#resize").mousedown(function(e){
-  Editor.state.isResizingEl = true;
-});
-
 $("#logoRotation").change(function(e){
   Editor.storage.$target.css('transform', 'rotate('+ $(this).val()+'deg)');
 }).mouseup(stopPropagation);

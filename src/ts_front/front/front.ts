@@ -79,49 +79,58 @@ const hChangeFontType = function() {
       curr = curr.nextSibling;
     }
   }
+
+  ResizeBars.show();
 };
 
 let $body = $('body')
   .mousedown(function(e) {
     // (lucas 11.02.21) I know e.which is deprecated, but there is no suitable replacement as of now
     if(e.which === 2) {
-      Editor.enableTransition(false);
-      Editor.beginDragSelf();
-      return false;
+      switch(Editor.state) {
+        case EditorStates.EL_BEGIN_FOCUS:
+        case EditorStates.EL_FOCUSED:
+        case EditorStates.NONE:
+          Editor.enableTransition(false);
+          Editor.beginDragSelf();
+          return false;
+      }
     }
   }).mousemove(function(e) {
     const ev = e.originalEvent;
     const dx = ev.movementX;
     const dy = ev.movementY;
 
-    if(Editor.state.isDraggingSelf) {
-      Editor.dragSelf(dx, dy);
-      return;
-    }
+    switch(Editor.state) {
+      case EditorStates.SELF_DRAGGING:
+        Editor.dragSelf(dx, dy);
+        break;
+      case EditorStates.EL_BEGIN_FOCUS:
+        Editor.beginDragEl();
+      case EditorStates.EL_DRAGGING:
+        Editor.dragEl(dx, dy);
+        break;
+      case EditorStates.EL_RESIZING:
+        ResizeBars.resizeEl(dx, dy);
+        break;
 
-    if(Editor.state.isDraggingEl) {
-      if(Editor.storage.dx === 0 && Editor.storage.dy === 0)
-        Editor.setCursor('move'); // (lucas 15.02.21) todo: find a better way to do this
-
-      Editor.dragEl(dx, dy);
-      return;
-    }
-
-    if(Editor.state.isResizingEl) {
-      ResizeBars.resizeEl(dx, dy);
-      return;
     }
   }).mouseup(function() {
-    const state   = Editor.state;
-    if(state.isDraggingSelf) {
-      Editor.endDragSelf();
-      Editor.enableTransition(true);
-    } else if(state.isDraggingEl) {
-      Editor.endDragEl();
-    } else if(state.isResizingEl) {
-      ResizeBars.endResizeEl();
-    } else {
-      Editor.clearTarget();
+    switch(Editor.state) {
+      case EditorStates.SELF_DRAGGING:
+        Editor.endDragSelf();
+        Editor.enableTransition(true);
+        break;
+      case EditorStates.EL_DRAGGING:
+        Editor.endDragEl();
+        break;
+      case EditorStates.EL_RESIZING:
+        ResizeBars.endResizeEl();
+        break;
+      case EditorStates.NONE:
+        break;
+      default:
+        Editor.clearTarget();
     }
   });
 
