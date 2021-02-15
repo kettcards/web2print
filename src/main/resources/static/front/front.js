@@ -939,6 +939,7 @@ $('#moveBtn').mousedown(function () {
     state.dragging = true;
 });
 $('#submitBtn').click(serialize);
+$('#tutorial').click(showTutorial);
 const $fontSelect = $('#fontSelect')
     .mouseup(stopPropagation)
     .change(hFontChanged);
@@ -984,6 +985,9 @@ $.get(web2print.links.apiUrl + 'fonts')
     alert('[fatal] something went wrong loading fonts: ' + JSON.stringify(e));
 });
 if (Cookie.getValue('tutorial') !== 'no') {
+    showTutorial();
+}
+function showTutorial() {
     const $tutOver = $('<div style="position:absolute; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.66)">' +
         '<div class="center" style="white-space: normal; overflow: auto; max-width:70%; max-height:70%; background-color:lightgray; padding:5px 5px 15px 5px;">' +
         '<div>' +
@@ -991,6 +995,13 @@ if (Cookie.getValue('tutorial') !== 'no') {
         '<img src="./TextTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">' +
         '<p>Um Text hinzuzufügen klicken Sie zuerst auf "Text".<br>' +
         'Danach können Sie den Text mit einem klick auf der Karte platzieren.</p>' +
+        '</div>' +
+        '<br style="clear: left">' +
+        '<div>' +
+        '<h3>Bearbeiten von Text:</h3>' +
+        '<img src="./TextEditTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">' +
+        '<p>Um Text zu bearbeiten klicken Sie zu erst auf den Text.<br>' +
+        'Es öffnet sich eine Toolbox mit den Werkzeugen zur Textbearbeitung.</p>' +
         '</div>' +
         '<br style="clear: left">' +
         '<div>' +
