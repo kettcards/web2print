@@ -23,7 +23,8 @@ const ElementSpawners : { [p: string]: Spawner; } = {
     return $("<img class='logo' src='"+web2print.links.apiUrl+"content/"+logoContentId+"' alt='"+logoContentId+"' draggable='false'>")
       .mousedown(function(e) {
         Editor.setTarget(e.delegateTarget);
-        Editor.state.isDraggingEl = true;
+        ResizeBars.show();
+        Editor.beginDragEl();
       })
       .click(stopPropagation)
       .css(p as JQuery.PlainObject);

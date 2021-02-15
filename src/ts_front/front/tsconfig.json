@@ -8,6 +8,7 @@
     "../parameters.ts",
     "../nodesFromSelection.ts",
     "../MMPerPx.ts",
+    "./ResizeBars.ts",
     "./Editor.ts",
     "./ElementSpawners.ts",
     "./textHandlers.ts",

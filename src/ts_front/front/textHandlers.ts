@@ -3,29 +3,30 @@
 
 class TextEl {
   static hMDown(e : JQuery.MouseDownEvent) : void {
-    if(Editor.storage.target === e.delegateTarget) {
-      if(Editor.state.focusLvl === 1)
-        Editor.state.focusLvl = 2;
-    } else {
-      Editor.storage.target   = e.delegateTarget;
+    if(Editor.state.focusLvl === 0 || Editor.storage.target !== e.delegateTarget) {
+      Editor.setTarget(e.delegateTarget);
+      if(ResizeBars.visible)
+        ResizeBars.show();
       Editor.state.focusLvl = 1;
+      Editor.beginDragEl();
       e.preventDefault();
       e.stopPropagation();
     }
   }
   static hMUp(e : JQuery.MouseUpEvent) : void {
-    if(Editor.storage.target !== e.delegateTarget) {
-      Editor.setTarget(e.delegateTarget);
-      Editor.state.focusLvl = 1;
-    }
+    if(Editor.storage.target !== e.delegateTarget)
+      return;
+
     switch(Editor.state.focusLvl) {
-      case 1: TextEl.showHandlesFor(Editor.storage.target); break;
-      case 2: TextEl.displaySelectedProperties();           break;
+      case 1: {
+        Editor.state.focusLvl = 2;
+        ResizeBars.show();
+      } break;
+      case 2: {
+        TextEl.displaySelectedProperties();
+        e.stopPropagation();
+      } break;
     }
-    e.stopPropagation();
-  }
-  static showHandlesFor(textEl : Element) : void {
-    console.log("[stub] - [showHandlesFor]");
   }
   static displaySelectedProperties() : void {
     const [startEl, _, endEl, __] = getSelectedNodes(getSel().getRangeAt(0));

@@ -168,6 +168,110 @@ const MMPerPx = (function () {
     $resTester.remove();
     return ret;
 })();
+class ResizeBars {
+    static setBoundsToTarget() {
+        const $target = Editor.storage.$target;
+        const scale = Editor.transform.scale;
+        ResizeBars.storage.bounds = Object.assign({
+            width: $target.width() * scale,
+            height: $target.height() * scale
+        }, $target.offset());
+    }
+    static show() {
+        ResizeBars.setBoundsToTarget();
+        ResizeBars.$handles.css(Object.assign({
+            visibility: 'visible',
+            transform: ''
+        }, ResizeBars.storage.bounds));
+        ResizeBars.visible = true;
+    }
+    static hBarMDown(e) {
+        Editor.state.isResizingEl = true;
+        ResizeBars.setBoundsToTarget();
+        Editor.storage.x = +Editor.storage.$target.css('left').slice(0, -2);
+        Editor.storage.y = +Editor.storage.$target.css('top').slice(0, -2);
+        Editor.storage.dx = 0;
+        Editor.storage.dy = 0;
+        ResizeBars.$handles.css('transform', '');
+        const rStorage = ResizeBars.storage;
+        switch ($(e.delegateTarget).attr('id')) {
+            case 'handle-top':
+                rStorage.lockDir = 0b1010;
+                Editor.setCursor('ns-resize');
+                break;
+            case 'handle-right':
+                rStorage.lockDir = 0b0001;
+                Editor.setCursor('ew-resize');
+                break;
+            case 'handle-bottom':
+                rStorage.lockDir = 0b0010;
+                Editor.setCursor('ns-resize');
+                break;
+            case 'handle-left':
+                rStorage.lockDir = 0b0101;
+                Editor.setCursor('ew-resize');
+                break;
+        }
+    }
+    static resizeEl(dx, dy) {
+        const eStorage = Editor.storage;
+        const scale = Editor.transform.scale;
+        const rStorage = ResizeBars.storage;
+        const bounds = rStorage.bounds;
+        if (rStorage.lockDir & 0b0100) {
+            eStorage.dx += dx;
+            ResizeBars.$handles.css({
+                left: bounds.left + eStorage.dx,
+                width: bounds.width - eStorage.dx
+            });
+            Editor.storage.$target.css({
+                left: eStorage.x + eStorage.dx / scale,
+                width: (bounds.width - eStorage.dx) / scale
+            });
+        }
+        else if (rStorage.lockDir & 0b0001) {
+            eStorage.dx += dx;
+            ResizeBars.$handles.css('width', bounds.width + eStorage.dx);
+            Editor.storage.$target.css('width', (bounds.width + eStorage.dx) / scale);
+        }
+        if (rStorage.lockDir & 0b1000) {
+            eStorage.dy += dy;
+            ResizeBars.$handles.css({
+                top: bounds.top + eStorage.dy,
+                height: bounds.height - eStorage.dy
+            });
+            Editor.storage.$target.css({
+                top: eStorage.y + eStorage.dy / scale,
+                height: (bounds.height - eStorage.dy) / scale
+            });
+        }
+        else if (rStorage.lockDir & 0b0010) {
+            eStorage.dy += dy;
+            ResizeBars.$handles.css('height', bounds.height + eStorage.dy);
+            Editor.storage.$target.css('height', (bounds.height + eStorage.dy) / scale);
+        }
+    }
+    static endResizeEl() {
+        Editor.setCursor('auto');
+        Editor.state.isResizingEl = false;
+    }
+    static hide() {
+        ResizeBars.$handles.css('visibility', 'collapse');
+        ResizeBars.visible = false;
+    }
+}
+ResizeBars.$handles = $('#resize-handles');
+ResizeBars.visible = false;
+ResizeBars.storage = {
+    bounds: {
+        left: 0,
+        width: 0,
+        top: 0,
+        height: 0
+    },
+    lockDir: 0,
+};
+ResizeBars.$handles.children().mousedown(ResizeBars.hBarMDown);
 class Editor {
     static setTarget(t) {
         Editor.storage.target = t;
@@ -177,19 +281,24 @@ class Editor {
         Editor.storage.target = undefined;
         Editor.storage.$target = undefined;
         Editor.state.focusLvl = 0;
+        ResizeBars.hide();
         console.log('clear target');
     }
     static beginDragEl() {
         Editor.storage.dx = 0;
         Editor.storage.dy = 0;
+        Editor.state.isDraggingEl = true;
     }
     static dragEl(dx, dy) {
         Editor.storage.dx += dx;
         Editor.storage.dy += dy;
         Editor.storage.$target.css('transform', `translate(${Editor.storage.dx / Editor.transform.scale}px, ${Editor.storage.dy / Editor.transform.scale}px)`);
+        if (ResizeBars.visible)
+            ResizeBars.$handles.css('transform', `translate(${Editor.storage.dx}px, ${Editor.storage.dy}px)`);
     }
     static endDragEl() {
         Editor.state.isDraggingEl = false;
+        Editor.setCursor('auto');
         const storage = Editor.storage;
         if (storage.dx === 0 && storage.dy === 0)
             return;
@@ -208,7 +317,7 @@ class Editor {
         storage.dx = 0;
         storage.dy = 0;
         Editor.state.isDraggingSelf = true;
-        document.body.style.cursor = 'move';
+        Editor.setCursor('move');
     }
     static dragSelf(dx, dy) {
         const storage = Editor.storage;
@@ -221,7 +330,7 @@ class Editor {
     }
     static endDragSelf() {
         Editor.state.isDraggingSelf = false;
-        document.body.style.cursor = 'default';
+        Editor.setCursor('auto');
     }
     static zoom(steps) {
         const scale = Editor.transform.scale;
@@ -240,6 +349,9 @@ class Editor {
     static applyTransform() {
         const transform = Editor.transform;
         Editor.$transformAnchor.css('transform', `scale(${transform.scale}) translate(${transform.translateX}px,${transform.translateY}px) rotateY(${transform.rotate}deg)`);
+    }
+    static setCursor(cursor) {
+        document.body.style.cursor = cursor;
     }
     static displayZoom() {
         Editor.$zoomLabel.text(Math.round(Editor.transform.scale * 100));
@@ -302,7 +414,8 @@ const ElementSpawners = {
         return $("<img class='logo' src='" + web2print.links.apiUrl + "content/" + logoContentId + "' alt='" + logoContentId + "' draggable='false'>")
             .mousedown(function (e) {
             Editor.setTarget(e.delegateTarget);
-            Editor.state.isDraggingEl = true;
+            ResizeBars.show();
+            Editor.beginDragEl();
         })
             .click(stopPropagation)
             .css(p);
@@ -310,34 +423,33 @@ const ElementSpawners = {
 };
 class TextEl {
     static hMDown(e) {
-        if (Editor.storage.target === e.delegateTarget) {
-            if (Editor.state.focusLvl === 1)
-                Editor.state.focusLvl = 2;
-        }
-        else {
-            Editor.storage.target = e.delegateTarget;
+        if (Editor.state.focusLvl === 0 || Editor.storage.target !== e.delegateTarget) {
+            Editor.setTarget(e.delegateTarget);
+            if (ResizeBars.visible)
+                ResizeBars.show();
             Editor.state.focusLvl = 1;
+            Editor.beginDragEl();
             e.preventDefault();
             e.stopPropagation();
         }
     }
     static hMUp(e) {
-        if (Editor.storage.target !== e.delegateTarget) {
-            Editor.setTarget(e.delegateTarget);
-            Editor.state.focusLvl = 1;
-        }
+        if (Editor.storage.target !== e.delegateTarget)
+            return;
         switch (Editor.state.focusLvl) {
             case 1:
-                TextEl.showHandlesFor(Editor.storage.target);
+                {
+                    Editor.state.focusLvl = 2;
+                    ResizeBars.show();
+                }
                 break;
             case 2:
-                TextEl.displaySelectedProperties();
+                {
+                    TextEl.displaySelectedProperties();
+                    e.stopPropagation();
+                }
                 break;
         }
-        e.stopPropagation();
-    }
-    static showHandlesFor(textEl) {
-        console.log("[stub] - [showHandlesFor]");
     }
     static displaySelectedProperties() {
         const [startEl, _, endEl, __] = getSelectedNodes(getSel().getRangeAt(0));
@@ -870,33 +982,31 @@ let $body = $('body')
         return;
     }
     if (Editor.state.isDraggingEl) {
+        if (Editor.storage.dx === 0 && Editor.storage.dy === 0)
+            Editor.setCursor('move');
         Editor.dragEl(dx, dy);
         return;
     }
     if (Editor.state.isResizingEl) {
-        Editor.storage.dx += dx;
-        Editor.storage.dy += dy;
-        Editor.storage.$target.css({
-            width: '+=' + dx,
-            height: '+=' + dy,
-        });
+        ResizeBars.resizeEl(dx, dy);
+        return;
     }
 }).mouseup(function () {
-    const storage = Editor.storage;
     const state = Editor.state;
     if (state.isDraggingSelf) {
         Editor.endDragSelf();
         Editor.enableTransition(true);
     }
-    if (state.isDraggingEl) {
+    else if (state.isDraggingEl) {
         Editor.endDragEl();
     }
-    if (state.isResizingEl) {
-        state.isResizingEl = false;
-        storage.dx = 0;
-        storage.dy = 0;
+    else if (state.isResizingEl) {
+        ResizeBars.endResizeEl();
     }
-}).click(Editor.clearTarget);
+    else {
+        Editor.clearTarget();
+    }
+});
 $(document)
     .keydown(function (e) {
     if (e.ctrlKey) {

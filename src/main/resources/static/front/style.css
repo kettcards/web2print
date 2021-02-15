@@ -411,3 +411,60 @@ button:active {
   background-color: #007ae1;
   color: white;
 }
+
+#resize-handles {
+  position: absolute;
+  pointer-events: none;
+}
+
+#resize-handles>div {
+  background-color: magenta;
+  position: absolute;
+  pointer-events: initial;
+}
+
+#handle-top,
+#handle-bottom {
+  height: 2px;
+  width: 100%;
+  cursor: ns-resize;
+}
+#handle-left,
+#handle-right {
+  width: 2px;
+  height: 100%;
+  cursor: ew-resize;
+}
+#handle-top    {    top: -2px; }
+#handle-bottom { bottom: -2px; }
+#handle-left   {   left: -2px; }
+#handle-right  {  right: -2px; }
+
+#handle-top::after,
+#handle-left::after,
+#handle-bottom::after,
+#handle-right::after {
+  content: '';
+  position: absolute;
+  display: block;
+  background-color: white;
+  border: solid magenta 1px;
+}
+#handle-top::after,
+#handle-bottom::after {
+  left: 50%;
+  transform: translateX(-50%);
+  width: .75em;
+  height: .5em;
+}
+#handle-left::after,
+#handle-right::after {
+  top: 50%;
+  transform: translateY(-50%);
+  width: .5em;
+  height: .75em;
+}
+#handle-top::after    { bottom: 0; }
+#handle-left::after   {  right: 0; }
+#handle-bottom::after {    top: 0; }
+#handle-right::after  {   left: 0; }

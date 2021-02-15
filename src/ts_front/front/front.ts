@@ -100,35 +100,30 @@ let $body = $('body')
     }
 
     if(Editor.state.isDraggingEl) {
+      if(Editor.storage.dx === 0 && Editor.storage.dy === 0)
+        Editor.setCursor('move'); // (lucas 15.02.21) todo: find a better way to do this
+
       Editor.dragEl(dx, dy);
       return;
     }
 
     if(Editor.state.isResizingEl) {
-      Editor.storage.dx += dx;
-      Editor.storage.dy += dy;
-
-      Editor.storage.$target.css({
-        width:  '+='+dx,
-        height: '+='+dy,
-      });
+      ResizeBars.resizeEl(dx, dy);
+      return;
     }
   }).mouseup(function() {
-    const storage = Editor.storage;
     const state   = Editor.state;
     if(state.isDraggingSelf) {
       Editor.endDragSelf();
       Editor.enableTransition(true);
-    }
-    if(state.isDraggingEl) {
+    } else if(state.isDraggingEl) {
       Editor.endDragEl();
+    } else if(state.isResizingEl) {
+      ResizeBars.endResizeEl();
+    } else {
+      Editor.clearTarget();
     }
-    if(state.isResizingEl) {
-      state.isResizingEl = false;
-      storage.dx = 0;
-      storage.dy = 0;
-    }
-  }).click(Editor.clearTarget);
+  });
 
 // disable default browser scroll
 $(document)

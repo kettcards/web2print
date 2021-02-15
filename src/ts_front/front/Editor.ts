@@ -52,6 +52,7 @@ class Editor {
     Editor.storage.target  = undefined;
     Editor.storage.$target = undefined;
     Editor.state.focusLvl  = 0;
+    ResizeBars.hide();
 
     console.log('clear target');
   }
@@ -59,6 +60,7 @@ class Editor {
   static beginDragEl() : void {
     Editor.storage.dx = 0;
     Editor.storage.dy = 0;
+    Editor.state.isDraggingEl = true;
   }
   static dragEl(dx : number, dy : number) : void {
     Editor.storage.dx += dx;
@@ -66,9 +68,12 @@ class Editor {
 
     Editor.storage.$target.css('transform',
       `translate(${Editor.storage.dx / Editor.transform.scale}px, ${Editor.storage.dy / Editor.transform.scale}px)`);
+    if(ResizeBars.visible)
+      ResizeBars.$handles.css('transform', `translate(${Editor.storage.dx}px, ${Editor.storage.dy}px)`);
   }
   static endDragEl() : void {
     Editor.state.isDraggingEl = false;
+    Editor.setCursor('auto');
 
     const storage = Editor.storage;
     if(storage.dx === 0 && storage.dy === 0)
@@ -92,7 +97,7 @@ class Editor {
     storage.dy = 0;
     Editor.state.isDraggingSelf = true;
 
-    document.body.style.cursor = 'move';
+    Editor.setCursor('move');
   }
   static dragSelf(dx : number, dy : number) : void {
     const storage = Editor.storage;
@@ -106,7 +111,7 @@ class Editor {
   }
   static endDragSelf() : void {
     Editor.state.isDraggingSelf = false;
-    document.body.style.cursor  = 'default';
+    Editor.setCursor('auto');
   }
   static zoom(steps) : void {
     const scale = Editor.transform.scale;
@@ -132,6 +137,9 @@ class Editor {
     Editor.$transformAnchor.css('transform', `scale(${transform.scale}) translate(${transform.translateX}px,${transform.translateY}px) rotateY(${transform.rotate}deg)`);
   }
 
+  static setCursor(cursor : string) {
+    document.body.style.cursor = cursor;
+  }
   static displayZoom() : void {
     Editor.$zoomLabel.text(Math.round(Editor.transform.scale * 100));
   }
