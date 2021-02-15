@@ -7,6 +7,7 @@ import de.kettcards.web2print.model.fonts.FontStyle;
 import de.kettcards.web2print.service.FontService;
 import de.kettcards.web2print.storage.Content;
 import de.kettcards.web2print.storage.StorageContextAware;
+import org.apache.fontbox.ttf.TrueTypeFont;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -14,6 +15,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +29,7 @@ public class Document extends PDDocument {
     private float xOffset = 0;
     private float yOffset = 0;
 
-    private final Map<String, Map<EnumSet<FontStyle>, PDFont>> embeddedFonts = new HashMap<>();
+    private final Map<String, Map<EnumSet<FontStyle>, AbstractMap.SimpleEntry<PDFont, TrueTypeFont>>> embeddedFonts = new HashMap<>();
     private FontService fontService;
     private StorageContextAware userContent;
 
@@ -39,7 +41,7 @@ public class Document extends PDDocument {
         this.userContent = userContent;
     }
 
-    public PDFont getFont(String fontName, EnumSet<FontStyle> fontStyle) throws IOException {
+    public AbstractMap.SimpleEntry<PDFont, TrueTypeFont> getFont(String fontName, EnumSet<FontStyle> fontStyle) throws IOException {
         var fontPackageMap = embeddedFonts.get(fontName);
         if (fontPackageMap == null || fontPackageMap.get(fontStyle) == null) {
             attemptFontLoading(fontName, fontStyle);
@@ -63,7 +65,7 @@ public class Document extends PDDocument {
     public void embedFontPackage(FontPackage fontPackage) throws IOException {
         var fontStyleMap = embeddedFonts.getOrDefault(fontPackage.getName(), new HashMap<>());
         for (var fontFace : fontPackage.getFontFaces()) {
-            fontStyleMap.put(fontFace.getFontStyle(), fontFace.embed(this));
+            fontStyleMap.put(fontFace.getFontStyle(), new AbstractMap.SimpleEntry<>(fontFace.embed(this),fontFace.getFont()));
         }
         embeddedFonts.put(fontPackage.getName(), fontStyleMap);
     }
@@ -77,8 +79,8 @@ public class Document extends PDDocument {
         embeddedFonts.put(fontPackage.getName(), fontStyleMap);
     }
 
-    private void checkAndEmbedFontFace(FontPackage fontPackage, FontFace fontFace, Map<EnumSet<FontStyle>, PDFont> fontStyleMap) throws IOException {
-        fontStyleMap.put(fontFace.getFontStyle(), fontFace.embed(this));
+    private void checkAndEmbedFontFace(FontPackage fontPackage, FontFace fontFace, Map<EnumSet<FontStyle>, AbstractMap.SimpleEntry<PDFont, TrueTypeFont>> fontStyleMap) throws IOException {
+        fontStyleMap.put(fontFace.getFontStyle(), new AbstractMap.SimpleEntry<>(fontFace.embed(this),fontFace.getFont()));
     }
 
     public void newPage(float width, float height) throws IOException {
