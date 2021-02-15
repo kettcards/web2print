@@ -8,7 +8,7 @@ declare interface RenderStyle {
 }
 
 const RenderStyles = [{
-  name: 'Simple',
+  name: 'Druckbogen',
   condition: function(card){ return true; },
   BgStretchObjs: {
     stretch: {
@@ -69,7 +69,7 @@ const RenderStyles = [{
     rot: 0
   }
 } as RenderStyle, {
-  name: 'simple_foldable',
+  name: 'einzelne Seite',
   condition: function(card){
     const folds = card.cardFormat.folds;
     return folds.length === 1 && folds[0].x1 === folds[0].x2;
