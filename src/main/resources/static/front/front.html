@@ -19,10 +19,10 @@
       <div id="editor-container">
         <div id="toolbar">
           <div class="toolbar-row" >
-            <textSpan class="toolbar-label">Add Elements</textSpan>
+            <textSpan class="toolbar-label">Hinzufügen</textSpan>
             <div class="toolbar-buttons">
               <button class="addElBtn" data-enum="TEXT">Text</button>
-              <button class="addElBtn" data-enum="IMAGE">Image</button>
+              <button class="addElBtn" data-enum="IMAGE">Bild / Logo</button>
               <input id="fileUpload" type="file" accept=".gif,.jpg,.jpeg,.png,.svg,.eps"/>
               <button class="addElBtn" data-enum="GEOM" style="display: none">Geometry</button>
             </div>
@@ -74,7 +74,7 @@
           <img alt="A preview Render of the printed Card" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" />
         </div>
         <div id="render-styles-container"></div>
-        <button id="submitBtn">Submit</button>
+        <button id="submitBtn">PDF erzeugen</button>
       </div>
     </div>
     <menu id="toolBox" style="visibility: collapse;">
@@ -85,14 +85,14 @@
         <input type="number" id="fontSizeSelect" min="0" value="99">
       </div>
       <div>
-        <button class="fontTypeButton" style="font-weight: bold" value="b">B</button><!--
-     --><button class="fontTypeButton" style="font-style: italic" value="i">I</button>
+        <button class="fontTypeButton" style="font-weight: bold" value="b"></button><!--
+     --><button class="fontTypeButton" style="font-style: italic" value="i"></button>
       </div>
       <div>
         <button id="moveBtn"></button><!--
-     --><button class="alignmentBtn" value="left">L</button><!--
-     --><button class="alignmentBtn" value="center">C</button><!--
-     --><button class="alignmentBtn" value="right">R</button>
+     --><button class="alignmentBtn" value="left"></button><!--
+     --><button class="alignmentBtn" value="center"></button><!--
+     --><button class="alignmentBtn" value="right"></button>
       </div>      
     </menu>
     </div>
