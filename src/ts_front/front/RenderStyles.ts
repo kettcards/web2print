@@ -56,8 +56,8 @@ const RenderStyles = [{
     return $bundle;
   },
   pageLabels: [
-    'Inside',
-    'Outside'
+    'Innenseite',
+    'Außenseite'
   ],
   initialDotIndex: 0,
   hPageChanged: function(direction) {
@@ -133,9 +133,9 @@ const RenderStyles = [{
     return $(document.createDocumentFragment()).append($page1, $page2);
   },
   pageLabels: [
-    'Back',
-    'Inside',
-    'Front'
+    'Rückseite',
+    'Innenseite',
+    'Vorderseite'
   ],
   initialDotIndex: 1,
   hPageChanged: function(direction) {
