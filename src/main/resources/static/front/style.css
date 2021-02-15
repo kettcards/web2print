@@ -352,9 +352,67 @@ body {
   background-color: rgba(200, 200, 200, 0.6);
   white-space: nowrap;
 }
-#fontSelect {
+
+#font-select {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Old versions of Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+
+  display: inline-block;
+  position: relative;
   outline: none;
+  background-color: white;
 }
+#font-label {
+  min-width: 150px;
+  max-width: 250px;
+  overflow: clip;
+}
+#font-select>p {
+  border: solid gray 1px;
+  transition: border-color .25s;
+  margin: 0;
+  padding: 0;
+}
+#font-select>p:hover {
+  border-color: black;
+}
+#font-label-tick {
+  float: right;
+  transition: border-color .25s, background-color .25s;
+  border-left: solid transparent 1px;
+}
+#font-select>p span {
+  padding: 5px 10px;
+  display: inline-block;
+}
+#font-select>p:hover>#font-label-tick {
+  background-color: lightgray;
+  border-left-color: black;
+}
+#font-options {
+  position: absolute;
+  border: solid gray 1px;
+  box-sizing: border-box;
+  min-width: 100%;
+  max-height: 300px;
+  overflow-y: scroll;
+  background-color: white;
+  z-index: 1;
+}
+#font-options>p {
+  margin: 0;
+  padding: 5px 10px;
+}
+#font-options>p:hover {
+  background-color: lightgray;
+  transition: background-color .25s;
+}
+
 #fontSizeSelect {
   outline: none;
   max-width: 50px;

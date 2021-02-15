@@ -335,7 +335,7 @@ const hTxtPaste = async function (e) {
 };
 const hFontChanged = function (e) {
     const range = getSel().getRangeAt(0);
-    const fName = $fontSelect.val();
+    const fName = currentSelection;
     makeNodesFromSelection(range, function (curr) {
         $(curr).css('font-family', fName);
     });
@@ -393,14 +393,12 @@ const Fonts = {
     FontAttributeMap: {},
     loadFonts(fontNames) {
         Fonts.FontNames = fontNames;
-        let $options = new Array(fontNames.length);
         for (let i = 0; i < fontNames.length; i++) {
             const fName = fontNames[i];
-            $options[i] = $('<option value="' + fName + '" style="font-family: ' + fName + ';">' + fName + '</option>');
+            $options.append($(`<p style="font-family: ${fName};">${fName}</p>`));
             Fonts.beginLoadFont(fName);
         }
         Fonts.defaultFont = fontNames[0];
-        return $options;
     },
     beginLoadFont: function (name) {
         return $.get(web2print.links.apiUrl + 'font/' + name)
@@ -793,6 +791,9 @@ const hChangeFontType = function () {
     }
 };
 let $body = $('body')
+    .click(function() {
+        $options.css('visibility', 'collapse');
+    })
     .mousedown(function (e) {
     if (e.which === 2) {
         Editor.enableTransition(false);
@@ -939,7 +940,7 @@ $('#moveBtn').mousedown(function () {
     state.dragging = true;
 });
 $('#submitBtn').click(serialize);
-const $fontSelect = $('#fontSelect')
+const $fontSelect = $('#font-select')
     .mouseup(stopPropagation)
     .change(hFontChanged);
 const $fontSizeSelect = $('#fontSizeSelect')
@@ -977,9 +978,6 @@ $.get(web2print.links.apiUrl + 'card/' + Parameters.card)
 });
 $.get(web2print.links.apiUrl + 'fonts')
     .then(Fonts.loadFonts)
-    .then(function (fonts) {
-    $fontSelect.append(fonts);
-})
     .catch(function (e) {
     alert('[fatal] something went wrong loading fonts: ' + JSON.stringify(e));
 });
@@ -994,3 +992,22 @@ if (Cookie.getValue('tutorial') !== 'no') {
     });
     $body.append($tutOver);
 }
+
+const $options = $('#font-options');
+const $label   = $('#font-label');
+let currentSelection;
+
+$fontSelect.children('p').click(function(e) {
+    e.stopPropagation();
+    $options.css('visibility', 'visible');
+});
+
+$options.click(function(e) {
+    if(e.target.nodeName !== 'P')
+        return;
+
+    const fName = e.target.textContent;
+    currentSelection = fName;
+    $label.text(fName).css('font-family', fName);
+    $fontSelect.trigger("change");
+});
