@@ -343,8 +343,8 @@ class Editor {
     }
     static beginDragSelf() {
         const storage = Editor.storage;
-        storage.x = 0;
-        storage.y = 0;
+        storage.x = Editor.transform.translateX;
+        storage.y = Editor.transform.translateY;
         storage.dx = 0;
         storage.dy = 0;
         Editor.state = EditorStates.SELF_DRAGGING;
