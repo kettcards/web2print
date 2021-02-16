@@ -8,6 +8,7 @@ class TextEl {
       case EditorStates.TXT_EDITING:
         if(Editor.storage.target === e.delegateTarget) {
           Editor.state = EditorStates.TXT_EDITING;
+          e.stopPropagation();
           break;
         }
       default:
@@ -17,7 +18,6 @@ class TextEl {
   static hMUp(e : JQuery.MouseUpEvent) : void {
     switch(Editor.state) {
       case EditorStates.TXT_EDITING:
-        e.stopPropagation();
         break;
       default:
         El.hMUp(e);

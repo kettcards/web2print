@@ -451,6 +451,7 @@ class TextEl {
             case EditorStates.TXT_EDITING:
                 if (Editor.storage.target === e.delegateTarget) {
                     Editor.state = EditorStates.TXT_EDITING;
+                    e.stopPropagation();
                     break;
                 }
             default:
@@ -460,7 +461,6 @@ class TextEl {
     static hMUp(e) {
         switch (Editor.state) {
             case EditorStates.TXT_EDITING:
-                e.stopPropagation();
                 break;
             default:
                 El.hMUp(e);
@@ -1004,6 +1004,12 @@ let $body = $('body')
                 return false;
         }
     }
+    else
+        switch (Editor.state) {
+            case EditorStates.TXT_EDITING:
+                Editor.state = EditorStates.EL_FOCUSED;
+                break;
+        }
 }).mousemove(function (e) {
     const ev = e.originalEvent;
     const dx = ev.movementX;
@@ -1032,6 +1038,9 @@ let $body = $('body')
             break;
         case EditorStates.EL_RESIZING:
             ResizeBars.endResizeEl();
+            break;
+        case EditorStates.TXT_EDITING:
+            TextEl.displaySelectedProperties();
             break;
         case EditorStates.NONE:
             break;
