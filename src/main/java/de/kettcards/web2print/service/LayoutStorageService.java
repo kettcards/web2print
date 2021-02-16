@@ -5,6 +5,7 @@ import de.kettcards.web2print.pdf.CardData;
 import de.kettcards.web2print.pdf.PDFGenerator;
 import de.kettcards.web2print.storage.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.util.InMemoryResource;
@@ -35,7 +36,7 @@ public class LayoutStorageService extends StorageContextAware {
      * @param cardData  base64 encoded json card data string
      * @return a storage id for retrieving this data
      */
-    public String StoreCard(String storageId, String cardData) throws IOException {
+    public String storeCard(String storageId, String cardData) throws IOException {
         var constraints = new LinkedList<StorageConstraint>();
         //constraints.add(new MaxAgeConstraint(Period.ofMonths(1))); // (lucas 15.02.21) todo: implement maxAgeConstraint
         var content = new Content(new InMemoryResource(cardData), "application/octet-stream", null, constraints);
@@ -47,12 +48,18 @@ public class LayoutStorageService extends StorageContextAware {
         }
     }
 
+    public String loadCard(String storageId) throws IOException {
+        try(var stream = load(storageId).getInputStream()) {
+            return IOUtils.toString(stream);
+        }
+    }
+
     private byte[] decodingBuffer = null;
     /**
      * @param rawData base64 encoded json card data string
      * @throws IOException    if pdf creation was unsuccessful
      */
-    public void ExportCard(String rawData) throws IOException {
+    public void exportCard(String rawData) throws IOException {
         final var BLOCK_SIZE = 4 * 1024;
 
         var ogLen = (rawData.length() / 4) * 3; // (lucas) might be slightly above above the og len since b64 is padded, but that should be fine

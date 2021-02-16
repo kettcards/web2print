@@ -14,6 +14,7 @@ const loadCard = function(card : Card) : false | void {
     return false;
 
   console.log('loading', card);
+  window.history.replaceState({}, card.name+" - Web2Print", stringifyParameters());
 
   document.querySelector<HTMLInputElement>('#preview-container>img').src
       = web2print.links.thumbnailUrl+card.thumbSlug;
@@ -33,6 +34,13 @@ const loadCard = function(card : Card) : false | void {
   Editor.enableTransition(true);
 
   hRenderStyleChanged(0);
+
+  if(Parameters.sId)
+    $.get(`${web2print.links.apiUrl}load/${Parameters.sId}`)
+      .then(loadElementsCompressed)
+      .catch(function(e) {
+        alert('Es gab einen Fehler beim laden der Elemente!\n'+JSON.stringify(e));
+      });
 };
 
 // spawning new elements

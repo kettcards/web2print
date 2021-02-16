@@ -37,7 +37,7 @@ function submit() : void {
     .then(function(response : string) {
       Parameters.sId = response;
       // nomerge todo: todo merge with the new editor
-      window.history.replaceState({}, 'cardName'+" - Web2Print", stringifyParameters());
+      window.history.replaceState({}, Editor.loadedCard.name+" - Web2Print", stringifyParameters());
       alert('Daten gesendet!');
     }).catch(function(e){
     alert('Fehler beim Senden der Daten!\n'+JSON.stringify(e));
@@ -126,5 +126,34 @@ function serializeSide($els : JQuery, xOffs : number, target : Box[]) : void {
 
       default: console.warn('cannot serialize element', $el[0]);
     }
+  }
+}
+
+function loadElementsCompressed(b64data : string) : void {
+  loadElements(JSON.parse(atob(b64data)));
+}
+function loadElements(data : PrintData) : void {
+  loadSide('front', data.outerEls);
+  loadSide('back' , data.innerEls);
+}
+function loadSide(side : 'front'|'back', boxes : Box[]) : void {
+  for(const box of boxes) {
+    const bounds = {
+      left  : box.x,
+      width : box.w,
+      top   : box.y,
+      height: box.h
+    };
+    let el : JQuery;
+    switch(box.t) {
+      case "i": {
+        el = ElementSpawners['IMAGE'](bounds);
+      } break;
+      case "t": {
+        el = ElementSpawners['TEXT'](bounds);
+      } break;
+      default: throw new Error(`Can't deserialize box of type '${box['t']}'.`);
+    }
+    renderStyleState.style.assocPage(side, bounds).children('.elements-layer').append(el);
   }
 }

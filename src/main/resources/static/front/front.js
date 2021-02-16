@@ -450,7 +450,7 @@ function submit() {
     $.post(`${web2print.links.apiUrl}save/${Parameters.sId || ''}?export=${_export}`, 'data=' + btoa(JSON.stringify(data)))
         .then(function (response) {
         Parameters.sId = response;
-        window.history.replaceState({}, 'cardName' + " - Web2Print", stringifyParameters());
+        window.history.replaceState({}, Editor.loadedCard.name + " - Web2Print", stringifyParameters());
         alert('Daten gesendet!');
     }).catch(function (e) {
         alert('Fehler beim Senden der Daten!\n' + JSON.stringify(e));
@@ -547,6 +547,38 @@ function serializeSide($els, xOffs, target) {
         }
     }
 }
+function loadElementsCompressed(b64data) {
+    loadElements(JSON.parse(atob(b64data)));
+}
+function loadElements(data) {
+    loadSide('front', data.outerEls);
+    loadSide('back', data.innerEls);
+}
+function loadSide(side, boxes) {
+    for (const box of boxes) {
+        const bounds = {
+            left: box.x,
+            width: box.w,
+            top: box.y,
+            height: box.h
+        };
+        let el;
+        switch (box.t) {
+            case "i":
+                {
+                    el = ElementSpawners['IMAGE'](bounds);
+                }
+                break;
+            case "t":
+                {
+                    el = ElementSpawners['TEXT'](bounds);
+                }
+                break;
+            default: throw new Error(`Can't deserialize box of type '${box['t']}'.`);
+        }
+        renderStyleState.style.assocPage(side, bounds).children('.elements-layer').append(el);
+    }
+}
 const createFold = function (fold) {
     if (fold.x1 === fold.x2) {
         let vFold = $('<div class="vFold"></div>');
@@ -564,7 +596,7 @@ const createFold = function (fold) {
 };
 const RenderStyles = [{
         name: 'Druckbogen',
-        condition: function (card) { return true; },
+        condition(card) { return true; },
         BgStretchObjs: {
             stretch: {
                 'background-size': 'cover',
@@ -572,7 +604,7 @@ const RenderStyles = [{
                 'background-position': 'center center',
             },
         },
-        pageGen: function (card) {
+        pageGen(card) {
             const width = card.cardFormat.width;
             const height = card.cardFormat.height;
             const $bundle = $(get('page-template').content.firstElementChild.cloneNode(true));
@@ -606,12 +638,15 @@ const RenderStyles = [{
             this.data.$bundle = $bundle;
             return $bundle;
         },
+        assocPage(side, _) {
+            return this.data.$bundle.children('.' + side);
+        },
         pageLabels: [
             'Innenseite',
             'Außenseite'
         ],
         initialDotIndex: 0,
-        hPageChanged: function (direction) {
+        hPageChanged(direction) {
             this.data.rot += direction * 180;
             this.data.$bundle.css('transform', 'rotateY(' + this.data.rot + 'deg)');
         },
@@ -621,7 +656,7 @@ const RenderStyles = [{
         }
     }, {
         name: 'einzelne Seite',
-        condition: function (card) {
+        condition(card) {
             const folds = card.cardFormat.folds;
             return folds.length === 1 && folds[0].x1 === folds[0].x2;
         },
@@ -634,7 +669,7 @@ const RenderStyles = [{
                 };
             },
         },
-        pageGen: function (card) {
+        pageGen(card) {
             const cardWidth = card.cardFormat.width;
             const cardHeight = card.cardFormat.height;
             const w1 = card.cardFormat.folds[0].x1;
@@ -679,13 +714,27 @@ const RenderStyles = [{
             this.data.state = 1;
             return $(document.createDocumentFragment()).append($page1, $page2);
         },
+        assocPage(side, bounds) {
+            if (side === "back") {
+                if (bounds.left > Editor.loadedCard.cardFormat.folds[0].x1)
+                    return this.data.$page2.children('.back');
+                else
+                    return this.data.$page1.children('.back');
+            }
+            else {
+                if (bounds.left > Editor.loadedCard.cardFormat.folds[0].x1)
+                    return this.data.$page1.children('.front');
+                else
+                    return this.data.$page2.children('.front');
+            }
+        },
         pageLabels: [
             'Rückseite',
             'Innenseite',
             'Vorderseite'
         ],
         initialDotIndex: 1,
-        hPageChanged: function (direction) {
+        hPageChanged(direction) {
             this.data.state = mod(this.data.state + direction, 3);
             let p1z = 0, p2z = 0;
             if (direction === 1) {
@@ -747,6 +796,7 @@ const loadCard = function (card) {
     if (!card)
         return false;
     console.log('loading', card);
+    window.history.replaceState({}, card.name + " - Web2Print", stringifyParameters());
     document.querySelector('#preview-container>img').src
         = web2print.links.thumbnailUrl + card.thumbSlug;
     for (let i = 0; i < RenderStyles.length; i++) {
@@ -762,6 +812,12 @@ const loadCard = function (card) {
     Editor.createRuler();
     Editor.enableTransition(true);
     hRenderStyleChanged(0);
+    if (Parameters.sId)
+        $.get(`${web2print.links.apiUrl}load/${Parameters.sId}`)
+            .then(loadElementsCompressed)
+            .catch(function (e) {
+            alert('Es gab einen Fehler beim laden der Elemente!\n' + JSON.stringify(e));
+        });
 };
 const hElementsLayerClick = function (e, target) {
     if (!state.addOnClick)
@@ -999,7 +1055,7 @@ $('.left>.nav-btn-inner').click(function () {
 $('#recenter-btn').click(function () {
     Editor.fitToContainer();
 });
-$.get(web2print.links.apiUrl + 'card/' + Parameters.card)
+$.get(`${web2print.links.apiUrl}card/${Parameters.card}`)
     .then(loadCard)
     .catch(function () {
     alert(Parameters.card

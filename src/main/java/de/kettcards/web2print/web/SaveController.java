@@ -22,13 +22,17 @@ public class SaveController {
     public String save(@PathVariable(required = false) String storageId,
                      @RequestParam String export,
                      @RequestParam("data") String cardData)
-            throws IOException, ParseException {
-        storageId = storageService.StoreCard(storageId, cardData);
+            throws IOException {
+        storageId = storageService.storeCard(storageId, cardData);
         if (export.equals("true"))
-            storageService.ExportCard(cardData);
+            storageService.exportCard(cardData);
         return storageId;
     }
 
+    @GetMapping(value = {"/load/{storageId}"}, produces = "application/octet-stream")
+    public String load(@PathVariable String storageId) throws IOException {
+        return storageService.loadCard(storageId);
+    }
 
     @GetMapping(value = {"/pdfs"})
     public List<String> list() throws IOException, ParseException {
@@ -36,7 +40,7 @@ public class SaveController {
     }
 
     @GetMapping(value = {"/pdfs/{storageId}"}, produces = "application/pdf")
-    public Resource load(@PathVariable(required = false) String storageId) throws IOException, ParseException {
+    public Resource show(@PathVariable(required = false) String storageId) throws IOException {
         return storageService.load(storageId);
     }
 }
