@@ -321,6 +321,7 @@ class Editor {
         Editor.storage.dy = 0;
         Editor.state = EditorStates.EL_DRAGGING;
         Editor.setCursor('move');
+        Editor.storage.$target.addClass('no-select');
     }
     static dragEl(dx, dy) {
         Editor.storage.dx += dx;
@@ -340,6 +341,7 @@ class Editor {
         });
         storage.dx = 0;
         storage.dy = 0;
+        Editor.storage.$target.removeClass('no-select');
     }
     static beginDragSelf() {
         const storage = Editor.storage;
@@ -440,6 +442,8 @@ const ElementSpawners = {
         return $("<img class='logo' src='" + web2print.links.apiUrl + "content/" + logoContentId + "' alt='" + logoContentId + "' draggable='false'>")
             .mousedown(ImageEl.hMDown)
             .mouseup(El.hMUp)
+            .on("dragstart", falsify)
+            .on("drop", falsify)
             .click(stopPropagation)
             .css(p);
     }

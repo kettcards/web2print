@@ -23,6 +23,9 @@ const ElementSpawners : { [p: string]: Spawner; } = {
     return $("<img class='logo' src='"+web2print.links.apiUrl+"content/"+logoContentId+"' alt='"+logoContentId+"' draggable='false'>")
       .mousedown(ImageEl.hMDown)
       .mouseup(El.hMUp)
+      // as above so below
+      .on("dragstart", falsify)
+      .on("drop", falsify)
       .click(stopPropagation)
       .css(p as JQuery.PlainObject);
   }

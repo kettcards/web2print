@@ -67,6 +67,7 @@ class Editor {
     Editor.storage.dy = 0;
     Editor.state = EditorStates.EL_DRAGGING;
     Editor.setCursor('move');
+    Editor.storage.$target.addClass('no-select');
   }
   static dragEl(dx : number, dy : number) : void {
     Editor.storage.dx += dx;
@@ -91,6 +92,7 @@ class Editor {
 
     storage.dx = 0;
     storage.dy = 0;
+    Editor.storage.$target.removeClass('no-select');
   }
 
   static beginDragSelf() : void {
@@ -117,7 +119,7 @@ class Editor {
     Editor.state = EditorStates.NONE;
     Editor.setCursor('auto');
   }
-  static zoom(steps) : void {
+  static zoom(steps : number) : void {
     const scale = Editor.transform.scale;
     Editor.transform.scale = Math.min(Math.max(scale + scale * steps * -0.01, 0.1), 5);
     Editor.applyTransform();
