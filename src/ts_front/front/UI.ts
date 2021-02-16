@@ -22,7 +22,7 @@ $('#moveBtn').mousedown(function(){
   state.dragging = true;
 });
 
-$('#submitBtn').click(serialize);
+$('#submitBtn').click(submit);
 
 const $fontSelect = $<HTMLSelectElement>('#font-select')
   .mouseup(stopPropagation)

@@ -18,8 +18,18 @@ const stopPropagation = function (e) { e.stopPropagation(); };
 const falsify = function () { return false; };
 const mod = function (a, n) { return ((a % n) + n) % n; };
 Node.prototype.isA = function (n) { return this.nodeName === n; };
+function stringifyParameters() {
+    let s = '?';
+    for (const [k, v] of Object.entries(Parameters)) {
+        if (s.length > 2)
+            s += '&';
+        s += k + '=' + v;
+    }
+    return s;
+}
 const Parameters = (function () {
-    const ret = {}, url = window.location.search;
+    const url = window.location.search;
+    const ret = {};
     if (url) {
         let split = url.substr(1).split('&'), subSplit;
         for (let s of split) {
@@ -335,7 +345,7 @@ const hTxtPaste = async function (e) {
 };
 const hFontChanged = function (e) {
     const range = getSel().getRangeAt(0);
-    const fName = currentSelection;
+    const fName = Fonts.currentSelection;
     makeNodesFromSelection(range, function (curr) {
         $(curr).css('font-family', fName);
     });
@@ -385,6 +395,9 @@ const getRotation = function () {
 const Fonts = {
     FontNames: undefined,
     defaultFont: undefined,
+    $options: $('#font-options'),
+    $label: $('#font-label'),
+    currentSelection: undefined,
     FontStyleValues: {
         b: 0b001,
         i: 0b010,
@@ -395,7 +408,7 @@ const Fonts = {
         Fonts.FontNames = fontNames;
         for (let i = 0; i < fontNames.length; i++) {
             const fName = fontNames[i];
-            $options.append($(`<p style="font-family: ${fName};">${fName}</p>`));
+            Fonts.$options.append($(`<p style="font-family: ${fName};">${fName}</p>`));
             Fonts.beginLoadFont(fName);
         }
         Fonts.defaultFont = fontNames[0];
@@ -430,7 +443,20 @@ const Fonts = {
         });
     },
 };
-const serialize = function () {
+function submit() {
+    const data = serialize();
+    console.log("sending", data);
+    const _export = true;
+    $.post(`${web2print.links.apiUrl}save/${Parameters.sId || ''}?export=${_export}`, 'data=' + btoa(JSON.stringify(data)))
+        .then(function (response) {
+        Parameters.sId = response;
+        window.history.replaceState({}, 'cardName' + " - Web2Print", stringifyParameters());
+        alert('Daten gesendet!');
+    }).catch(function (e) {
+        alert('Fehler beim Senden der Daten!\n' + JSON.stringify(e));
+    });
+}
+function serialize() {
     const data = {
         v: '0.2',
         card: Parameters.card,
@@ -444,16 +470,9 @@ const serialize = function () {
         serializeSide($b.find('.front>.elements-layer').children(), offs, data.outerEls);
         serializeSide($b.find('.back>.elements-layer').children(), offs, data.innerEls);
     }
-    console.log("sending", data);
-    const _export = true;
-    $.post(web2print.links.apiUrl + 'save/' + (Parameters.sId || '') + '?export=' + _export, 'data=' + btoa(JSON.stringify(data)))
-        .then(function () {
-        alert('Sent data!');
-    }).catch(function (e) {
-        alert('Send failed: \n' + JSON.stringify(e));
-    });
-};
-const serializeSide = function ($els, xOffs, target) {
+    return data;
+}
+function serializeSide($els, xOffs, target) {
     for (let j = 0; j < $els.length; j++) {
         const $el = $els.eq(j);
         const bounds = {
@@ -527,7 +546,7 @@ const serializeSide = function ($els, xOffs, target) {
             default: console.warn('cannot serialize element', $el[0]);
         }
     }
-};
+}
 const createFold = function (fold) {
     if (fold.x1 === fold.x2) {
         let vFold = $('<div class="vFold"></div>');
@@ -588,8 +607,8 @@ const RenderStyles = [{
             return $bundle;
         },
         pageLabels: [
-            'Inside',
-            'Outside'
+            'Innenseite',
+            'Außenseite'
         ],
         initialDotIndex: 0,
         hPageChanged: function (direction) {
@@ -661,9 +680,9 @@ const RenderStyles = [{
             return $(document.createDocumentFragment()).append($page1, $page2);
         },
         pageLabels: [
-            'Back',
-            'Inside',
-            'Front'
+            'Rückseite',
+            'Innenseite',
+            'Vorderseite'
         ],
         initialDotIndex: 1,
         hPageChanged: function (direction) {
@@ -791,9 +810,9 @@ const hChangeFontType = function () {
     }
 };
 let $body = $('body')
-    .click(function() {
-        $options.css('visibility', 'collapse');
-    })
+    .click(function () {
+    Fonts.$options.css('visibility', 'collapse');
+})
     .mousedown(function (e) {
     if (e.which === 2) {
         Editor.enableTransition(false);
@@ -939,10 +958,22 @@ $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
 $('#moveBtn').mousedown(function () {
     state.dragging = true;
 });
-$('#submitBtn').click(serialize);
+$('#submitBtn').click(submit);
 const $fontSelect = $('#font-select')
     .mouseup(stopPropagation)
     .change(hFontChanged);
+Fonts.$options.click(function (e) {
+    if (e.target.nodeName !== 'P')
+        return;
+    const fName = e.target.textContent;
+    Fonts.currentSelection = fName;
+    Fonts.$label.text(fName).css('font-family', fName);
+    $fontSelect.trigger("change");
+});
+$fontSelect.children('p').click(function (e) {
+    e.stopPropagation();
+    Fonts.$options.css('visibility', 'visible');
+});
 const $fontSizeSelect = $('#fontSizeSelect')
     .mousedown(function (e) {
     const s = getSel();
@@ -992,22 +1023,3 @@ if (Cookie.getValue('tutorial') !== 'no') {
     });
     $body.append($tutOver);
 }
-
-const $options = $('#font-options');
-const $label   = $('#font-label');
-let currentSelection;
-
-$fontSelect.children('p').click(function(e) {
-    e.stopPropagation();
-    $options.css('visibility', 'visible');
-});
-
-$options.click(function(e) {
-    if(e.target.nodeName !== 'P')
-        return;
-
-    const fName = e.target.textContent;
-    currentSelection = fName;
-    $label.text(fName).css('font-family', fName);
-    $fontSelect.trigger("change");
-});

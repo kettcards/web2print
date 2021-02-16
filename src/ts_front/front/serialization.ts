@@ -1,34 +1,50 @@
-declare interface PrintData {
+interface PrintData {
   v        : '0.2';
   card     : string;
   outerEls : Box[];
   innerEls : Box[];
 }
-declare type Box = TextBox | ImageBox;
-declare interface TextBox extends BoundingBox {
+type Box = TextBox | ImageBox;
+interface TextBox extends BoundingBox {
   t : "t";
   a : 'l' | 'r' | 'c' | 'j';
   r : TextRun[];
 }
-declare type TextRun = 'br' | ActualTextRun;
-declare interface ActualTextRun {
+type TextRun = 'br' | ActualTextRun;
+interface ActualTextRun {
   f : string;
   s : number;
   a : number;
   t : string;
 }
-declare interface ImageBox extends BoundingBox {
+interface ImageBox extends BoundingBox {
   t : "i";
   s : string;
 }
-declare interface BoundingBox {
+interface BoundingBox {
   x : number;
   y : number;
   w : number;
   h : number;
 }
 
-const serialize = function() {
+function submit() : void {
+  const data = serialize();
+
+  console.log("sending", data);
+  const _export = true;
+  $.post(`${web2print.links.apiUrl}save/${Parameters.sId || ''}?export=${_export}`, 'data='+btoa(JSON.stringify(data)))
+    .then(function(response : string) {
+      Parameters.sId = response;
+      // nomerge todo: todo merge with the new editor
+      window.history.replaceState({}, 'cardName'+" - Web2Print", stringifyParameters());
+      alert('Daten gesendet!');
+    }).catch(function(e){
+    alert('Fehler beim Senden der Daten!\n'+JSON.stringify(e));
+  });
+}
+
+function serialize() : PrintData {
   const data : PrintData = {
     v: '0.2',
     card: Parameters.card,
@@ -44,17 +60,10 @@ const serialize = function() {
     serializeSide($b.find('.back>.elements-layer' as JQuery.Selector).children() , offs, data.innerEls);
   }
 
-  console.log("sending", data);
-  const _export = true;
-  $.post(web2print.links.apiUrl+'save/'+(Parameters.sId || '')+'?export='+_export, 'data='+btoa(JSON.stringify(data)))
-    .then(function() {
-      alert('Sent data!');
-    }).catch(function(e){
-    alert('Send failed: \n'+JSON.stringify(e));
-  });
+  return data;
 }
 
-const serializeSide = function($els : JQuery, xOffs : number, target : Box[]) {
+function serializeSide($els : JQuery, xOffs : number, target : Box[]) : void {
   for(let j = 0; j < $els.length; j++) {
     const $el = $els.eq(j);
     const bounds : BoundingBox = {
@@ -118,4 +127,4 @@ const serializeSide = function($els : JQuery, xOffs : number, target : Box[]) {
       default: console.warn('cannot serialize element', $el[0]);
     }
   }
-};
+}

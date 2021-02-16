@@ -19,13 +19,14 @@ public class SaveController {
     private LayoutStorageService storageService;
 
     @PostMapping(value = {"/save/", "/save/{storageId}"})
-    public void save(@PathVariable(required = false) String storageId,
+    public String save(@PathVariable(required = false) String storageId,
                      @RequestParam String export,
                      @RequestParam("data") String cardData)
             throws IOException, ParseException {
-        storageService.StoreCard(storageId, cardData);
+        storageId = storageService.StoreCard(storageId, cardData);
         if (export.equals("true"))
             storageService.ExportCard(cardData);
+        return storageId;
     }
 
 
