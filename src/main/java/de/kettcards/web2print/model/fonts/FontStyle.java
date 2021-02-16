@@ -20,15 +20,15 @@ public enum FontStyle {
      */
     ITALIC(1 << 1);
 
-    private static final float defaultLineHeight = 1.0f;
-    private static final FontStyle defaultFontStyle = FontStyle.NORMAL;
-    private static final FontStyle defaultFontStyleWeight = defaultFontStyle;
-    private static final Map<FontStyle, Integer> defaultFontStyleWeights = new HashMap<>();
+    private static final float DEFAULT_LINE_HEIGHT = 1.0f;
+    private static final FontStyle DEFAULT_FONT_STYLE = FontStyle.NORMAL;
+    private static final FontStyle DEFAULT_FONT_STYLE_WEIGHT = DEFAULT_FONT_STYLE;
+    private static final Map<FontStyle, Integer> DEFAULT_FONT_STYLE_WEIGHTS = new HashMap<>();
 
     static {
-        defaultFontStyleWeights.put(NORMAL, 400);
-        defaultFontStyleWeights.put(BOLD, 700);
-        defaultFontStyleWeights.put(ITALIC, 400);
+        DEFAULT_FONT_STYLE_WEIGHTS.put(NORMAL, 400);
+        DEFAULT_FONT_STYLE_WEIGHTS.put(BOLD, 700);
+        DEFAULT_FONT_STYLE_WEIGHTS.put(ITALIC, 400);
     }
 
     private final int value;
@@ -42,9 +42,9 @@ public enum FontStyle {
      * @return the corresponding font style weight, if no specific value is defined the default value will be returned
      */
     public static Integer getWeight(FontStyle fontStyle) {
-        Integer val = defaultFontStyleWeights.get(fontStyle);
+        Integer val = DEFAULT_FONT_STYLE_WEIGHTS.get(fontStyle);
         if (val == null) {
-            val = defaultFontStyleWeights.get(defaultFontStyleWeight);
+            val = DEFAULT_FONT_STYLE_WEIGHTS.get(DEFAULT_FONT_STYLE_WEIGHT);
         }
         return val;
     }
@@ -102,7 +102,7 @@ public enum FontStyle {
      * @return the default font style
      */
     public static FontStyle getDefaultFontStyle() {
-        return defaultFontStyle;
+        return DEFAULT_FONT_STYLE;
     }
 
     /**
@@ -110,7 +110,7 @@ public enum FontStyle {
      * @return the default line height
      */
     public static float getDefaultLineHeight() {
-        return defaultLineHeight;
+        return DEFAULT_LINE_HEIGHT;
     }
 
     /**
