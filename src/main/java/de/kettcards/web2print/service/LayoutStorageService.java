@@ -37,7 +37,7 @@ public final class LayoutStorageService extends StorageContextAware {
      * @param cardData  base64 encoded json card data string
      * @return a storage id for retrieving this data
      */
-    public String StoreCard(String storageId, String cardData) {
+    public String storeCard(String storageId, String cardData) {
         return "0000";
     }
 
@@ -46,7 +46,7 @@ public final class LayoutStorageService extends StorageContextAware {
      * @throws IOException    if pdf creation was unsuccessful
      * @throws ParseException invalid rawData
      */
-    public void ExportCard(String rawData) throws IOException, ParseException {
+    public void exportCard(String rawData) throws IOException, ParseException {
         var asciiData = Base64.getDecoder().decode(rawData); //(lucas 18.01.21) mbe reuse the byte array
         var data = new String(asciiData, StandardCharsets.ISO_8859_1).getBytes(StandardCharsets.UTF_8);
         var cardData = jsonMapper.readValue(data, CardData.class);

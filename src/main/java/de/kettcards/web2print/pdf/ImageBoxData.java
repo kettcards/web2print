@@ -20,13 +20,18 @@ import java.io.IOException;
 public class ImageBoxData extends BoxData {
 
     private final String contentId;
-    float svgOriginalWidth, svgOriginalHeight;
+    private float svgOriginalWidth, svgOriginalHeight;
 
     public ImageBoxData(float x, float y, float width, float height, String contentId) {
         super(x, y, width, height);
         this.contentId = contentId;
     }
 
+    /**
+     * applies image data
+     * @param doc document
+     * @throws IOException if data cant be written into document
+     */
     @Override
     public void apply(Document doc) throws IOException {
         final Content content = doc.resolveContent(contentId);

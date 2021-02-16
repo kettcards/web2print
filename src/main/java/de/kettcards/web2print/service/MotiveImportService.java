@@ -31,7 +31,7 @@ import java.util.List;
 @Component
 public final class MotiveImportService extends StorageContextAware implements WebContextAware {
 
-    private static final String defaultPrefix = "default/";
+    private static final String DEFAULT_PREFIX = "default/";
 
     private final MotiveRepository motiveRepository;
 
@@ -105,7 +105,7 @@ public final class MotiveImportService extends StorageContextAware implements We
             saveDefaultFormat(format, streams.get(1), "-back.png");
         }
 
-        save(content, defaultPrefix.concat(originalFilename));
+        save(content, DEFAULT_PREFIX.concat(originalFilename));
         Motive motive = new Motive();
         motive.setTextureSlug(originalFilename);
 
@@ -113,7 +113,7 @@ public final class MotiveImportService extends StorageContextAware implements We
 
     private void saveDefaultFormat(CardFormat cardFormat, ByteArrayOutputStream stream, String suffix) throws IOException {
         if (stream != null) {
-            var name = defaultPrefix + cardFormat.getId() + suffix;
+            var name = DEFAULT_PREFIX + cardFormat.getId() + suffix;
             save(new Content(new InMemoryResource(stream.toByteArray())), name);
             Motive motive = new Motive();
             motive.setTextureSlug(name);

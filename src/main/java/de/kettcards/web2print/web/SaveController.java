@@ -23,9 +23,9 @@ public final class SaveController {
                      @RequestParam String export,
                      @RequestParam("data") String cardData)
             throws IOException, ParseException {
-        storageService.StoreCard(storageId, cardData);
+        storageService.storeCard(storageId, cardData);
         if (export.equals("true"))
-            storageService.ExportCard(cardData);
+            storageService.exportCard(cardData);
     }
 
 

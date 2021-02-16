@@ -8,6 +8,10 @@ public class SpanDimension {
     private float fontSizeInPoint;
 
     private float actualClientHeight;
+
+    /**
+     * the default line height for a paragraph (css attribute: line-height)
+     */
     public static final float LINE_HEIGHT = 1.2f;
 
     public SpanDimension(int ascender, int descender, int emHeight, float fontSizeInPoint){
@@ -32,10 +36,22 @@ public class SpanDimension {
         return dim;
     }
 
+    /**
+     *
+     * @param lineHeightFactor line height
+     * @return the initial line offset for the first paragraph
+     */
     public float getFirstLineBaseline(float lineHeightFactor){
         return ( fontSizeInPoint * lineHeightFactor - actualClientHeight ) / 2f + ((float) ascender / emHeight) * fontSizeInPoint;
     }
 
+    /**
+     *
+     * @param lastLineDimension previous dim
+     * @param lastLineHeightFactor last line height
+     * @param currentLineHeightFactor current line height
+     * @return the line offset for the next line
+     */
     public float getNextLineBaseline(SpanDimension lastLineDimension, float lastLineHeightFactor, float currentLineHeightFactor){
         float firstHalfLine = ( - lastLineDimension.getAscender() + ( (lastLineDimension.getAscender() - lastLineDimension.getDescender()) / 2f))
                 / lastLineDimension.getEmHeight() * lastLineDimension.getFontSizeInPoint();
