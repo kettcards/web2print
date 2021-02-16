@@ -80,7 +80,7 @@ const hChangeFontType = function() {
     }
   }
 
-  ResizeBars.show();
+  ResizeBars.show(false);
 };
 
 let $body = $('body')

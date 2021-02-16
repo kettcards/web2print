@@ -183,36 +183,56 @@ class ResizeBars {
             height: $target.height()
         };
     }
-    static show() {
+    static show(preserveRatio) {
+        const rStorage = ResizeBars.storage;
+        rStorage.preserveRatio = preserveRatio;
         ResizeBars.setBoundsToTarget();
         ResizeBars.$handles.css(Object.assign({
             visibility: 'visible',
             transform: ''
-        }, ResizeBars.storage.bounds));
+        }, rStorage.bounds))[rStorage.preserveRatio ? 'addClass' : 'removeClass']('preserve-ratio');
         ResizeBars.visible = true;
-        ResizeBars.storage.$target = ResizeBars.$handles.add(Editor.storage.$target);
+        rStorage.$target = ResizeBars.$handles.add(Editor.storage.$target);
     }
     static hBarMDown(e) {
         Editor.state = EditorStates.EL_RESIZING;
         ResizeBars.setBoundsToTarget();
         const rStorage = ResizeBars.storage;
-        switch ($(e.delegateTarget).attr('id')) {
+        const id = $(e.delegateTarget).attr('id');
+        switch (id) {
             case 'handle-top':
-                rStorage.lockDir = 0b1010;
+                rStorage.lockDir = 0b0001;
                 Editor.setCursor('ns-resize');
                 break;
             case 'handle-right':
-                rStorage.lockDir = 0b0001;
+                rStorage.lockDir = 0b0010;
                 Editor.setCursor('ew-resize');
                 break;
             case 'handle-bottom':
-                rStorage.lockDir = 0b0010;
+                rStorage.lockDir = 0b0100;
                 Editor.setCursor('ns-resize');
                 break;
             case 'handle-left':
-                rStorage.lockDir = 0b0101;
+                rStorage.lockDir = 0b1000;
                 Editor.setCursor('ew-resize');
                 break;
+        }
+        if (rStorage.preserveRatio) {
+            rStorage.lockDir |= (rStorage.lockDir >> 1) || 0b1000;
+            switch (id) {
+                case 'handle-top':
+                    Editor.setCursor('nw-resize');
+                    break;
+                case 'handle-right':
+                    Editor.setCursor('ne-resize');
+                    break;
+                case 'handle-bottom':
+                    Editor.setCursor('se-resize');
+                    break;
+                case 'handle-left':
+                    Editor.setCursor('sw-resize');
+                    break;
+            }
         }
     }
     static resizeEl(dx, dy) {
@@ -220,28 +240,44 @@ class ResizeBars {
         const scale = Editor.transform.scale;
         const rStorage = ResizeBars.storage;
         const bounds = rStorage.bounds;
-        if (rStorage.lockDir & 0b0100) {
-            eStorage.dx += dx;
-            ResizeBars.storage.$target.css({
-                left: eStorage.x + eStorage.dx / scale,
-                width: bounds.width - eStorage.dx / scale
-            });
+        const css = {};
+        if (rStorage.preserveRatio) {
+            if (Math.abs(dx) > Math.abs(dy)) {
+                dy = dx;
+                if (rStorage.lockDir === 0b0011 || rStorage.lockDir === 0b1100) {
+                    dy *= -1;
+                }
+            }
+            else {
+                dx = dy;
+                if (rStorage.lockDir === 0b0011 || rStorage.lockDir === 0b1100) {
+                    dx *= -1;
+                }
+            }
         }
-        else if (rStorage.lockDir & 0b0001) {
-            eStorage.dx += dx;
-            ResizeBars.storage.$target.css('width', bounds.width + eStorage.dx / scale);
-        }
-        if (rStorage.lockDir & 0b1000) {
+        if (rStorage.lockDir & 0b0001) {
             eStorage.dy += dy;
-            ResizeBars.storage.$target.css({
+            Object.assign(css, {
                 top: eStorage.y + eStorage.dy / scale,
                 height: bounds.height - eStorage.dy / scale
             });
         }
-        else if (rStorage.lockDir & 0b0010) {
+        else if (rStorage.lockDir & 0b0100) {
             eStorage.dy += dy;
-            ResizeBars.storage.$target.css('height', bounds.height + eStorage.dy / scale);
+            Object.assign(css, { height: bounds.height + eStorage.dy / scale });
         }
+        if (rStorage.lockDir & 0b0010) {
+            eStorage.dx += dx;
+            Object.assign(css, { width: bounds.width + eStorage.dx / scale });
+        }
+        else if (rStorage.lockDir & 0b1000) {
+            eStorage.dx += dx;
+            Object.assign(css, {
+                left: eStorage.x + eStorage.dx / scale,
+                width: bounds.width - eStorage.dx / scale
+            });
+        }
+        ResizeBars.storage.$target.css(css);
     }
     static endResizeEl() {
         Editor.setCursor('auto');
@@ -261,6 +297,7 @@ ResizeBars.storage = {
         top: 0,
         height: 0
     },
+    preserveRatio: false,
     lockDir: 0,
     $target: undefined,
 };
@@ -271,14 +308,14 @@ class El {
             case EditorStates.NONE:
                 Editor.state = EditorStates.EL_BEGIN_FOCUS;
                 Editor.setTarget(e.delegateTarget);
-                ResizeBars.show();
+                Editor.showHandlesOnTarget();
                 break;
             case EditorStates.EL_FOCUSED:
             case EditorStates.TXT_EDITING:
                 if (Editor.storage.target !== e.delegateTarget) {
                     Editor.state = EditorStates.EL_BEGIN_FOCUS;
                     Editor.setTarget(e.delegateTarget);
-                    ResizeBars.show();
+                    Editor.showHandlesOnTarget();
                     break;
                 }
         }
@@ -382,6 +419,9 @@ class Editor {
     static applyTransform() {
         const transform = Editor.transform;
         Editor.$transformAnchor.css('transform', `scale(${transform.scale}) translate(${transform.translateX}px,${transform.translateY}px) rotateY(${transform.rotate}deg)`);
+    }
+    static showHandlesOnTarget() {
+        ResizeBars.show(Editor.storage.target.isA('IMG'));
     }
     static setCursor(cursor) {
         document.body.style.cursor = cursor;
@@ -994,7 +1034,7 @@ const hChangeFontType = function () {
             curr = curr.nextSibling;
         }
     }
-    ResizeBars.show();
+    ResizeBars.show(false);
 };
 let $body = $('body')
     .mousedown(function (e) {

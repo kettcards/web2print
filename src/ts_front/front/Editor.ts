@@ -119,6 +119,7 @@ class Editor {
     Editor.state = EditorStates.NONE;
     Editor.setCursor('auto');
   }
+
   static zoom(steps : number) : void {
     const scale = Editor.transform.scale;
     Editor.transform.scale = Math.min(Math.max(scale + scale * steps * -0.01, 0.1), 5);
@@ -141,6 +142,10 @@ class Editor {
     const transform = Editor.transform;
     // (lucas) cant use the proper matrix solution because the browser gets confused with the rotation direction :(
     Editor.$transformAnchor.css('transform', `scale(${transform.scale}) translate(${transform.translateX}px,${transform.translateY}px) rotateY(${transform.rotate}deg)`);
+  }
+
+  static showHandlesOnTarget(): void {
+    ResizeBars.show((Editor.storage.target as Node).isA('IMG'));
   }
 
   static setCursor(cursor : string) {

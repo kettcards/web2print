@@ -4,14 +4,14 @@ class El {
       case EditorStates.NONE:
         Editor.state = EditorStates.EL_BEGIN_FOCUS;
         Editor.setTarget(e.delegateTarget);
-        ResizeBars.show();
+        Editor.showHandlesOnTarget();
         break;
       case EditorStates.EL_FOCUSED:
       case EditorStates.TXT_EDITING:
         if(Editor.storage.target !== e.delegateTarget) {
           Editor.state = EditorStates.EL_BEGIN_FOCUS;
           Editor.setTarget(e.delegateTarget);
-          ResizeBars.show();
+          Editor.showHandlesOnTarget();
           break;
         }
     }

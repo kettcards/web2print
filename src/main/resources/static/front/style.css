@@ -476,3 +476,33 @@ button:active {
 #handle-left::after   {  right: 0; }
 #handle-bottom::after {    top: 0; }
 #handle-right::after  {   left: 0; }
+
+.preserve-ratio>* {
+  cursor: auto !important;
+}
+.preserve-ratio>#handle-top::after {
+  left: 0;
+  transform: translateX(-100%);
+  height: 0.75em;
+  cursor: nw-resize;
+}
+.preserve-ratio>#handle-left::after {
+  top: unset;
+  bottom: 0;
+  transform: translateY(100%);
+  width: 0.75em;
+  cursor: sw-resize;
+}
+.preserve-ratio>#handle-bottom::after {
+  left: unset;
+  right: 0;
+  transform: translateX(100%);
+  height: 0.75em;
+  cursor: se-resize;
+}
+.preserve-ratio>#handle-right::after {
+  top: 0;
+  transform: translateY(-100%);
+  width: 0.75em;
+  cursor: ne-resize;
+}
