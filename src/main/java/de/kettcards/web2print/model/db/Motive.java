@@ -9,7 +9,7 @@ import java.io.Serializable;
 @Data
 @Entity
 @Table(name = "motive")
-public class Motive implements Serializable, VirtualId {
+public final class Motive implements Serializable, VirtualId {
 
     @JsonIgnore
     @Id

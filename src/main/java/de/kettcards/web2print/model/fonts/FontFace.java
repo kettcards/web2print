@@ -11,7 +11,7 @@ import java.io.InputStream;
 import java.util.EnumSet;
 import java.util.Objects;
 
-public class FontFace {
+public final class FontFace {
 
     private final EnumSet<FontStyle> fontStyle;
 
