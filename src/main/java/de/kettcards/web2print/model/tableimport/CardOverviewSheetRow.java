@@ -1,6 +1,9 @@
 package de.kettcards.web2print.model.tableimport;
 
-import de.kettcards.web2print.model.db.*;
+import de.kettcards.web2print.model.db.Card;
+import de.kettcards.web2print.model.db.CardFormat;
+import de.kettcards.web2print.model.db.Material;
+import de.kettcards.web2print.model.db.VirtualId;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;

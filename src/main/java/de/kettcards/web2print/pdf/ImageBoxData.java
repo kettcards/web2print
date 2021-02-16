@@ -1,6 +1,5 @@
 package de.kettcards.web2print.pdf;
 
-import com.kitfox.svg.A;
 import com.kitfox.svg.SVGDiagram;
 import com.kitfox.svg.SVGException;
 import com.kitfox.svg.SVGUniverse;
@@ -10,7 +9,6 @@ import org.apache.pdfbox.pdmodel.graphics.image.JPEGFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.util.Matrix;
-import org.springframework.core.ReactiveAdapterRegistry;
 
 import javax.imageio.ImageIO;
 import java.awt.geom.AffineTransform;
