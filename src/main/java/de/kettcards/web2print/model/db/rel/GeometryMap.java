@@ -12,11 +12,11 @@ import java.io.Serializable;
 @Data
 @Entity
 @Table(name = "geometry_map")
-public class GeometryMap implements Serializable {
+public final class GeometryMap implements Serializable {
 
     @JsonIgnore
     @EmbeddedId
-    GeometryMapId geometryMapId;
+    private GeometryMapId geometryMapId;
 
     @JsonIgnore
     @ManyToOne
@@ -33,7 +33,7 @@ public class GeometryMap implements Serializable {
 
     @Data
     @Embeddable
-    public static class GeometryMapId implements Serializable {
+    public final static class GeometryMapId implements Serializable {
 
         private Integer card;
 

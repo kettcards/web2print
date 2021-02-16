@@ -20,7 +20,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Document extends PDDocument {
+public final class Document extends PDDocument {
 
     private PDPage currentPage;
 

@@ -17,13 +17,13 @@ import java.util.Objects;
 @Value
 @AllArgsConstructor
 @Slf4j
-public class CardFormatSheetRow implements VirtualId {
+public final class CardFormatSheetRow implements VirtualId {
 
-    String nameExplanation;
+    private String nameExplanation;
 
-    Integer formatType, height, width;
+    private Integer formatType, height, width;
 
-    String foldType;
+    private String foldType;
 
     public static List<CardFormatSheetRow> parseRows(XSSFSheet cardFormatSheet) {
         var data = new ArrayList<CardFormatSheetRow>();
