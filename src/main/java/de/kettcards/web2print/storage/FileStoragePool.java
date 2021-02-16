@@ -17,9 +17,9 @@ import java.util.*;
  *
  * @author dt
  */
-public class FileStoragePool extends StoragePool {
+public final class FileStoragePool extends StoragePool {
 
-    protected final FileStoragePoolConfiguration poolConfiguration;
+    private final FileStoragePoolConfiguration poolConfiguration;
 
     public FileStoragePool() throws IOException {
         this(new FileStoragePoolConfiguration(".pool_data"));
@@ -171,6 +171,10 @@ public class FileStoragePool extends StoragePool {
             return true;
         FileSystemUtils.deleteRecursively(resolve);
         return true;
+    }
+
+    public FileStoragePoolConfiguration getPoolConfiguration() {
+        return poolConfiguration;
     }
 
 }

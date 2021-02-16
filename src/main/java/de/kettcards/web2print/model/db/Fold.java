@@ -1,7 +1,6 @@
 package de.kettcards.web2print.model.db;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -11,7 +10,7 @@ import java.util.Objects;
 @Data
 @Entity
 @Table(name = "fold")
-public class Fold implements Serializable, VirtualId {
+public final class Fold implements Serializable, VirtualId {
 
     @JsonIgnore
     @Id

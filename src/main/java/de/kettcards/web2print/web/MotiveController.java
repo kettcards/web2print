@@ -15,7 +15,7 @@ import java.io.IOException;
 @Deprecated
 @RestController
 @RequestMapping("${web2print.links.api-path}")
-public class MotiveController {
+public final class MotiveController {
 
     @Autowired
     private MotiveImportService motiveImportService;

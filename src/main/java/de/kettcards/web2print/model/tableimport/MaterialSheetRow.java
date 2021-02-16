@@ -15,11 +15,11 @@ import java.util.List;
 @Value
 @AllArgsConstructor
 @Slf4j
-public class MaterialSheetRow implements VirtualId {
+public final class MaterialSheetRow implements VirtualId {
 
-    Integer id;
+    private Integer id;
 
-    String name;
+    private String name;
 
     public static List<MaterialSheetRow> parseRows(XSSFSheet materialSheet) {
         var data = new ArrayList<MaterialSheetRow>();

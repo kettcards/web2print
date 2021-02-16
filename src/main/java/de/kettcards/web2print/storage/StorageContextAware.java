@@ -63,7 +63,6 @@ public abstract class StorageContextAware implements StorageContext {
 
 
     /**
-     * @param storageContext current context
      * @return lists all valid paths inside the current storage context
      * @throws IOException if listing was unsuccessful
      */
