@@ -29,7 +29,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class MotiveImportService extends StorageContextAware implements WebContextAware {
+public final class MotiveImportService extends StorageContextAware implements WebContextAware {
 
     private static final String defaultPrefix = "default/";
 

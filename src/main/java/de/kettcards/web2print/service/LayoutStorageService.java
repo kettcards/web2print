@@ -20,7 +20,7 @@ import java.util.Collections;
 
 @Slf4j
 @Service
-public class LayoutStorageService extends StorageContextAware {
+public final class LayoutStorageService extends StorageContextAware {
 
     @Autowired
     private ObjectMapper jsonMapper;

@@ -4,10 +4,10 @@ import lombok.Getter;
 
 @Getter
 public class SpanDimension {
-    int ascender, descender, emHeight;
-    float fontSizeInPoint;
+    private int ascender, descender, emHeight;
+    private float fontSizeInPoint;
 
-    float actualClientHeight;
+    private float actualClientHeight;
     public static final float LINE_HEIGHT = 1.2f;
 
     public SpanDimension(int ascender, int descender, int emHeight, float fontSizeInPoint){

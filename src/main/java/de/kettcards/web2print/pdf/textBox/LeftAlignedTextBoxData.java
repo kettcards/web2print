@@ -10,23 +10,29 @@ import java.util.List;
  */
 public class LeftAlignedTextBoxData extends TextBoxData {
 
-    /**
-     * {@inheritDoc}
-     */
     public LeftAlignedTextBoxData(float x, float y, float width, float height, List<TextParagraph> textParagraphs) {
         super(x, y, width, height, textParagraphs);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setInitialBoxPosition(Document doc, TextParagraph firstParagraph) throws IOException {
         doc.stream().newLineAtOffset(x, y + height);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setParagraphBeginPosition(Document doc, float paragraphWidth) throws IOException {
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setParagraphEndPosition(Document doc, float paragraphWidth) throws IOException {
 

@@ -7,8 +7,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum FontStyle {
+    /**
+     * normal style
+     */
     NORMAL(0 << 0),
+    /**
+     * bold style
+     */
     BOLD(1 << 0),
+    /**
+     * italic style
+     */
     ITALIC(1 << 1);
 
     private static final float defaultLineHeight = 1.0f;
@@ -22,7 +31,7 @@ public enum FontStyle {
         defaultFontStyleWeights.put(ITALIC, 400);
     }
 
-    public final int value;
+    private final int value;
 
     FontStyle(int value) {
         this.value = value;
@@ -54,6 +63,11 @@ public enum FontStyle {
         throw new IllegalFontStyleException(style);
     }
 
+    /**
+     *
+     * @param combined combined value
+     * @return a set of FontStyle based on the combined value
+     */
     public static EnumSet<FontStyle> getFontStyle(int combined) {
         var ret = EnumSet.noneOf(FontStyle.class);
         if (combined == 0)
@@ -65,6 +79,12 @@ public enum FontStyle {
         return ret;
     }
 
+    /**
+     *
+     * @param styles set to be converted
+     * @return the numeric value for the given set
+     * @throws IllegalFontStyleException if the given set is empty
+     */
     public static int getValues(EnumSet<FontStyle> styles) throws IllegalFontStyleException {
         boolean wasSet = false;
         int combined = 0;
@@ -77,12 +97,27 @@ public enum FontStyle {
         return combined;
     }
 
+    /**
+     *
+     * @return the default font style
+     */
     public static FontStyle getDefaultFontStyle() {
         return defaultFontStyle;
     }
 
+    /**
+     *
+     * @return the default line height
+     */
     public static float getDefaultLineHeight() {
         return defaultLineHeight;
     }
 
+    /**
+     *
+     * @return the numeric value associated to the given font style
+     */
+    public int getValue() {
+        return value;
+    }
 }

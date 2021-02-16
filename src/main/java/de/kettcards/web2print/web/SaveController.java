@@ -13,7 +13,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("${web2print.links.api-path}")
-public class SaveController {
+public final class SaveController {
 
     @Autowired
     private LayoutStorageService storageService;

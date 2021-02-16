@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class XlsxImportService {
+public final class XlsxImportService {
 
     @Autowired
     private CardRepository cardRepository;
