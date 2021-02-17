@@ -60,7 +60,7 @@ function showTutorial(){
       '</div>'+
       '<input type="checkbox" id="dont-show-again" style="margin:10px 2px 0 0;">' +
       '<label for="dont-show-again">nicht erneut anzeigen</label>' +
-      '<button style="margin:5px 0 0 0;float: right;">Ok</button></div></div>');
+      '<button style="padding: 16px 16px; margin:5px 0 0 0;float: right;">Ok</button></div></div>');
   const dontShowAgain = <HTMLInputElement>$tutOver.find('input')[0];
   $tutOver.find('button').click(function(){
     if(dontShowAgain.checked) {
