@@ -8,7 +8,7 @@ declare interface RenderStyle {
 }
 
 const RenderStyles = [{
-  name: 'Simple',
+  name: 'Druckbogen',
   condition: function(card){ return true; },
   BgStretchObjs: {
     stretch: {
@@ -56,8 +56,8 @@ const RenderStyles = [{
     return $bundle;
   },
   pageLabels: [
-    'Inside',
-    'Outside'
+    'Innenseite',
+    'Außenseite'
   ],
   initialDotIndex: 0,
   hPageChanged: function(direction) {
@@ -69,7 +69,7 @@ const RenderStyles = [{
     rot: 0
   }
 } as RenderStyle, {
-  name: 'simple_foldable',
+  name: 'einzelne Seite',
   condition: function(card){
     const folds = card.cardFormat.folds;
     return folds.length === 1 && folds[0].x1 === folds[0].x2;
@@ -133,9 +133,9 @@ const RenderStyles = [{
     return $(document.createDocumentFragment()).append($page1, $page2);
   },
   pageLabels: [
-    'Back',
-    'Inside',
-    'Front'
+    'Rückseite',
+    'Innenseite',
+    'Vorderseite'
   ],
   initialDotIndex: 1,
   hPageChanged: function(direction) {

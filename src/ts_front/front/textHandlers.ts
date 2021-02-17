@@ -154,7 +154,7 @@ const hTxtPaste = async function(e) {
 //font stuff
 const hFontChanged = function(e) {
   const range = getSel().getRangeAt(0);
-  const fName = $fontSelect.val() as string;
+  const fName = Fonts.currentSelection;
   makeNodesFromSelection(range, function(curr) {
     $(curr).css('font-family', fName);
   })

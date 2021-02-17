@@ -11,7 +11,7 @@ import java.util.Objects;
 @Data
 @Entity
 @Table(name = "card_format")
-public class CardFormat implements Serializable, VirtualId {
+public final class CardFormat implements Serializable, VirtualId {
 
     @Id
     @Column(name = "id")

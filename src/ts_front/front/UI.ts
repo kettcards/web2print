@@ -16,9 +16,24 @@ $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
 
 $('#submitBtn').click(serialize);
 
-const $fontSelect = $<HTMLSelectElement>('#fontSelect')
+const $fontSelect = $<HTMLSelectElement>('#font-select')
   .mouseup(stopPropagation)
   .change(hFontChanged);
+
+Fonts.$options.click(function(e) {
+  if(e.target.nodeName !== 'P')
+    return;
+
+  const fName = e.target.textContent;
+  Fonts.currentSelection = fName;
+  Fonts.$label.text(fName).css('font-family', fName);
+  $fontSelect.trigger("change");
+});
+
+$fontSelect.children('p').click(function(e) {
+  e.stopPropagation();
+  Fonts.$options.css('visibility', 'visible');
+});
 
 const $fontSizeSelect = $<HTMLInputElement>('#fontSizeSelect')
   .mousedown(function(e){
