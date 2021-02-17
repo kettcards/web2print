@@ -16,6 +16,8 @@ $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
 
 $('#submitBtn').click(serialize);
 
+$('#tutorial').click(showTutorial);
+
 const $fontSelect = $<HTMLDivElement>('#font-select')
   .mousedown(Editor.saveSelection)
   .mouseup(stopPropagation);
