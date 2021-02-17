@@ -546,10 +546,9 @@ const Fonts = {
         });
     },
 };
-function submit() {
+function submit(_export) {
     const data = serialize();
     console.log("sending", data);
-    const _export = true;
     $.post(`${web2print.links.apiUrl}save/${Parameters.sId || ''}?export=${_export}`, 'data=' + btoa(JSON.stringify(data)))
         .then(function (response) {
         Parameters.sId = response;
@@ -1068,7 +1067,9 @@ $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
 $('#moveBtn').mousedown(function () {
     state.dragging = true;
 });
-$('#submitBtn').click(submit);
+$('#save-btn').click(function () {
+    submit(false);
+});
 const $fontSelect = $('#font-select')
     .mouseup(stopPropagation)
     .change(hFontChanged);

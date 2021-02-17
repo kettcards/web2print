@@ -28,11 +28,10 @@ interface BoundingBox {
   h : number;
 }
 
-function submit() : void {
+function submit(_export : boolean) : void {
   const data = serialize();
 
   console.log("sending", data);
-  const _export = true;
   $.post(`${web2print.links.apiUrl}save/${Parameters.sId || ''}?export=${_export}`, 'data='+btoa(JSON.stringify(data)))
     .then(function(response : string) {
       Parameters.sId = response;

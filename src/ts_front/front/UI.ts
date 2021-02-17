@@ -27,7 +27,10 @@ $('#moveBtn').mousedown(function(){
   state.dragging = true;
 });
 
-$('#submitBtn').click(submit);
+$('#save-btn').click(function() {
+  // (lucas 17.02.21) todo: local saving
+  submit(false);
+});
 
 const $fontSelect = $<HTMLSelectElement>('#font-select')
   .mouseup(stopPropagation)
