@@ -19,7 +19,7 @@
       <div id="editor-container">
         <div id="toolbar">
           <div class="toolbar-row" >
-            <textSpan class="toolbar-label">Hinzufügen</textSpan>
+            <span class="toolbar-label">Hinzufügen</span>
             <div class="toolbar-buttons">
               <button class="addElBtn" data-enum="TEXT">Text</button>
               <button class="addElBtn" data-enum="IMAGE">Bild / Logo</button>
@@ -31,7 +31,11 @@
             <span class="toolbar-label">Text</span>
             <div>
               <div class="text-tools-block">
-                <select id="fontSelect"></select><!-- this will get replaces quickly anyway
+                <div id="font-select">
+                  <p><span id="font-label">Schriftart wählen</span><span id="font-label-tick">V</span></p>
+                  <div id="font-options" style="visibility: collapse;">
+                  </div>
+                </div><!--
              --><label for="fontSizeSelect">Schriftgrö&szlig;e:&nbsp;</label><input type="number" id="fontSizeSelect" min="1" value="16">Pt
               </div>
               <div class="text-tools-block" id="text-btns">

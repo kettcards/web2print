@@ -69,7 +69,6 @@ body {
   position: relative;
   z-index: 1;
   background-color: lightgray;
-  overflow: hidden;
   padding: 5px 0;
 }
 .toolbar-row {
@@ -127,8 +126,8 @@ body {
 }
 
 #text-btns button {
-  width: 25px;
-  height: 25px;
+  width: 28px;
+  height: 28px;
   padding: 0;
 }
 
@@ -386,7 +385,6 @@ body {
 }
 
 #font-select {
-  display: inline-block;
   position: relative;
   outline: none;
   background-color: white;
@@ -440,7 +438,6 @@ body {
 #fontSizeSelect {
   outline: none;
   max-width: 50px;
-  float: right;
 }
 
 .fontTypeButton[value=b] {
