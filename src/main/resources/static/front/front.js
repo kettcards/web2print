@@ -168,67 +168,292 @@ const MMPerPx = (function () {
     $resTester.remove();
     return ret;
 })();
-const Editor = {
-    loadedCard: undefined,
-    $transformAnchor: $('#transform-anchor'),
-    $editorArea: $("#editor-area"),
-    $zoomLabel: $('#zoom-val'),
-    scale: 1,
-    translate: { x: 0, y: 0 },
-    rotate: 0,
-    apply() {
-        this.$zoomLabel.text(Math.round(this.scale * 100));
-        this.$transformAnchor.css('transform', `scale(${this.scale}) translate(${this.translate.x}px,${this.translate.y}px) rotateY(${this.rotate}deg)`);
+class ResizeBars {
+    static setBoundsToTarget() {
+        const eStorage = Editor.storage;
+        const $target = eStorage.$target;
+        eStorage.x = +$target.css('left').slice(0, -2);
+        eStorage.y = +$target.css('top').slice(0, -2);
+        eStorage.dx = 0;
+        eStorage.dy = 0;
+        ResizeBars.storage.bounds = {
+            left: eStorage.x + +$target.parents('.page-bundle').attr('data-x-offset') / MMPerPx.x,
+            width: $target.width(),
+            top: eStorage.y,
+            height: $target.height()
+        };
+    }
+    static show(preserveRatio) {
+        const rStorage = ResizeBars.storage;
+        rStorage.preserveRatio = preserveRatio;
+        ResizeBars.setBoundsToTarget();
+        ResizeBars.$handles.css(Object.assign({
+            visibility: 'visible',
+            transform: ''
+        }, rStorage.bounds))[rStorage.preserveRatio ? 'addClass' : 'removeClass']('preserve-ratio');
+        ResizeBars.visible = true;
+        rStorage.$target = ResizeBars.$handles.add(Editor.storage.$target);
+    }
+    static hBarMDown(e) {
+        Editor.state = EditorStates.EL_RESIZING;
+        ResizeBars.setBoundsToTarget();
+        const rStorage = ResizeBars.storage;
+        const id = $(e.delegateTarget).attr('id');
+        switch (id) {
+            case 'handle-top':
+                rStorage.lockDir = 0b0001;
+                Editor.setCursor('ns-resize');
+                break;
+            case 'handle-right':
+                rStorage.lockDir = 0b0010;
+                Editor.setCursor('ew-resize');
+                break;
+            case 'handle-bottom':
+                rStorage.lockDir = 0b0100;
+                Editor.setCursor('ns-resize');
+                break;
+            case 'handle-left':
+                rStorage.lockDir = 0b1000;
+                Editor.setCursor('ew-resize');
+                break;
+        }
+        if (rStorage.preserveRatio) {
+            rStorage.lockDir |= (rStorage.lockDir >> 1) || 0b1000;
+            switch (id) {
+                case 'handle-top':
+                    Editor.setCursor('nw-resize');
+                    break;
+                case 'handle-right':
+                    Editor.setCursor('ne-resize');
+                    break;
+                case 'handle-bottom':
+                    Editor.setCursor('se-resize');
+                    break;
+                case 'handle-left':
+                    Editor.setCursor('sw-resize');
+                    break;
+            }
+        }
+    }
+    static resizeEl(dx, dy) {
+        const eStorage = Editor.storage;
+        const scale = Editor.transform.scale;
+        const rStorage = ResizeBars.storage;
+        const bounds = rStorage.bounds;
+        const css = {};
+        if (rStorage.lockDir & 0b0001) {
+            eStorage.dy += dy;
+            Object.assign(css, {
+                top: eStorage.y + eStorage.dy / scale,
+                height: bounds.height - eStorage.dy / scale
+            });
+        }
+        else if (rStorage.lockDir & 0b0100) {
+            eStorage.dy += dy;
+            Object.assign(css, { height: bounds.height + eStorage.dy / scale });
+        }
+        if (rStorage.lockDir & 0b0010) {
+            eStorage.dx += dx;
+            Object.assign(css, { width: bounds.width + eStorage.dx / scale });
+        }
+        else if (rStorage.lockDir & 0b1000) {
+            eStorage.dx += dx;
+            Object.assign(css, {
+                left: eStorage.x + eStorage.dx / scale,
+                width: bounds.width - eStorage.dx / scale
+            });
+        }
+        ResizeBars.storage.$target.css(css);
+    }
+    static endResizeEl() {
+        Editor.setCursor('auto');
+        Editor.state = EditorStates.EL_FOCUSED;
+    }
+    static hide() {
+        ResizeBars.$handles.css('visibility', 'collapse');
+        ResizeBars.visible = false;
+    }
+}
+ResizeBars.$handles = $('#resize-handles');
+ResizeBars.visible = false;
+ResizeBars.storage = {
+    bounds: {
+        left: 0,
+        width: 0,
+        top: 0,
+        height: 0
     },
-    fitToContainer() {
-        this.scale = Math.min(this.$editorArea.width() * MMPerPx.x / (this.loadedCard.cardFormat.width + 55), this.$editorArea.height() * MMPerPx.x / (this.loadedCard.cardFormat.height + 55)) * 0.9;
-        this.translate.x = 0;
-        this.translate.y = 0;
-        this.rotate = 0;
-        this.apply();
-    },
-    createRuler() {
-        const $topRuler = $('.ruler.top');
-        for (let i = 0; i < this.loadedCard.cardFormat.width; i += 5)
-            $topRuler.append($(make('li')).css('left', i + 'mm').attr('data-val', i / 10));
-        const $leftRuler = $('.ruler.left');
-        for (let i = 0; i < this.loadedCard.cardFormat.height; i += 5)
-            $leftRuler.append($(make('li')).css('top', i + 'mm').attr('data-val', i / 10));
-    },
-    isDragging: false,
-    translateStore: { x: 0, y: 0 },
-    deltaStore: { x: 0, y: 0 },
-    beginDrag() {
-        this.deltaStore.x = 0;
-        this.deltaStore.y = 0;
-        this.translateStore.x = this.translate.x;
-        this.translateStore.y = this.translate.y;
-        this.isDragging = true;
-        document.body.style.cursor = 'move';
-    },
-    drag(dx, dy) {
-        this.deltaStore.x += dx;
-        this.deltaStore.y += dy;
-        this.translate.x = this.translateStore.x + this.deltaStore.x / this.scale;
-        this.translate.y = this.translateStore.y + this.deltaStore.y / this.scale;
-    },
-    endDrag() {
-        this.isDragging = false;
-        document.body.style.cursor = 'default';
-    },
-    scroll(steps) {
-        this.scale = Math.min(Math.max(this.scale + this.scale * steps * -0.01, 0.1), 5);
-    },
-    enableTransition(enable) {
+    preserveRatio: false,
+    lockDir: 0,
+    $target: undefined,
+};
+ResizeBars.$handles.children().mousedown(ResizeBars.hBarMDown);
+class El {
+    static hMDown(e) {
+        switch (Editor.state) {
+            case EditorStates.NONE:
+                Editor.state = EditorStates.EL_BEGIN_FOCUS;
+                Editor.setTarget(e.delegateTarget);
+                Editor.showHandlesOnTarget();
+                break;
+            case EditorStates.EL_FOCUSED:
+            case EditorStates.TXT_EDITING:
+                if (Editor.storage.target !== e.delegateTarget) {
+                    Editor.state = EditorStates.EL_BEGIN_FOCUS;
+                    Editor.setTarget(e.delegateTarget);
+                    Editor.showHandlesOnTarget();
+                    break;
+                }
+        }
+    }
+    static hMUp(e) {
+        switch (Editor.state) {
+            case EditorStates.EL_BEGIN_FOCUS:
+                if (Editor.storage.target === e.delegateTarget) {
+                    Editor.state = EditorStates.EL_FOCUSED;
+                    e.stopPropagation();
+                }
+                break;
+        }
+    }
+}
+var EditorStates;
+(function (EditorStates) {
+    EditorStates[EditorStates["NONE"] = 0] = "NONE";
+    EditorStates[EditorStates["SELF_DRAGGING"] = 1] = "SELF_DRAGGING";
+    EditorStates[EditorStates["EL_BEGIN_FOCUS"] = 2] = "EL_BEGIN_FOCUS";
+    EditorStates[EditorStates["EL_FOCUSED"] = 3] = "EL_FOCUSED";
+    EditorStates[EditorStates["EL_DRAGGING"] = 4] = "EL_DRAGGING";
+    EditorStates[EditorStates["EL_RESIZING"] = 5] = "EL_RESIZING";
+    EditorStates[EditorStates["TXT_EDITING"] = 6] = "TXT_EDITING";
+})(EditorStates || (EditorStates = {}));
+class Editor {
+    static setTarget(t) {
+        Editor.storage.target = t;
+        Editor.storage.$target = $(t);
+    }
+    static clearTarget() {
+        Editor.storage.target = undefined;
+        Editor.storage.$target = undefined;
+        ResizeBars.hide();
+        Editor.state = EditorStates.NONE;
+        console.log('clear target');
+    }
+    static beginDragEl() {
+        Editor.storage.dx = 0;
+        Editor.storage.dy = 0;
+        Editor.state = EditorStates.EL_DRAGGING;
+        Editor.setCursor('move');
+        Editor.storage.$target.addClass('no-select');
+    }
+    static dragEl(dx, dy) {
+        Editor.storage.dx += dx;
+        Editor.storage.dy += dy;
+        ResizeBars.storage.$target.css('transform', `translate(${Editor.storage.dx / Editor.transform.scale}px, ${Editor.storage.dy / Editor.transform.scale}px)`);
+    }
+    static endDragEl() {
+        Editor.state = EditorStates.EL_FOCUSED;
+        Editor.setCursor('auto');
+        const storage = Editor.storage;
+        if (storage.dx === 0 && storage.dy === 0)
+            return;
+        ResizeBars.storage.$target.css({
+            top: `+=${storage.dy / Editor.transform.scale}`,
+            left: `+=${storage.dx / Editor.transform.scale}`,
+            transform: 'rotate(' + getRotation() + 'deg)',
+        });
+        storage.dx = 0;
+        storage.dy = 0;
+        Editor.storage.$target.removeClass('no-select');
+    }
+    static beginDragSelf() {
+        const storage = Editor.storage;
+        storage.x = Editor.transform.translateX;
+        storage.y = Editor.transform.translateY;
+        storage.dx = 0;
+        storage.dy = 0;
+        Editor.state = EditorStates.SELF_DRAGGING;
+        Editor.setCursor('move');
+    }
+    static dragSelf(dx, dy) {
+        const storage = Editor.storage;
+        storage.dx += dx;
+        storage.dy += dy;
+        const transform = Editor.transform;
+        transform.translateX = storage.x + storage.dx / transform.scale;
+        transform.translateY = storage.y + storage.dy / transform.scale;
+        Editor.applyTransform();
+    }
+    static endDragSelf() {
+        Editor.state = EditorStates.NONE;
+        Editor.setCursor('auto');
+    }
+    static zoom(steps) {
+        const scale = Editor.transform.scale;
+        Editor.transform.scale = Math.min(Math.max(scale + scale * steps * -0.01, 0.1), 5);
+        Editor.applyTransform();
+        Editor.displayZoom();
+    }
+    static fitToContainer() {
+        Editor.transform.scale = Math.min(Editor.$editorArea.width() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.width + 55), Editor.$editorArea.height() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.height + 55)) * 0.9;
+        Editor.transform.translateX = 0;
+        Editor.transform.translateY = 0;
+        Editor.transform.rotate = 0;
+        Editor.applyTransform();
+        Editor.displayZoom();
+    }
+    static applyTransform() {
+        const transform = Editor.transform;
+        Editor.$transformAnchor.css('transform', `scale(${transform.scale}) translate(${transform.translateX}px,${transform.translateY}px) rotateY(${transform.rotate}deg)`);
+    }
+    static showHandlesOnTarget() {
+        ResizeBars.show(Editor.storage.target.isA('IMG'));
+    }
+    static setCursor(cursor) {
+        document.body.style.cursor = cursor;
+    }
+    static displayZoom() {
+        Editor.$zoomLabel.text(Math.round(Editor.transform.scale * 100));
+    }
+    static enableTransition(enable) {
         this.$transformAnchor.css('transition', enable ? 'transform 1s' : '');
     }
+    static createRuler() {
+        const $topRuler = $('.ruler.top');
+        for (let i = 0; i < Editor.storage.loadedCard.cardFormat.width; i += 5)
+            $topRuler.append($(make('li')).css('left', i + 'mm').attr('data-val', i / 10));
+        const $leftRuler = $('.ruler.left');
+        for (let i = 0; i < Editor.storage.loadedCard.cardFormat.height; i += 5)
+            $leftRuler.append($(make('li')).css('top', i + 'mm').attr('data-val', i / 10));
+    }
+}
+Editor.$transformAnchor = $('#transform-anchor');
+Editor.$editorArea = $('#editor-area');
+Editor.$zoomLabel = $('#zoom-val');
+Editor.transform = {
+    scale: 1,
+    translateX: 0,
+    translateY: 1,
+    rotate: 0
+};
+Editor.state = EditorStates.NONE;
+Editor.storage = {
+    loadedCard: undefined,
+    x: 0,
+    y: 0,
+    dx: 0,
+    dy: 0,
+    target: undefined,
+    $target: undefined,
+    addOnClick: undefined,
+    range: undefined,
 };
 const ElementSpawners = {
     TEXT: function (p) {
         return $('<div class="text" contenteditable="true"><p><span>Ihr Text Hier!</span></p></div>')
-            .mousedown(hTxtMDown)
-            .mouseup(hTxtMUp)
-            .click(hTxtClick)
+            .mousedown(TextEl.hMDown)
+            .mouseup(TextEl.hMUp)
+            .click(stopPropagation)
             .on('paste', hTxtPaste)
             .on('keydown', hTxtKeyDown)
             .on('keyup', hTxtKeyUp)
@@ -241,55 +466,63 @@ const ElementSpawners = {
     },
     IMAGE: function (p) {
         return $("<img class='logo' src='" + web2print.links.apiUrl + "content/" + logoContentId + "' alt='" + logoContentId + "' draggable='false'>")
-            .mousedown(function (e) {
-            state.target = $(e.delegateTarget);
-            state.addOnClick = undefined;
-            state.dragging = true;
-            $toolBox.css(Object.assign({
-                visibility: 'hidden'
-            }));
-        })
-            .click(imgClick)
+            .mousedown(ImageEl.hMDown)
+            .mouseup(El.hMUp)
+            .on("dragstart", falsify)
+            .on("drop", falsify)
+            .click(stopPropagation)
             .css(p);
     }
 };
-const hTxtMDown = function (e) {
-    state.target = $(e.delegateTarget);
-    state.addOnClick = undefined;
-};
-const hTxtMUp = function () {
-    const [startEl, _, endEl, __] = getSelectedNodes(getSel().getRangeAt(0));
-    let fontFam = $(startEl).css('font-family');
-    let fontSize = +$(startEl).css('font-size').slice(0, -2);
-    let index;
-    for (let n = startEl;;) {
-        const nextFam = $(n).css('font-family');
-        const nextSize = +$(n).css('font-size').slice(0, -2);
-        if (fontFam !== nextFam) {
-            index = -1;
-        }
-        if (nextSize < fontSize) {
-            fontSize = nextSize;
-        }
-        if (n === endEl)
-            break;
-        if (n.nextSibling === null) {
-            n = n.parentNode.nextSibling.firstChild;
-        }
-        else {
-            n = n.nextSibling;
+class TextEl {
+    static hMDown(e) {
+        switch (Editor.state) {
+            case EditorStates.EL_FOCUSED:
+            case EditorStates.TXT_EDITING:
+                if (Editor.storage.target === e.delegateTarget) {
+                    Editor.state = EditorStates.TXT_EDITING;
+                    e.stopPropagation();
+                    break;
+                }
+            default:
+                El.hMDown(e);
         }
     }
-    $fontSelect[0].selectedIndex = index || Fonts.FontNames.indexOf(fontFam);
-    $fontSizeSelect.val(Math.round(fontSize / 96 * 72));
-};
-const hTxtClick = function (e) {
-    e.stopPropagation();
-    const $target = $(e.delegateTarget);
-    $toolBox.css(Object.assign({
-        visibility: 'visible'
-    }, $target.offset()));
-};
+    static hMUp(e) {
+        switch (Editor.state) {
+            case EditorStates.TXT_EDITING:
+                break;
+            default:
+                El.hMUp(e);
+        }
+    }
+    static displaySelectedProperties() {
+        const [startEl, _, endEl, __] = getSelectedNodes(getSel().getRangeAt(0));
+        let fontFam = $(startEl).css('font-family');
+        let fontSize = +$(startEl).css('font-size').slice(0, -2);
+        let index;
+        for (let n = startEl;;) {
+            const nextFam = $(n).css('font-family');
+            const nextSize = +$(n).css('font-size').slice(0, -2);
+            if (fontFam !== nextFam) {
+                index = -1;
+            }
+            if (nextSize < fontSize) {
+                fontSize = nextSize;
+            }
+            if (n === endEl)
+                break;
+            if (n.nextSibling === null) {
+                n = n.parentNode.nextSibling.firstChild;
+            }
+            else {
+                n = n.nextSibling;
+            }
+        }
+        $fontSelect[0].selectedIndex = index || Fonts.FontNames.indexOf(fontFam);
+        $fontSizeSelect.val(Math.round(fontSize / 96 * 72));
+    }
+}
 const hTxtKeyDown = function (e) {
     const ev = e.originalEvent;
     const key = ev.keyCode;
@@ -327,7 +560,7 @@ const hTxtKeyUp = function (e) {
         }
     }
     if ((key >= 37 && key <= 40) || (key >= 33 && key <= 36)) {
-        hTxtMUp();
+        TextEl.displaySelectedProperties();
     }
 };
 const hTxtPaste = async function (e) {
@@ -335,11 +568,24 @@ const hTxtPaste = async function (e) {
 };
 const hFontChanged = function (e) {
     const range = getSel().getRangeAt(0);
-    const fName = currentSelection;
+    const fName = Fonts.currentSelection;
     makeNodesFromSelection(range, function (curr) {
         $(curr).css('font-family', fName);
     });
 };
+class ImageEl {
+    static hMDown(e) {
+        switch (Editor.state) {
+            case EditorStates.EL_FOCUSED:
+                if (Editor.storage.target === e.delegateTarget) {
+                    Editor.beginDragEl();
+                    break;
+                }
+            default:
+                El.hMDown(e);
+        }
+    }
+}
 let logoContentId;
 const hFileUploadChanged = function (e) {
     let file = e.target.files[0];
@@ -360,15 +606,8 @@ const hFileUploadChanged = function (e) {
     });
 };
 const $fileUpBtn = $('#fileUpload').change(hFileUploadChanged);
-const imgClick = function (e) {
-    e.stopPropagation();
-    const target = $(e.delegateTarget);
-    imgTool.css(Object.assign({
-        visibility: 'visible',
-    }, target.offset()));
-};
 const getRotation = function () {
-    let transformMatrix = state.target.css('transform');
+    let transformMatrix = Editor.storage.$target.css('transform');
     let angle = 0;
     if (transformMatrix !== "none") {
         let mat = transformMatrix.split('(')[1].split(')')[0].split(',');
@@ -385,6 +624,9 @@ const getRotation = function () {
 const Fonts = {
     FontNames: undefined,
     defaultFont: undefined,
+    $options: $('#font-options'),
+    $label: $('#font-label'),
+    currentSelection: undefined,
     FontStyleValues: {
         b: 0b001,
         i: 0b010,
@@ -395,7 +637,7 @@ const Fonts = {
         Fonts.FontNames = fontNames;
         for (let i = 0; i < fontNames.length; i++) {
             const fName = fontNames[i];
-            $options.append($(`<p style="font-family: ${fName};">${fName}</p>`));
+            Fonts.$options.append($(`<p style="font-family: ${fName};">${fName}</p>`));
             Fonts.beginLoadFont(fName);
         }
         Fonts.defaultFont = fontNames[0];
@@ -588,8 +830,8 @@ const RenderStyles = [{
             return $bundle;
         },
         pageLabels: [
-            'Inside',
-            'Outside'
+            'Innenseite',
+            'Außenseite'
         ],
         initialDotIndex: 0,
         hPageChanged: function (direction) {
@@ -661,9 +903,9 @@ const RenderStyles = [{
             return $(document.createDocumentFragment()).append($page1, $page2);
         },
         pageLabels: [
-            'Back',
-            'Inside',
-            'Front'
+            'Rückseite',
+            'Innenseite',
+            'Vorderseite'
         ],
         initialDotIndex: 1,
         hPageChanged: function (direction) {
@@ -718,8 +960,6 @@ const RenderStyles = [{
             p2r: 0
         }
     }];
-const $toolBox = $('#toolBox');
-const imgTool = $('#imgTool');
 const $cardContainer = $('#card-container');
 const rsContainer = get('render-styles-container');
 const $navDotsUl = $('.floater.bottom>ul');
@@ -738,33 +978,25 @@ const loadCard = function (card) {
         $(frag).text(renderStyle.name).attr('onclick', 'hRenderStyleChanged(' + i + ');');
         rsContainer.appendChild(frag);
     }
-    Editor.loadedCard = card;
+    Editor.storage.loadedCard = card;
     Editor.fitToContainer();
     Editor.createRuler();
     Editor.enableTransition(true);
     hRenderStyleChanged(0);
 };
 const hElementsLayerClick = function (e, target) {
-    if (!state.addOnClick)
+    if (!Editor.storage.addOnClick)
         return;
-    const el = state.addOnClick({ left: e.offsetX, top: e.offsetY });
+    e.stopPropagation();
+    const el = Editor.storage.addOnClick({ left: e.offsetX, top: e.offsetY });
     $(target).append(el);
-    state.addOnClick = undefined;
-};
-const state = {
-    addOnClick: undefined,
-    target: undefined,
-    dragging: false,
-    resizing: false,
-    dx: 0,
-    dy: 0,
-    range: undefined
+    Editor.storage.addOnClick = undefined;
 };
 const hAddElClick = function (e) {
     spawnNewEl($(e.target).attr('data-enum'));
 };
 const spawnNewEl = function (objectType) {
-    state.addOnClick = ElementSpawners[objectType];
+    Editor.storage.addOnClick = ElementSpawners[objectType];
     if (objectType === 'IMAGE') {
         $fileUpBtn.click();
     }
@@ -789,76 +1021,65 @@ const hChangeFontType = function () {
             curr = curr.nextSibling;
         }
     }
+    ResizeBars.show(false);
 };
 let $body = $('body')
-    .click(function() {
-        $options.css('visibility', 'collapse');
-    })
+    .click(function () {
+    Fonts.$options.css('visibility', 'collapse');
+})
     .mousedown(function (e) {
     if (e.which === 2) {
-        Editor.enableTransition(false);
-        Editor.beginDrag();
-        return false;
+        switch (Editor.state) {
+            case EditorStates.EL_BEGIN_FOCUS:
+            case EditorStates.EL_FOCUSED:
+            case EditorStates.NONE:
+                Editor.enableTransition(false);
+                Editor.beginDragSelf();
+                return false;
+        }
     }
-})
-    .mousemove(function (e) {
+    else
+        switch (Editor.state) {
+            case EditorStates.TXT_EDITING:
+                Editor.state = EditorStates.EL_FOCUSED;
+                break;
+        }
+}).mousemove(function (e) {
     const ev = e.originalEvent;
     const dx = ev.movementX;
     const dy = ev.movementY;
-    if (Editor.isDragging) {
-        Editor.drag(dx, dy);
-        Editor.apply();
-    }
-    if (!state.dragging && !state.resizing)
-        return;
-    state.dx += dx;
-    state.dy += dy;
-    if (state.resizing) {
-        state.target.css({
-            width: '+=' + dx,
-            height: '+=' + dy,
-        });
-    }
-    else if (state.dragging) {
-        state.target.css('transform', 'translate(' + state.dx / Editor.scale + 'px, ' + state.dy / Editor.scale + 'px) rotate(' + getRotation() + 'deg)');
-        $toolBox.css('transform', 'translate(' + state.dx + 'px, calc(-100% + ' + state.dy + 'px))');
-        imgTool.css('transform', 'translate(' + state.dx + 'px, ' + state.dy + 'px)');
+    switch (Editor.state) {
+        case EditorStates.SELF_DRAGGING:
+            Editor.dragSelf(dx, dy);
+            break;
+        case EditorStates.EL_BEGIN_FOCUS:
+            Editor.beginDragEl();
+        case EditorStates.EL_DRAGGING:
+            Editor.dragEl(dx, dy);
+            break;
+        case EditorStates.EL_RESIZING:
+            ResizeBars.resizeEl(dx, dy);
+            break;
     }
 }).mouseup(function () {
-    if (Editor.isDragging) {
-        Editor.endDrag();
-        Editor.enableTransition(true);
-    }
-    else if (state.dragging) {
-        if (state.dx !== 0 || state.dy !== 0) {
-            state.target.css({
-                left: '+=' + state.dx / Editor.scale,
-                top: '+=' + state.dy / Editor.scale,
-                transform: 'translate(' + 0 + 'px, ' + 0 + 'px) rotate(' + getRotation() + 'deg)',
-            });
-            $toolBox.css({
-                left: '+=' + state.dx,
-                top: '+=' + state.dy,
-                transform: '',
-            });
-            imgTool.css({
-                left: '+=' + state.dx,
-                top: '+=' + state.dy,
-                transform: '',
-            });
-            state.dx = 0;
-            state.dy = 0;
-        }
-        state.dragging = false;
-    }
-    else if (state.resizing) {
-        state.resizing = false;
-        state.dx = 0;
-        state.dy = 0;
-    }
-    else {
-        $toolBox.css('visibility', 'collapse');
-        imgTool.css('visibility', 'collapse');
+    switch (Editor.state) {
+        case EditorStates.SELF_DRAGGING:
+            Editor.endDragSelf();
+            Editor.enableTransition(true);
+            break;
+        case EditorStates.EL_DRAGGING:
+            Editor.endDragEl();
+            break;
+        case EditorStates.EL_RESIZING:
+            ResizeBars.endResizeEl();
+            break;
+        case EditorStates.TXT_EDITING:
+            TextEl.displaySelectedProperties();
+            break;
+        case EditorStates.NONE:
+            break;
+        default:
+            Editor.clearTarget();
     }
 });
 $(document)
@@ -866,21 +1087,18 @@ $(document)
     if (e.ctrlKey) {
         if (e.key === '-') {
             e.preventDefault();
-            Editor.scroll(10);
-            Editor.apply();
+            Editor.zoom(10);
         }
         else if (e.key === '+') {
             e.preventDefault();
-            Editor.scroll(-10);
-            Editor.apply();
+            Editor.zoom(-10);
         }
     }
 });
 function preventScroll(e) {
     if (e.ctrlKey) {
         e.preventDefault();
-        Editor.scroll(Math.sign(e.deltaY) * 10);
-        Editor.apply();
+        Editor.zoom(Math.sign(e.deltaY) * 10);
         return false;
     }
 }
@@ -916,7 +1134,7 @@ const hRenderStyleChanged = function (index) {
     }
     range.selectNodeContents($cardContainer[0]);
     range.deleteContents();
-    $cardContainer.append(renderStyleState.style.pageGen(Editor.loadedCard));
+    $cardContainer.append(renderStyleState.style.pageGen(Editor.storage.loadedCard));
 };
 const hPageSwitch = function (direction) {
     renderStyleState.style.hPageChanged(direction);
@@ -926,35 +1144,41 @@ const hPageSwitch = function (direction) {
     $pageLabel.text(renderStyleState.getActiveLabel());
 };
 $('.addElBtn').click(hAddElClick);
-$("#resize").mousedown(function (e) {
-    state.resizing = true;
-});
 $("#logoRotation").change(function (e) {
-    state.target.css('transform', 'rotate(' + $(this).val() + 'deg)');
+    Editor.storage.$target.css('transform', 'rotate(' + $(this).val() + 'deg)');
 }).mouseup(stopPropagation);
 $(".alignmentBtn").click(function () {
-    state.target.css('text-align', $(this).val());
+    Editor.storage.$target.css('text-align', $(this).val());
 }).mouseup(stopPropagation);
 $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
-$('#moveBtn').mousedown(function () {
-    state.dragging = true;
-});
 $('#submitBtn').click(serialize);
 const $fontSelect = $('#font-select')
     .mouseup(stopPropagation)
     .change(hFontChanged);
+Fonts.$options.click(function (e) {
+    if (e.target.nodeName !== 'P')
+        return;
+    const fName = e.target.textContent;
+    Fonts.currentSelection = fName;
+    Fonts.$label.text(fName).css('font-family', fName);
+    $fontSelect.trigger("change");
+});
+$fontSelect.children('p').click(function (e) {
+    e.stopPropagation();
+    Fonts.$options.css('visibility', 'visible');
+});
 const $fontSizeSelect = $('#fontSizeSelect')
     .mousedown(function (e) {
     const s = getSel();
     if (s.rangeCount === 1)
-        state.range = s.getRangeAt(0).cloneRange();
+        Editor.storage.range = s.getRangeAt(0).cloneRange();
 })
     .mouseup(stopPropagation)
     .change(function (e) {
     const fontSize = e.target.value;
     const sel = getSel();
     sel.removeAllRanges();
-    sel.addRange(state.range);
+    sel.addRange(Editor.storage.range);
     makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
         $(curr).css('font-size', fontSize + 'pt');
     });
@@ -992,22 +1216,3 @@ if (Cookie.getValue('tutorial') !== 'no') {
     });
     $body.append($tutOver);
 }
-
-const $options = $('#font-options');
-const $label   = $('#font-label');
-let currentSelection;
-
-$fontSelect.children('p').click(function(e) {
-    e.stopPropagation();
-    $options.css('visibility', 'visible');
-});
-
-$options.click(function(e) {
-    if(e.target.nodeName !== 'P')
-        return;
-
-    const fName = e.target.textContent;
-    currentSelection = fName;
-    $label.text(fName).css('font-family', fName);
-    $fontSelect.trigger("change");
-});
