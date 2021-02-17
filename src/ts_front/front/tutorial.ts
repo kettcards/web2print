@@ -15,8 +15,8 @@ function showTutorial(){
       '<div>' +
       '<h3>Bearbeiten von Text:</h3>'+
       '<img src="./TextEditTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">'+
-      '<p>Um Text zu bearbeiten klicken Sie zu erst auf den Text.<br>' +
-      'Es öffnet sich eine Toolbox mit den Werkzeugen zur Textbearbeitung.</p>'+
+      '<p>Um Text zu bewegen klicken Sie auf das Textfeld und lassen die linke Maustate gerückt. Nun können Sie den Text mit der Maus bewegen.<br>' +
+      'Wenn Sie in das Textfeld rein klicken wird ein Rahmen um das Feld angezeigt. Nun können Sie die Textbearbeitungswerkzeuge aus der Werkzeugleiste nutzen.</p>'+
       '</div>'+
       '<br style="clear: left">'+
       '<div>' +
