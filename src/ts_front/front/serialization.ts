@@ -73,56 +73,8 @@ function serializeSide($els : JQuery, xOffs : number, target : Box[]) : void {
       h: $el.height() * MMPerPx.y
     };
     switch($el[0].nodeName){
-      case 'DIV': {
-        let align = $el.css('text-align');
-        switch (align) {
-          case 'justify': align = 'j'; break;
-          case 'right':   align = 'r'; break;
-          case 'center':  align = 'c'; break;
-          default:        align = 'l';
-        }
-        let box = Object.assign({
-          t: "t",
-          a: align,
-          r: []
-        }, bounds) as TextBox;
-        let $innerChildren = $el.children();
-        for (let j = 0; j < $innerChildren.length; j++) {
-          let $iel = $innerChildren.eq(j);
-          if(($iel[0] as Node).isA('P')) {
-            const $spans = $iel.children();
-            for(let k = 0; k < $spans.length; k++) {
-              const $span = $spans.eq(k);
-              if(($span[0] as Node).isA('SPAN')) {
-                let attributes = 0;
-                for(const [c, v] of Object.entries(Fonts.FontStyleValues))
-                  if ($span.hasClass(c))
-                    attributes |= v;
-                box.r.push({
-                  f: $span.css('font-family'),
-                  s: Math.round((+$span.css('font-size').slice(0,-2)) / 96 * 72),
-                  a: attributes,
-                  t: $span.text()
-                });
-              } else {
-                console.warn('cannot serialize element', $span[0]);
-              }
-            }
-            box.r.push('br');
-          } else {
-            console.warn('cannot serialize element', $iel[0]);
-          }
-        }
-        target.push(box);
-      } break;
-
-      case 'IMG':{
-        let box = Object.assign({
-          t: "i",
-          s: ($el[0] as HTMLImageElement).alt,
-        }, bounds) as ImageBox;
-        target.push(box);
-      } break;
+      case 'DIV': target.push(Object.assign(Elements.TEXT .serialize($el), bounds)); break;
+      case 'IMG': target.push(Object.assign(Elements.IMAGE.serialize($el), bounds)); break;
 
       default: console.warn('cannot serialize element', $el[0]);
     }
@@ -133,24 +85,30 @@ function loadElementsCompressed(b64data : string) : void {
   loadElements(JSON.parse(atob(b64data)));
 }
 function loadElements(data : PrintData) : void {
+  console.log('loading data', data);
+
   loadSide('front', data.outerEls);
   loadSide('back' , data.innerEls);
 }
 function loadSide(side : 'front'|'back', boxes : Box[]) : void {
+  //todo new editor
+  const cardHeight = Editor.loadedCard.cardFormat.height / MMPerPx.y;
   for(const box of boxes) {
     const bounds = {
-      left  : box.x,
-      width : box.w,
-      top   : box.y,
-      height: box.h
+      left  : box.x / MMPerPx.x,
+      width : box.w / MMPerPx.x,
+      top   : cardHeight - (box.y + box.h) / MMPerPx.y,
+      height: box.h / MMPerPx.y
     };
     let el : JQuery;
     switch(box.t) {
       case "i": {
-        el = ElementSpawners['IMAGE'](bounds);
+        el = Elements.IMAGE.spawn(bounds);
+        Elements.IMAGE.restore(el, box);
       } break;
       case "t": {
-        el = ElementSpawners['TEXT'](bounds);
+        el = Elements.TEXT.spawn(bounds);
+        Elements.TEXT.restore(el, box);
       } break;
       default: throw new Error(`Can't deserialize box of type '${box['t']}'.`);
     }

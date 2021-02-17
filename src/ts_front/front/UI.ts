@@ -2,7 +2,12 @@
 /// <reference path="./serialization.ts" />
 /// <reference path="./textHandlers.ts" />
 
-$('.addElBtn').click(hAddElClick);
+{
+  const $addBtnContainer = $('#add-el-btns');
+  for(const [k, v] of Object.entries(Elements)) {
+    $addBtnContainer.append($(`<button class="addElBtn" onclick="spawnNewEl('${k}')">${v.displayName}</button>`));
+  }
+}
 
 $("#resize").mousedown(function(e){
   state.resizing = true;

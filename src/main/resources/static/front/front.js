@@ -233,34 +233,137 @@ const Editor = {
         this.$transformAnchor.css('transition', enable ? 'transform 1s' : '');
     }
 };
-const ElementSpawners = {
-    TEXT: function (p) {
-        return $('<div class="text" contenteditable="true"><p><span>Ihr Text Hier!</span></p></div>')
-            .mousedown(hTxtMDown)
-            .mouseup(hTxtMUp)
-            .click(hTxtClick)
-            .on('paste', hTxtPaste)
-            .on('keydown', hTxtKeyDown)
-            .on('keyup', hTxtKeyUp)
-            .on("dragstart", falsify)
-            .on("drop", falsify)
-            .css(Object.assign({
-            'font-family': Fonts.defaultFont,
-            'font-size': '16pt'
-        }, p));
+const Elements = {
+    TEXT: {
+        displayName: 'Text',
+        spawn(css) {
+            return $('<div class="text" contenteditable="true"><p><span>Ihr Text Hier!</span></p></div>')
+                .mousedown(hTxtMDown)
+                .mouseup(hTxtMUp)
+                .click(hTxtClick)
+                .on('paste', hTxtPaste)
+                .on('keydown', hTxtKeyDown)
+                .on('keyup', hTxtKeyUp)
+                .on("dragstart", falsify)
+                .on("drop", falsify)
+                .css(Object.assign({
+                'font-family': Fonts.defaultFont,
+                'font-size': '16pt'
+            }, css));
+        },
+        serialize($instance) {
+            let align = $instance.css('text-align');
+            switch (align) {
+                case 'justify':
+                    align = 'j';
+                    break;
+                case 'right':
+                    align = 'r';
+                    break;
+                case 'center':
+                    align = 'c';
+                    break;
+                default: align = 'l';
+            }
+            let data = {
+                t: "t",
+                a: align,
+                r: []
+            };
+            let $innerChildren = $instance.children();
+            for (let j = 0; j < $innerChildren.length; j++) {
+                let $iel = $innerChildren.eq(j);
+                if ($iel[0].isA('P')) {
+                    const $spans = $iel.children();
+                    for (let k = 0; k < $spans.length; k++) {
+                        const $span = $spans.eq(k);
+                        if ($span[0].isA('SPAN')) {
+                            let attributes = 0;
+                            for (const [c, v] of Object.entries(Fonts.FontStyleValues))
+                                if ($span.hasClass(c))
+                                    attributes |= v;
+                            data.r.push({
+                                f: $span.css('font-family'),
+                                s: Math.round((+$span.css('font-size').slice(0, -2)) / 96 * 72),
+                                a: attributes,
+                                t: $span.text()
+                            });
+                        }
+                        else {
+                            console.warn('cannot serialize element', $span[0]);
+                        }
+                    }
+                    data.r.push('br');
+                }
+                else {
+                    console.warn('cannot serialize element', $iel[0]);
+                }
+            }
+            return data;
+        },
+        restore($ownInstance, data) {
+            $ownInstance.html('');
+            let align;
+            switch (data.a) {
+                case 'j':
+                    align = 'justify';
+                    break;
+                case 'r':
+                    align = 'right';
+                    break;
+                case 'c':
+                    align = 'center';
+                    break;
+            }
+            if (align)
+                $ownInstance.css('text-align', align);
+            let $currentP = $(make('p'));
+            for (const run of data.r) {
+                if (run === 'br') {
+                    if ($currentP.children().length < 1)
+                        $currentP.append(make('span'));
+                    $ownInstance.append($currentP);
+                    $currentP = $(make('p'));
+                }
+                else {
+                    let classString = '';
+                    for (const [c, v] of Object.entries(Fonts.FontStyleValues))
+                        if (run.a & v)
+                            classString += '.' + c;
+                    $currentP.append($(make('span' + classString, makeT(run.t))).css({
+                        'font-family': run.f,
+                        'font-size': run.s + 'pt',
+                    }));
+                }
+            }
+        }
     },
-    IMAGE: function (p) {
-        return $("<img class='logo' src='" + web2print.links.apiUrl + "content/" + logoContentId + "' alt='" + logoContentId + "' draggable='false'>")
-            .mousedown(function (e) {
-            state.target = $(e.delegateTarget);
-            state.addOnClick = undefined;
-            state.dragging = true;
-            $toolBox.css(Object.assign({
-                visibility: 'hidden'
-            }));
-        })
-            .click(imgClick)
-            .css(p);
+    IMAGE: {
+        displayName: 'Bild / Logo',
+        spawn(p) {
+            return $("<img class='logo' src='" + web2print.links.apiUrl + "content/" + logoContentId + "' alt='" + logoContentId + "' draggable='false'>")
+                .mousedown(function (e) {
+                state.target = $(e.delegateTarget);
+                state.addOnClick = undefined;
+                state.dragging = true;
+                $toolBox.css(Object.assign({
+                    visibility: 'hidden'
+                }));
+            })
+                .click(imgClick)
+                .css(p);
+        },
+        serialize($instance) {
+            return {
+                t: "i",
+                s: $instance[0].alt,
+            };
+        },
+        restore($ownInstance, data) {
+            const img = $ownInstance[0];
+            img.src = `${web2print.links.apiUrl}content/${data.s}`;
+            img.alt = data.s;
+        }
     }
 };
 const hTxtMDown = function (e) {
@@ -483,65 +586,10 @@ function serializeSide($els, xOffs, target) {
         };
         switch ($el[0].nodeName) {
             case 'DIV':
-                {
-                    let align = $el.css('text-align');
-                    switch (align) {
-                        case 'justify':
-                            align = 'j';
-                            break;
-                        case 'right':
-                            align = 'r';
-                            break;
-                        case 'center':
-                            align = 'c';
-                            break;
-                        default: align = 'l';
-                    }
-                    let box = Object.assign({
-                        t: "t",
-                        a: align,
-                        r: []
-                    }, bounds);
-                    let $innerChildren = $el.children();
-                    for (let j = 0; j < $innerChildren.length; j++) {
-                        let $iel = $innerChildren.eq(j);
-                        if ($iel[0].isA('P')) {
-                            const $spans = $iel.children();
-                            for (let k = 0; k < $spans.length; k++) {
-                                const $span = $spans.eq(k);
-                                if ($span[0].isA('SPAN')) {
-                                    let attributes = 0;
-                                    for (const [c, v] of Object.entries(Fonts.FontStyleValues))
-                                        if ($span.hasClass(c))
-                                            attributes |= v;
-                                    box.r.push({
-                                        f: $span.css('font-family'),
-                                        s: Math.round((+$span.css('font-size').slice(0, -2)) / 96 * 72),
-                                        a: attributes,
-                                        t: $span.text()
-                                    });
-                                }
-                                else {
-                                    console.warn('cannot serialize element', $span[0]);
-                                }
-                            }
-                            box.r.push('br');
-                        }
-                        else {
-                            console.warn('cannot serialize element', $iel[0]);
-                        }
-                    }
-                    target.push(box);
-                }
+                target.push(Object.assign(Elements.TEXT.serialize($el), bounds));
                 break;
             case 'IMG':
-                {
-                    let box = Object.assign({
-                        t: "i",
-                        s: $el[0].alt,
-                    }, bounds);
-                    target.push(box);
-                }
+                target.push(Object.assign(Elements.IMAGE.serialize($el), bounds));
                 break;
             default: console.warn('cannot serialize element', $el[0]);
         }
@@ -551,27 +599,31 @@ function loadElementsCompressed(b64data) {
     loadElements(JSON.parse(atob(b64data)));
 }
 function loadElements(data) {
+    console.log('loading data', data);
     loadSide('front', data.outerEls);
     loadSide('back', data.innerEls);
 }
 function loadSide(side, boxes) {
+    const cardHeight = Editor.loadedCard.cardFormat.height / MMPerPx.y;
     for (const box of boxes) {
         const bounds = {
-            left: box.x,
-            width: box.w,
-            top: box.y,
-            height: box.h
+            left: box.x / MMPerPx.x,
+            width: box.w / MMPerPx.x,
+            top: cardHeight - (box.y + box.h) / MMPerPx.y,
+            height: box.h / MMPerPx.y
         };
         let el;
         switch (box.t) {
             case "i":
                 {
-                    el = ElementSpawners['IMAGE'](bounds);
+                    el = Elements.IMAGE.spawn(bounds);
+                    Elements.IMAGE.restore(el, box);
                 }
                 break;
             case "t":
                 {
-                    el = ElementSpawners['TEXT'](bounds);
+                    el = Elements.TEXT.spawn(bounds);
+                    Elements.TEXT.restore(el, box);
                 }
                 break;
             default: throw new Error(`Can't deserialize box of type '${box['t']}'.`);
@@ -835,11 +887,8 @@ const state = {
     dy: 0,
     range: undefined
 };
-const hAddElClick = function (e) {
-    spawnNewEl($(e.target).attr('data-enum'));
-};
 const spawnNewEl = function (objectType) {
-    state.addOnClick = ElementSpawners[objectType];
+    state.addOnClick = Elements[objectType].spawn;
     if (objectType === 'IMAGE') {
         $fileUpBtn.click();
     }
@@ -1000,7 +1049,12 @@ const hPageSwitch = function (direction) {
     renderStyleState.getActiveDot().addClass('active');
     $pageLabel.text(renderStyleState.getActiveLabel());
 };
-$('.addElBtn').click(hAddElClick);
+{
+    const $addBtnContainer = $('#add-el-btns');
+    for (const [k, v] of Object.entries(Elements)) {
+        $addBtnContainer.append($(`<button class="addElBtn" onclick="spawnNewEl('${k}')">${v.displayName}</button>`));
+    }
+}
 $("#resize").mousedown(function (e) {
     state.resizing = true;
 });

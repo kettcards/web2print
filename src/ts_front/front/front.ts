@@ -1,5 +1,4 @@
 'use strict';
-import ScrollEvent = JQuery.ScrollEvent;
 
 const $toolBox       = $('#toolBox');
 const imgTool        = $('#imgTool');
@@ -73,12 +72,8 @@ const state : StateObj = {
   range: undefined
 };
 
-//(lucas 10.02.21) todo: rework this to generated elements and inline calls
-const hAddElClick = function(e) {
-  spawnNewEl($(e.target).attr('data-enum') as string);
-}
 const spawnNewEl = function(objectType : string) {
-  state.addOnClick = ElementSpawners[objectType];
+  state.addOnClick = Elements[objectType].spawn;
   // (lucas 10.02.21) todo: dont do this
   if(objectType === 'IMAGE') {
     $fileUpBtn.click();

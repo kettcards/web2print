@@ -9,7 +9,7 @@
     "../nodesFromSelection.ts",
     "../MMPerPx.ts",
     "./Editor.ts",
-    "./ElementSpawners.ts",
+    "./Elements.ts",
     "./textHandlers.ts",
     "./imgHandlers.ts",
     "./Fonts.ts",
