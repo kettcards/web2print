@@ -33,7 +33,7 @@ class ResizeBars {
     eStorage.dx = 0;
     eStorage.dy = 0;
     ResizeBars.storage.bounds = {
-      left  : eStorage.x,
+      left  : eStorage.x + +$target.parents('.page-bundle').attr('data-x-offset') / MMPerPx.x,
       width : $target.width(),
       top   : eStorage.y,
       height: $target.height()

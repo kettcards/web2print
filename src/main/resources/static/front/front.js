@@ -177,7 +177,7 @@ class ResizeBars {
         eStorage.dx = 0;
         eStorage.dy = 0;
         ResizeBars.storage.bounds = {
-            left: eStorage.x,
+            left: eStorage.x + +$target.parents('.page-bundle').attr('data-x-offset') / MMPerPx.x,
             width: $target.width(),
             top: eStorage.y,
             height: $target.height()
@@ -568,7 +568,7 @@ const hTxtPaste = async function (e) {
 };
 const hFontChanged = function (e) {
     const range = getSel().getRangeAt(0);
-    const fName = currentSelection;
+    const fName = Fonts.currentSelection;
     makeNodesFromSelection(range, function (curr) {
         $(curr).css('font-family', fName);
     });
@@ -624,6 +624,9 @@ const getRotation = function () {
 const Fonts = {
     FontNames: undefined,
     defaultFont: undefined,
+    $options: $('#font-options'),
+    $label: $('#font-label'),
+    currentSelection: undefined,
     FontStyleValues: {
         b: 0b001,
         i: 0b010,
@@ -634,7 +637,7 @@ const Fonts = {
         Fonts.FontNames = fontNames;
         for (let i = 0; i < fontNames.length; i++) {
             const fName = fontNames[i];
-            $options.append($(`<p style="font-family: ${fName};">${fName}</p>`));
+            Fonts.$options.append($(`<p style="font-family: ${fName};">${fName}</p>`));
             Fonts.beginLoadFont(fName);
         }
         Fonts.defaultFont = fontNames[0];
@@ -827,8 +830,8 @@ const RenderStyles = [{
             return $bundle;
         },
         pageLabels: [
-            'Inside',
-            'Outside'
+            'Innenseite',
+            'Außenseite'
         ],
         initialDotIndex: 0,
         hPageChanged: function (direction) {
@@ -900,9 +903,9 @@ const RenderStyles = [{
             return $(document.createDocumentFragment()).append($page1, $page2);
         },
         pageLabels: [
-            'Back',
-            'Inside',
-            'Front'
+            'Rückseite',
+            'Innenseite',
+            'Vorderseite'
         ],
         initialDotIndex: 1,
         hPageChanged: function (direction) {
@@ -1021,9 +1024,9 @@ const hChangeFontType = function () {
     ResizeBars.show(false);
 };
 let $body = $('body')
-    .click(function() {
-        $options.css('visibility', 'collapse');
-    })
+    .click(function () {
+    Fonts.$options.css('visibility', 'collapse');
+})
     .mousedown(function (e) {
     if (e.which === 2) {
         switch (Editor.state) {
@@ -1152,6 +1155,18 @@ $('#submitBtn').click(serialize);
 const $fontSelect = $('#font-select')
     .mouseup(stopPropagation)
     .change(hFontChanged);
+Fonts.$options.click(function (e) {
+    if (e.target.nodeName !== 'P')
+        return;
+    const fName = e.target.textContent;
+    Fonts.currentSelection = fName;
+    Fonts.$label.text(fName).css('font-family', fName);
+    $fontSelect.trigger("change");
+});
+$fontSelect.children('p').click(function (e) {
+    e.stopPropagation();
+    Fonts.$options.css('visibility', 'visible');
+});
 const $fontSizeSelect = $('#fontSizeSelect')
     .mousedown(function (e) {
     const s = getSel();
@@ -1201,22 +1216,3 @@ if (Cookie.getValue('tutorial') !== 'no') {
     });
     $body.append($tutOver);
 }
-
-const $options = $('#font-options');
-const $label   = $('#font-label');
-let currentSelection;
-
-$fontSelect.children('p').click(function(e) {
-    e.stopPropagation();
-    $options.css('visibility', 'visible');
-});
-
-$options.click(function(e) {
-    if(e.target.nodeName !== 'P')
-        return;
-
-    const fName = e.target.textContent;
-    currentSelection = fName;
-    $label.text(fName).css('font-family', fName);
-    $fontSelect.trigger("change");
-});
