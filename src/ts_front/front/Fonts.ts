@@ -11,6 +11,8 @@ interface FontsObj {
 
   beginLoadFont(name: string) : void;
   loadFont(font : Font) : void;
+
+  displaySelected() : void;
 }
 
 interface IFontFace {
@@ -79,4 +81,8 @@ const Fonts = {
       Fonts.FontAttributeMap[font.name] = attribs;
     });
   },
+  displaySelected() {
+    const fName = Fonts.currentSelection;
+    Fonts.$label.text(fName).css('font-family', fName);
+  }
 } as FontsObj;

@@ -426,6 +426,17 @@ class Editor {
         for (let i = 0; i < Editor.storage.loadedCard.cardFormat.height; i += 5)
             $leftRuler.append($(make('li')).css('top', i + 'mm').attr('data-val', i / 10));
     }
+    static saveSelection() {
+        const s = getSel();
+        if (s.rangeCount === 1)
+            Editor.storage.range = s.getRangeAt(0).cloneRange();
+    }
+    static loadSelection() {
+        const sel = getSel();
+        sel.removeAllRanges();
+        sel.addRange(Editor.storage.range);
+        return sel;
+    }
 }
 Editor.$transformAnchor = $('#transform-anchor');
 Editor.$editorArea = $('#editor-area');
@@ -500,12 +511,11 @@ class TextEl {
         const [startEl, _, endEl, __] = getSelectedNodes(getSel().getRangeAt(0));
         let fontFam = $(startEl).css('font-family');
         let fontSize = +$(startEl).css('font-size').slice(0, -2);
-        let index;
         for (let n = startEl;;) {
             const nextFam = $(n).css('font-family');
             const nextSize = +$(n).css('font-size').slice(0, -2);
             if (fontFam !== nextFam) {
-                index = -1;
+                fontFam = '';
             }
             if (nextSize < fontSize) {
                 fontSize = nextSize;
@@ -519,7 +529,8 @@ class TextEl {
                 n = n.nextSibling;
             }
         }
-        $fontSelect[0].selectedIndex = index || Fonts.FontNames.indexOf(fontFam);
+        Fonts.currentSelection = fontFam;
+        Fonts.displaySelected();
         $fontSizeSelect.val(Math.round(fontSize / 96 * 72));
     }
 }
@@ -566,7 +577,7 @@ const hTxtKeyUp = function (e) {
 const hTxtPaste = async function (e) {
     e.preventDefault();
 };
-const hFontChanged = function (e) {
+const hFontChanged = function () {
     const range = getSel().getRangeAt(0);
     const fName = Fonts.currentSelection;
     makeNodesFromSelection(range, function (curr) {
@@ -671,6 +682,10 @@ const Fonts = {
             Fonts.FontAttributeMap[font.name] = attribs;
         });
     },
+    displaySelected() {
+        const fName = Fonts.currentSelection;
+        Fonts.$label.text(fName).css('font-family', fName);
+    }
 };
 const serialize = function () {
     const data = {
@@ -1153,32 +1168,28 @@ $(".alignmentBtn").click(function () {
 $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
 $('#submitBtn').click(serialize);
 const $fontSelect = $('#font-select')
-    .mouseup(stopPropagation)
-    .change(hFontChanged);
-Fonts.$options.click(function (e) {
+    .mousedown(Editor.saveSelection)
+    .mouseup(stopPropagation);
+Fonts.$options
+    .mousedown(stopPropagation)
+    .click(function (e) {
     if (e.target.nodeName !== 'P')
         return;
-    const fName = e.target.textContent;
-    Fonts.currentSelection = fName;
-    Fonts.$label.text(fName).css('font-family', fName);
-    $fontSelect.trigger("change");
+    Fonts.currentSelection = e.target.textContent;
+    Fonts.displaySelected();
+    Editor.loadSelection();
+    hFontChanged();
 });
 $fontSelect.children('p').click(function (e) {
     e.stopPropagation();
     Fonts.$options.css('visibility', 'visible');
 });
 const $fontSizeSelect = $('#fontSizeSelect')
-    .mousedown(function (e) {
-    const s = getSel();
-    if (s.rangeCount === 1)
-        Editor.storage.range = s.getRangeAt(0).cloneRange();
-})
+    .mousedown(Editor.saveSelection)
     .mouseup(stopPropagation)
     .change(function (e) {
     const fontSize = e.target.value;
-    const sel = getSel();
-    sel.removeAllRanges();
-    sel.addRange(Editor.storage.range);
+    const sel = Editor.loadSelection();
     makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
         $(curr).css('font-size', fontSize + 'pt');
     });

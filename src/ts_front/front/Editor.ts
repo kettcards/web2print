@@ -168,4 +168,17 @@ class Editor {
     for(let i = 0; i < Editor.storage.loadedCard.cardFormat.height; i += 5)
       $leftRuler.append($(make('li')).css('top', i + 'mm').attr('data-val', i / 10));
   }
+
+  static saveSelection() : void {
+    const s = getSel();
+    if(s.rangeCount === 1)
+      Editor.storage.range = s.getRangeAt(0).cloneRange();
+  }
+  static loadSelection() : Selection {
+    const sel = getSel();
+    sel.removeAllRanges();
+    sel.addRange(Editor.storage.range);
+
+    return sel;
+  }
 }

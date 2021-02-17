@@ -28,12 +28,11 @@ class TextEl {
 
     let fontFam  =  $(startEl).css('font-family');
     let fontSize = +$(startEl).css('font-size').slice(0, -2);
-    let index;
     for(let n = startEl;;){
       const nextFam  =  $(n).css('font-family');
       const nextSize = +$(n).css('font-size').slice(0, -2);
-      if(fontFam !== nextFam){
-        index = -1;
+      if(fontFam !== nextFam) {
+        fontFam = '';
       }
       if(nextSize < fontSize) {
         fontSize = nextSize;
@@ -48,7 +47,8 @@ class TextEl {
       }
     }
 
-    $fontSelect[0].selectedIndex = index || Fonts.FontNames.indexOf(fontFam);
+    Fonts.currentSelection = fontFam;
+    Fonts.displaySelected();
 
     $fontSizeSelect.val(Math.round(fontSize / 96 * 72));
   }
@@ -152,7 +152,7 @@ const hTxtPaste = async function(e) {
 };
 
 //font stuff
-const hFontChanged = function(e) {
+const hFontChanged = function() {
   const range = getSel().getRangeAt(0);
   const fName = Fonts.currentSelection;
   makeNodesFromSelection(range, function(curr) {

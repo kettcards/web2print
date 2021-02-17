@@ -16,18 +16,20 @@ $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
 
 $('#submitBtn').click(serialize);
 
-const $fontSelect = $<HTMLSelectElement>('#font-select')
-  .mouseup(stopPropagation)
-  .change(hFontChanged);
+const $fontSelect = $<HTMLDivElement>('#font-select')
+  .mousedown(Editor.saveSelection)
+  .mouseup(stopPropagation);
 
-Fonts.$options.click(function(e) {
+Fonts.$options
+  .mousedown(stopPropagation)
+  .click(function(e) {
   if(e.target.nodeName !== 'P')
     return;
 
-  const fName = e.target.textContent;
-  Fonts.currentSelection = fName;
-  Fonts.$label.text(fName).css('font-family', fName);
-  $fontSelect.trigger("change");
+  Fonts.currentSelection = e.target.textContent;
+  Fonts.displaySelected();
+  Editor.loadSelection();
+  hFontChanged();
 });
 
 $fontSelect.children('p').click(function(e) {
@@ -36,17 +38,11 @@ $fontSelect.children('p').click(function(e) {
 });
 
 const $fontSizeSelect = $<HTMLInputElement>('#fontSizeSelect')
-  .mousedown(function(e){
-    const s = getSel();
-    if(s.rangeCount === 1)
-      Editor.storage.range = s.getRangeAt(0).cloneRange();
-  })
+  .mousedown(Editor.saveSelection)
   .mouseup(stopPropagation)
   .change(function(e) {
     const fontSize = e.target.value;
-    const sel = getSel();
-    sel.removeAllRanges();
-    sel.addRange(Editor.storage.range);
+    const sel = Editor.loadSelection();
     makeNodesFromSelection(sel.getRangeAt(0), function(curr) {
       $(curr).css('font-size', fontSize+'pt');
     });
