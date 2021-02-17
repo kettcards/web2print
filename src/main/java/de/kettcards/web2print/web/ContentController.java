@@ -21,7 +21,7 @@ import java.util.List;
 // controller advice
 @RestController
 @RequestMapping("${web2print.links.api-path}/content")
-public class ContentController extends StorageContextAware {
+public final class ContentController extends StorageContextAware {
 
 
     @GetMapping("/{contentId}")

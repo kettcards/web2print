@@ -1,6 +1,5 @@
 package de.kettcards.web2print.web;
 
-import de.kettcards.web2print.model.fonts.Font;
 import de.kettcards.web2print.model.fonts.FontPackage;
 import de.kettcards.web2print.service.FontService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("${web2print.links.api-path}")
-public class FontController {
+public final class FontController {
 
     @Autowired
     private ResourceLoader resourceLoader;

@@ -34,24 +34,16 @@ public class FontPackage {
         this.fontFaces.add(defaultFontFace);
         //extra
         this.fontFaces.addAll(fontFaces);
-        //fill missing
-        /*
-        for (var style : FontStyle.values()) {
-            if (!this.fontFaces.contains(style)) {
-                Integer weight = FontStyle.getWeight(style);
-                float defaultLineHeight = FontStyle.getDefaultLineHeight();
-                //String source = defaultFontFace.getSource();
-                var missingFace = new FontFace(style, weight, defaultLineHeight, defaultFontFace.getSource());
-                this.fontFaces.add(missingFace);
-            }
-        }
-         */
     }
 
     public String getName() {
         return name;
     }
 
+    /**
+     * @param fontStyle font style set
+     * @return the corresponding font face for the given style set, null if unavailable
+     */
     public FontFace getFontFace(EnumSet<FontStyle> fontStyle) {
         for (var face : fontFaces) {
             if (face.getFontStyle().equals(fontStyle))
@@ -60,6 +52,9 @@ public class FontPackage {
         return null;
     }
 
+    /**
+     * @return list of available font faces
+     */
     public HashSet<FontFace> getFontFaces() {
         return fontFaces;
     }

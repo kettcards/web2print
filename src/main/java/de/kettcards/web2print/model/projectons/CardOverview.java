@@ -4,9 +4,9 @@ import de.kettcards.web2print.model.db.VirtualId;
 import lombok.Value;
 
 @Value
-public class CardOverview implements VirtualId {
+public final class CardOverview implements VirtualId {
 
-    String name, orderId, thumbSlug;
+    private String name, orderId, thumbSlug;
 
     @Override
     public int getVirtualId() {

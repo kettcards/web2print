@@ -14,7 +14,7 @@ import java.io.IOException;
 
 @Slf4j
 @Component
-public class TextureImportService extends StorageContextAware implements WebContextAware {
+public final class TextureImportService extends StorageContextAware implements WebContextAware {
 
     @Autowired
     private ApplicationConfiguration configuration;
