@@ -1013,6 +1013,14 @@ function showTutorial() {
         '</div>' +
         '<br style="clear: left">' +
         '<div>' +
+        '<h3>Bearbeiten von Bildern:</h3>' +
+        '<img src="./ImageResizeTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">' +
+        '<p>Um ein Bild zu verschieben klicken Sie auf das Bild und halten Sie die linke Maustaste gedrückt.<br>' +
+        'Nun können Sie das Bild verschieben.<br>' +
+        'Um ein Bild zu vergrößern/verkleinern klicken Sie auf das Bild. Es erscheint ein Rahmen mit Kästchen an den Ecken.<br>' +
+        'Klicken Sie auf eines der Kästchen und halten Sie die linke Maustaste gedrückt, bewegen Sie nun die Maus wird das Bild größer/kleiner.</p>' +
+        '</div><br style="clear: left">' +
+        '<div>' +
         '<h3>Bewegen und Zoomen der Karte:</h3>' +
         '<img src="./CardMoveTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">' +
         '<p>Durch gedrückt halten vom Mausrad (Maustaste 3) kann die Karte im Editor bewegt werden.<br>' +
