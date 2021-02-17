@@ -82,6 +82,7 @@ class ResizeBars {
     const bounds   = rStorage.bounds;
 
     const css : JQuery.PlainObject = {};
+    /*
     if(rStorage.preserveRatio) {
       if(Math.abs(dx) > Math.abs(dy)) {
         dy = dx;
@@ -96,6 +97,7 @@ class ResizeBars {
         }
       }
     }
+    */
 
     if(rStorage.lockDir & 0b0001) {
       eStorage.dy += dy;
