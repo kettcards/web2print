@@ -56,6 +56,7 @@ public class CardDataDeserializer extends JsonDeserializer<CardData> {
             var width = mm2pt(textBoxNode.get("w").intValue());
             var height = mm2pt(textBoxNode.get("h").intValue());
 
+            var lineHeight =  1.2f; //todo: textBoxNode.get("lh").floatValue();
 
             //type
             var textTypeNode = textBoxNode.get("t");
@@ -93,13 +94,13 @@ public class CardDataDeserializer extends JsonDeserializer<CardData> {
                     var alignment = textBoxNode.get("a").textValue().charAt(0);
                     switch (alignment) {
                         case 'l':
-                            ret.add(new LeftAlignedTextBoxData(x, y, width, height, paragraphs));
+                            ret.add(new LeftAlignedTextBoxData(x, y, width, height, paragraphs,lineHeight));
                             break;
                         case 'c':
-                            ret.add(new CenterAlignedTextBoxData(x, y, width, height, paragraphs));
+                            ret.add(new CenterAlignedTextBoxData(x, y, width, height, paragraphs, lineHeight));
                             break;
                         case 'r':
-                            ret.add(new RightAlignedTextBoxData(x, y, width, height, paragraphs));
+                            ret.add(new RightAlignedTextBoxData(x, y, width, height, paragraphs, lineHeight));
                             break;
                         default:
                             throw new IOException();
@@ -117,7 +118,7 @@ public class CardDataDeserializer extends JsonDeserializer<CardData> {
         return ret;
     }
 
-    public TextSpan parseTextSpan(JsonNode textSpanNode) throws IOException {
+    public TextSpan parseTextSpan(JsonNode textSpanNode) {
         var fontNode = textSpanNode.get("f");
         var fontSizeNode = textSpanNode.get("s");
         var fontStyleNode = textSpanNode.get("a");
