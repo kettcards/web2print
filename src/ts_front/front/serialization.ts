@@ -99,6 +99,7 @@ function loadSide(side : 'front'|'back', boxes : Box[]) : void {
       top   : cardHeight - (box.y + box.h) / MMPerPx.y,
       height: box.h / MMPerPx.y
     };
+    const page = renderStyleState.style.assocPage(side, bounds);
     let el : JQuery;
     switch(box.t) {
       case "i": {
@@ -111,6 +112,6 @@ function loadSide(side : 'front'|'back', boxes : Box[]) : void {
       } break;
       default: throw new Error(`Can't deserialize box of type '${box['t']}'.`);
     }
-    renderStyleState.style.assocPage(side, bounds).children('.elements-layer').append(el);
+    page.children('.elements-layer').append(el);
   }
 }

@@ -23,7 +23,7 @@ const loadCard = function(card : Card) : false | void {
     if(!renderStyle.condition(card))
       continue;
     const frag = make('button.render-select');
-    $(frag).text(renderStyle.name).attr('onclick', 'hRenderStyleChanged('+i+');');
+    $(frag).text(renderStyle.name).attr('onclick', 'hRenderStyleBtnClick('+i+');');
     rsContainer.appendChild(frag);
   }
 
@@ -32,7 +32,7 @@ const loadCard = function(card : Card) : false | void {
   Editor.createRuler();
   Editor.enableTransition(true);
 
-  hRenderStyleChanged(0);
+  changeRenderStyle(0);
 
   if(Parameters.sId)
     $.get(`${web2print.links.apiUrl}load/${Parameters.sId}`)
@@ -232,9 +232,16 @@ const renderStyleState : RenderStyleState = {
     return this.style.pageLabels[this.currentDotIndex];
   }
 };
+
 // [called inline]
-const hRenderStyleChanged = function(index : number) {
-  renderStyleState.style = RenderStyles[index];
+function hRenderStyleBtnClick(index : number) {
+  const data = serialize();
+  changeRenderStyle(index);
+  loadElements(data);
+}
+
+function changeRenderStyle(newIndex : number) {
+  renderStyleState.style = RenderStyles[newIndex];
   renderStyleState.currentDotIndex = renderStyleState.style.initialDotIndex;
   renderStyleState.dots = new Array(renderStyleState.style.pageLabels.length);
 
@@ -254,7 +261,7 @@ const hRenderStyleChanged = function(index : number) {
   range.selectNodeContents($cardContainer[0]);
   range.deleteContents();
   $cardContainer.append(renderStyleState.style.pageGen(Editor.loadedCard));
-};
+}
 
 const hPageSwitch = function(direction) {
   renderStyleState.style.hPageChanged(direction);

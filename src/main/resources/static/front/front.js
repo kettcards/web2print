@@ -611,6 +611,7 @@ function loadSide(side, boxes) {
             top: cardHeight - (box.y + box.h) / MMPerPx.y,
             height: box.h / MMPerPx.y
         };
+        const page = renderStyleState.style.assocPage(side, bounds);
         let el;
         switch (box.t) {
             case "i":
@@ -627,7 +628,7 @@ function loadSide(side, boxes) {
                 break;
             default: throw new Error(`Can't deserialize box of type '${box['t']}'.`);
         }
-        renderStyleState.style.assocPage(side, bounds).children('.elements-layer').append(el);
+        page.children('.elements-layer').append(el);
     }
 }
 const createFold = function (fold) {
@@ -766,17 +767,22 @@ const RenderStyles = [{
             return $(document.createDocumentFragment()).append($page1, $page2);
         },
         assocPage(side, bounds) {
-            if (side === "back") {
-                if (bounds.left > Editor.loadedCard.cardFormat.folds[0].x1)
-                    return this.data.$page2.children('.back');
-                else
-                    return this.data.$page1.children('.back');
+            let leftPage, rightPage;
+            if (side === 'back') {
+                leftPage = this.data.$page1;
+                rightPage = this.data.$page2;
             }
             else {
-                if (bounds.left > Editor.loadedCard.cardFormat.folds[0].x1)
-                    return this.data.$page1.children('.front');
-                else
-                    return this.data.$page2.children('.front');
+                rightPage = this.data.$page1;
+                leftPage = this.data.$page2;
+            }
+            const fold = Editor.loadedCard.cardFormat.folds[0].x1 / MMPerPx.x;
+            if (bounds.left > fold) {
+                bounds.left -= fold;
+                return rightPage.children('.' + side);
+            }
+            else {
+                return leftPage.children('.' + side);
             }
         },
         pageLabels: [
@@ -855,14 +861,14 @@ const loadCard = function (card) {
         if (!renderStyle.condition(card))
             continue;
         const frag = make('button.render-select');
-        $(frag).text(renderStyle.name).attr('onclick', 'hRenderStyleChanged(' + i + ');');
+        $(frag).text(renderStyle.name).attr('onclick', 'hRenderStyleBtnClick(' + i + ');');
         rsContainer.appendChild(frag);
     }
     Editor.loadedCard = card;
     Editor.fitToContainer();
     Editor.createRuler();
     Editor.enableTransition(true);
-    hRenderStyleChanged(0);
+    changeRenderStyle(0);
     if (Parameters.sId)
         $.get(`${web2print.links.apiUrl}load/${Parameters.sId}`)
             .then(loadElementsCompressed)
@@ -1021,8 +1027,13 @@ const renderStyleState = {
         return this.style.pageLabels[this.currentDotIndex];
     }
 };
-const hRenderStyleChanged = function (index) {
-    renderStyleState.style = RenderStyles[index];
+function hRenderStyleBtnClick(index) {
+    const data = serialize();
+    changeRenderStyle(index);
+    loadElements(data);
+}
+function changeRenderStyle(newIndex) {
+    renderStyleState.style = RenderStyles[newIndex];
     renderStyleState.currentDotIndex = renderStyleState.style.initialDotIndex;
     renderStyleState.dots = new Array(renderStyleState.style.pageLabels.length);
     const range = makeR();
@@ -1040,7 +1051,7 @@ const hRenderStyleChanged = function (index) {
     range.selectNodeContents($cardContainer[0]);
     range.deleteContents();
     $cardContainer.append(renderStyleState.style.pageGen(Editor.loadedCard));
-};
+}
 const hPageSwitch = function (direction) {
     renderStyleState.style.hPageChanged(direction);
     renderStyleState.getActiveDot().removeClass('active');

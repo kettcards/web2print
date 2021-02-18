@@ -137,18 +137,22 @@ const RenderStyles : RenderStyle[] = [{
     return $(document.createDocumentFragment()).append($page1, $page2);
   },
   assocPage(side, bounds) {
-    if(side === "back") {
-      if(bounds.left > Editor.loadedCard.cardFormat.folds[0].x1)
-        // (lucas 16.02.21) todo: this might get slow without caching
-        return this.data.$page2.children('.back');
-      else
-        return this.data.$page1.children('.back');
+    let leftPage, rightPage;
+    if(side === 'back') {
+      leftPage  = this.data.$page1;
+      rightPage = this.data.$page2;
     } else {
-      if(bounds.left > Editor.loadedCard.cardFormat.folds[0].x1)
-        // (lucas 16.02.21) todo: this might get slow without caching
-        return this.data.$page1.children('.front');
-      else
-        return this.data.$page2.children('.front');
+      rightPage = this.data.$page1;
+      leftPage  = this.data.$page2;
+    }
+
+    const fold = Editor.loadedCard.cardFormat.folds[0].x1 / MMPerPx.x;
+    if(bounds.left > fold) {
+      bounds.left -= fold;
+      // (lucas 16.02.21) todo: this might get slow without caching
+      return rightPage.children('.'+side);
+    } else {
+      return leftPage.children('.'+side);
     }
   },
   pageLabels: [
