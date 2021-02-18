@@ -1,6 +1,8 @@
+type Spawner = (p : JQuery.Coordinates | JQuery.PlainObject) => JQuery;
+
 interface ElementObj {
   displayName : string;
-  spawn(p : JQuery.Coordinates | JQuery.PlainObject) : JQuery;
+  spawn : Spawner;
   serialize($instance : JQuery) : any;
   restore($ownInstance : JQuery, data : any) : void;
 }
@@ -12,9 +14,9 @@ const Elements : ElementsObj = {
     displayName: 'Text',
     spawn(css) : JQuery<HTMLDivElement> {
       return $<HTMLDivElement> ('<div class="text" contenteditable="true"><p><span>Ihr Text Hier!</span></p></div>')
-        .mousedown(hTxtMDown)
-        .mouseup(hTxtMUp)
-        .click(hTxtClick)
+        .mousedown(TextEl.hMDown)
+        .mouseup(TextEl.hMUp)
+        .click(stopPropagation)
         .on('paste', hTxtPaste)
         .on('keydown', hTxtKeyDown)
         .on('keyup', hTxtKeyUp)
@@ -106,15 +108,12 @@ const Elements : ElementsObj = {
     displayName: 'Bild / Logo',
     spawn(p: JQuery.Coordinates | JQuery.PlainObject): JQuery<HTMLImageElement> {
       return $<HTMLImageElement>("<img class='logo' src='"+web2print.links.apiUrl+"content/"+logoContentId+"' alt='"+logoContentId+"' draggable='false'>")
-        .mousedown(function(e){
-          state.target = $(e.delegateTarget);
-          state.addOnClick = undefined;
-          state.dragging = true;
-          $toolBox.css(Object.assign({
-            visibility: 'hidden'
-          }));
-        })
-        .click(imgClick)
+        .mousedown(ImageEl.hMDown)
+        .mouseup(El.hMUp)
+        // as above so below
+        .on("dragstart", falsify)
+        .on("drop", falsify)
+        .click(stopPropagation)
         .css(p as JQuery.PlainObject);
     },
     serialize($instance: JQuery<HTMLImageElement>) : any {

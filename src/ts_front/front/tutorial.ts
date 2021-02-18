@@ -4,7 +4,7 @@ if(Cookie.getValue('tutorial') !== 'no') {
 }
 function showTutorial(){
   const $tutOver = $('<div style="position:absolute; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.66)">' +
-      '<div class="center" style="white-space: normal; overflow: auto; max-width:70%; max-height:70%; background-color:lightgray; padding:5px 5px 15px 5px;">' +
+      '<div class="center" style="white-space: normal; overflow: auto; width: 700px; max-width:70%; max-height:70%; background-color:lightgray; padding:5px 5px 15px 5px;">' +
       '<div>' +
       '<h3>Hinzufügen von Text:</h3>' +
       '<img src="./TextTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">' +
@@ -61,7 +61,9 @@ function showTutorial(){
       '<input type="checkbox" id="dont-show-again" style="margin:10px 2px 0 0;">' +
       '<label for="dont-show-again">nicht erneut anzeigen</label>' +
       '<button style="padding: 16px 16px; margin:5px 0 0 0;float: right;">Ok</button></div></div>');
-  const dontShowAgain = <HTMLInputElement>$tutOver.find('input')[0];
+
+  const dontShowAgain = $tutOver.find<HTMLInputElement>('#dont-show-again' as JQuery.Selector)[0];
+  dontShowAgain.checked = Cookie.getValue('tutorial') === 'no';
   $tutOver.find('button').click(function(){
     if(dontShowAgain.checked) {
       Cookie.set('tutorial', 'no');

@@ -146,7 +146,7 @@ const RenderStyles : RenderStyle[] = [{
       leftPage  = this.data.$page2;
     }
 
-    const fold = Editor.loadedCard.cardFormat.folds[0].x1 / MMPerPx.x;
+    const fold = Editor.storage.loadedCard.cardFormat.folds[0].x1 / MMPerPx.x;
     if(bounds.left > fold) {
       bounds.left -= fold;
       // (lucas 16.02.21) todo: this might get slow without caching

@@ -81,8 +81,6 @@ body {
 }
 
 #toolbar {
-  position: relative;
-  z-index: 1;
   background-color: lightgray;
   padding: 5px 0;
 }
@@ -147,6 +145,7 @@ body {
 }
 
 #editor-area {
+  overflow: hidden;
   position: relative;
   flex-grow: 1;
 }
@@ -367,6 +366,9 @@ body {
   text-align: center;
   padding: 10px;
   box-sizing: border-box;
+}
+
+#editor-area .floater {
   z-index: 1;
 }
 

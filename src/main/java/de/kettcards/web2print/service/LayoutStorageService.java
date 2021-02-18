@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.util.*;
 
 @Slf4j
@@ -58,9 +59,8 @@ public final class LayoutStorageService extends StorageContextAware {
     /**
      * @param rawData base64 encoded json card data string
      * @throws IOException    if pdf creation was unsuccessful
-     * @throws ParseException invalid rawData
      */
-    public void exportCard(String rawData) throws IOException, ParseException {
+    public void exportCard(String rawData) throws IOException {
         final var BLOCK_SIZE = 4 * 1024;
 
         var ogLen = (rawData.length() / 4) * 3; // (lucas) might be slightly above above the og len since b64 is padded, but that should be fine

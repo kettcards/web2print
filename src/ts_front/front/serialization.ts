@@ -35,8 +35,7 @@ function submit(_export : boolean) : void {
   $.post(`${web2print.links.apiUrl}save/${Parameters.sId || ''}?export=${_export}`, 'data='+btoa(JSON.stringify(data)))
     .then(function(response : string) {
       Parameters.sId = response;
-      // nomerge todo: todo merge with the new editor
-      window.history.replaceState({}, Editor.loadedCard.name+" - Web2Print", stringifyParameters());
+      window.history.replaceState({}, Editor.storage.loadedCard.name+" - Web2Print", stringifyParameters());
       alert('Daten gesendet!');
     }).catch(function(e){
     alert('Fehler beim Senden der Daten!\n'+JSON.stringify(e));
@@ -90,8 +89,7 @@ function loadElements(data : PrintData) : void {
   loadSide('back' , data.innerEls);
 }
 function loadSide(side : 'front'|'back', boxes : Box[]) : void {
-  //todo new editor
-  const cardHeight = Editor.loadedCard.cardFormat.height / MMPerPx.y;
+  const cardHeight = Editor.storage.loadedCard.cardFormat.height / MMPerPx.y;
   for(const box of boxes) {
     const bounds = {
       left  : box.x / MMPerPx.x,
