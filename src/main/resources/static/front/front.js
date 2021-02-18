@@ -756,8 +756,7 @@ const serializeSide = function ($els, xOffs, target) {
                                         f: $span.css('font-family'),
                                         s: Math.round((+$span.css('font-size').slice(0, -2)) / 96 * 72),
                                         a: attributes,
-                                        t: $span.text(),
-                                        c: $span.css('color')
+                                        t: $span.text()
                                     });
                                 }
                                 else {
@@ -1169,6 +1168,13 @@ $(".alignmentBtn").click(function () {
 $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
 $('#submitBtn').click(serialize);
 $('#tutorial').click(showTutorial);
+const $colorpicker = $('#colorpicker').mousedown(Editor.saveSelection).change(function (e) {
+    const sel = Editor.loadSelection();
+    const color = $colorpicker.val();
+    makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
+        $(curr).css('color', color + '');
+    });
+});
 const $fontSelect = $('#font-select')
     .mousedown(Editor.saveSelection)
     .mouseup(stopPropagation);
