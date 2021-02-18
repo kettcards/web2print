@@ -3,6 +3,7 @@ declare interface RenderStyle {
   condition(card : Card): boolean;
   pageGen(card: Card): DocumentFragment | JQuery<DocumentFragment>;
   assocPage(side : 'front'|'back', bounds : JQuery.Coordinates) : JQuery<HTMLDivElement>;
+  clear() : void;
   pageLabels: string[];
   initialDotIndex: number;
   hPageChanged(direction: -1 | 0 | 1): void;
@@ -55,6 +56,9 @@ const RenderStyles : RenderStyle[] = [{
     this.data.$bundle = $bundle;
 
     return $bundle;
+  },
+  clear() : void {
+    this.data.$bundle.find('.elements-layer').html('');
   },
   assocPage(side, _) {
     return this.data.$bundle.children('.'+side);
@@ -135,6 +139,9 @@ const RenderStyles : RenderStyle[] = [{
     this.data.state = 1;
 
     return $(document.createDocumentFragment()).append($page1, $page2);
+  },
+  clear() : void {
+    this.data.$page1.add(this.data.$page2).find('.elements-layer').html('');
   },
   assocPage(side, bounds) {
     let leftPage, rightPage;

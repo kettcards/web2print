@@ -54,25 +54,25 @@ body {
   margin-left: 2px;
 }
 
-#submit-btn,
-#save-select,
-#save-btn  {
+.lower-btn {
   width: 200px;
   max-width: 90%;
+  display: inline-block;
+  margin-bottom: 5px;
+}
+
+#save-btn {
+  width: 100%;
   font-size: 22px;
 }
-#submit-btn,
-#save-select {
+
+#submit-btn {
+  font-size: 22px;
   margin: 0 0 5px 0;
 }
-#save-select,
 #save-btn {
   box-sizing: border-box;
   display: inline-block;
-}
-#save-select>span:nth-child(2) {
-  padding: 5px;
-  float: right;
 }
 
 #submit-btn,
@@ -401,39 +401,36 @@ body {
   background-color: #8c8585;
 }
 
-#font-select {
+.select-ex {
   position: relative;
-  outline: none;
-  background-color: white;
 }
-#font-label {
-  min-width: 150px;
-  max-width: 250px;
+.select-ex-label {
   overflow: clip;
 }
-#font-select>p {
+.select-ex>p {
   border: solid gray 1px;
+  background-color: white;
   transition: border-color .25s;
   margin: 0;
   padding: 0;
 }
-#font-select>p:hover {
+.select-ex>p:hover {
   border-color: black;
 }
-#font-label-tick {
+.select-ex-tick {
   float: right;
   transition: border-color .25s, background-color .25s;
   border-left: solid transparent 1px;
 }
-#font-select>p span {
-  padding: 5px 10px;
-  display: inline-block;
-}
-#font-select>p:hover>#font-label-tick {
+.select-ex>p:hover>.select-ex-tick {
   background-color: lightgray;
   border-left-color: black;
 }
-#font-options {
+.select-ex>p span {
+  padding: 5px 10px;
+  display: inline-block;
+}
+.select-ex-options {
   position: absolute;
   border: solid gray 1px;
   box-sizing: border-box;
@@ -443,13 +440,18 @@ body {
   background-color: white;
   z-index: 1;
 }
-#font-options>p {
+.select-ex-options>p {
   margin: 0;
   padding: 5px 10px;
 }
-#font-options>p:hover {
+.select-ex-options>p:hover {
   background-color: lightgray;
   transition: background-color .25s;
+}
+
+#font-label {
+  min-width: 150px;
+  max-width: 250px;
 }
 
 #fontSizeSelect {
@@ -525,8 +527,7 @@ body {
   position: absolute;
 }
 
-button,
-#save-select {
+button {
   background-color: #003f73;
   border: #003f73 solid thin;
   color: white;
@@ -534,13 +535,11 @@ button,
   transition: background-color 0.3s,color 0.3s;
   outline: none;
 }
-      button:hover,
-#save-select:hover  {
+button:hover {
   background-color: white;
   color: #003f73;
 }
-      button:active,
-#save-select:active  {
+button:active {
   background-color: #007ae1;
   color: white;
 }

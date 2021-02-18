@@ -1,3 +1,5 @@
+import ChangeEvent = JQuery.ChangeEvent;
+
 interface PrintData {
   v        : '0.2';
   card     : string;
@@ -42,6 +44,28 @@ function submit(_export : boolean) : void {
   });
 }
 
+function download() {
+  const data     = serialize();
+  const fileName = `${data.card}.des`;
+  // (lucas) taken from
+  // https://stackoverflow.com/questions/13405129/javascript-create-and-save-file
+    const file = new Blob([btoa(JSON.stringify(data))], { type: 'text/plain' });
+  if (window.navigator.msSaveOrOpenBlob) { // IE10+
+    window.navigator.msSaveOrOpenBlob(file, fileName);
+  } else { // Others
+    const a = make("a") as HTMLAnchorElement;
+    const url = URL.createObjectURL(file);
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function() {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 0);
+  }
+}
+
 function serialize() : PrintData {
   const data : PrintData = {
     v: '0.2',
@@ -77,6 +101,17 @@ function serializeSide($els : JQuery, xOffs : number, target : Box[]) : void {
       default: console.warn('cannot serialize element', $el[0]);
     }
   }
+}
+
+function hUpload(e : ChangeEvent) {
+  const file = e.target.files[0] as File;
+  if (!file)
+    return;
+
+  renderStyleState.style.clear();
+  delete Parameters.sId;
+  window.history.replaceState({}, Editor.storage.loadedCard.name+" - Web2Print", stringifyParameters());
+  file.text().then(loadElementsCompressed);
 }
 
 function loadElementsCompressed(b64data : string) : void {

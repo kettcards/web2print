@@ -20,9 +20,14 @@ $(".alignmentBtn").click(function(){
 $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
 
 $('#save-btn').click(function() {
-  // (lucas 17.02.21) todo: local saving
-  submit(false);
+  if(saveSelect.value === 'Server') {
+    submit(false);
+  } else {
+    download();
+  }
 });
+const saveSelect = new SelectEx($('#save-select-ex'));
+saveSelect.value = 'Server';
 
 $('#tutorial').click(showTutorial);
 

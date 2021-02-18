@@ -90,6 +90,7 @@ const hChangeFontType = function() {
 let $body = $('body')
   .click(function() {
     Fonts.$options.css('visibility', 'collapse');
+    saveSelect.close();
   })
   .mousedown(function(e) {
     // (lucas 11.02.21) I know e.which is deprecated, but there is no suitable replacement as of now

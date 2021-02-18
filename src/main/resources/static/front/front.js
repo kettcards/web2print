@@ -178,6 +178,32 @@ const MMPerPx = (function () {
     $resTester.remove();
     return ret;
 })();
+class SelectEx {
+    constructor($target, onChange) {
+        const This = this;
+        This.$target = $target;
+        This.$options = $target.children('.select-ex-options');
+        const $p = $target.children('p')
+            .click(function (e) {
+            e.stopPropagation();
+            This.$options.css('visibility', 'visible');
+        });
+        This.$label = $p.children('.select-ex-label');
+        This.$options
+            .mousedown(stopPropagation)
+            .click(function (e) {
+            if (e.target.nodeName !== 'P')
+                return;
+            if (onChange)
+                onChange(This.value);
+            This.value = e.target.textContent;
+            This.$label.text(This.value);
+        });
+    }
+    close() {
+        this.$options.css('visibility', 'collapse');
+    }
+}
 class ResizeBars {
     static setBoundsToTarget() {
         const eStorage = Editor.storage;
@@ -812,6 +838,26 @@ function submit(_export) {
         alert('Fehler beim Senden der Daten!\n' + JSON.stringify(e));
     });
 }
+function download() {
+    const data = serialize();
+    const fileName = `${data.card}.des`;
+    const file = new Blob([btoa(JSON.stringify(data))], { type: 'text/plain' });
+    if (window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(file, fileName);
+    }
+    else {
+        const a = make("a");
+        const url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 0);
+    }
+}
 function serialize() {
     const data = {
         v: '0.2',
@@ -847,6 +893,15 @@ function serializeSide($els, xOffs, target) {
             default: console.warn('cannot serialize element', $el[0]);
         }
     }
+}
+function hUpload(e) {
+    const file = e.target.files[0];
+    if (!file)
+        return;
+    renderStyleState.style.clear();
+    delete Parameters.sId;
+    window.history.replaceState({}, Editor.storage.loadedCard.name + " - Web2Print", stringifyParameters());
+    file.text().then(loadElementsCompressed);
 }
 function loadElementsCompressed(b64data) {
     loadElements(JSON.parse(atob(b64data)));
@@ -944,6 +999,9 @@ const RenderStyles = [{
             this.data.$bundle = $bundle;
             return $bundle;
         },
+        clear() {
+            this.data.$bundle.find('.elements-layer').html('');
+        },
         assocPage(side, _) {
             return this.data.$bundle.children('.' + side);
         },
@@ -1019,6 +1077,9 @@ const RenderStyles = [{
             this.data.p2r = 0;
             this.data.state = 1;
             return $(document.createDocumentFragment()).append($page1, $page2);
+        },
+        clear() {
+            this.data.$page1.add(this.data.$page2).find('.elements-layer').html('');
         },
         assocPage(side, bounds) {
             let leftPage, rightPage;
@@ -1167,6 +1228,7 @@ const hChangeFontType = function () {
 let $body = $('body')
     .click(function () {
     Fonts.$options.css('visibility', 'collapse');
+    saveSelect.close();
 })
     .mousedown(function (e) {
     if (e.which === 2) {
@@ -1303,8 +1365,15 @@ $(".alignmentBtn").click(function () {
 }).mouseup(stopPropagation);
 $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
 $('#save-btn').click(function () {
-    submit(false);
+    if (saveSelect.value === 'Server') {
+        submit(false);
+    }
+    else {
+        download();
+    }
 });
+const saveSelect = new SelectEx($('#save-select-ex'));
+saveSelect.value = 'Server';
 $('#tutorial').click(showTutorial);
 const $fontSelect = $('#font-select')
     .mousedown(Editor.saveSelection)
