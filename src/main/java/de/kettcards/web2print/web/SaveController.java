@@ -13,7 +13,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("${web2print.links.api-path}")
-public class SaveController {
+public final class SaveController {
 
     @Autowired
     private LayoutStorageService storageService;
@@ -22,7 +22,7 @@ public class SaveController {
     public String save(@PathVariable(required = false) String storageId,
                      @RequestParam String export,
                      @RequestParam("data") String cardData)
-            throws IOException {
+            throws IOException, ParseException {
         storageId = storageService.storeCard(storageId, cardData);
         if (export.equals("true"))
             storageService.exportCard(cardData);

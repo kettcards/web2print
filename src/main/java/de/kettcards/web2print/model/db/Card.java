@@ -16,7 +16,7 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "card")
-public class Card implements Serializable, VirtualId {
+public final class Card implements Serializable, VirtualId {
 
     @JsonIgnore
     @Id
@@ -90,23 +90,6 @@ public class Card implements Serializable, VirtualId {
     @Override
     public int hashCode() {
         return orderId.hashCode();
-    }
-
-    public enum Side {
-        FRONT, BACK
-    }
-
-    public static class SideConverter implements AttributeConverter<Side, Integer> {
-
-        @Override
-        public Integer convertToDatabaseColumn(Side attribute) {
-            return null; //TODO impl
-        }
-
-        @Override
-        public Side convertToEntityAttribute(Integer dbData) {
-            return null; //TODO impl
-        }
     }
 
 }

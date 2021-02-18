@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("${web2print.links.api-path}")
-public class CardController {
+public final class CardController {
 
     private final CardService cardService;
 

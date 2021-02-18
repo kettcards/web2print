@@ -12,7 +12,7 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping
-public class ResourceLinkController {
+public final class ResourceLinkController {
 
     private final ApplicationConfiguration configuration;
 

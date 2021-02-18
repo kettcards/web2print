@@ -19,11 +19,11 @@ import java.util.Map;
 public class FileStoragePoolConfiguration {
 
     //valid default directory for storing context
-    Path basePath;
+    private Path basePath;
 
     //if a namespace wants to be outside of the base directory it should register
     // its namespace with the corresponding path
-    Map<String, Path> namespacePathMap;
+    private Map<String, Path> namespacePathMap;
 
     public FileStoragePoolConfiguration(Path basePath) throws IOException {
         this(basePath, Collections.emptyMap());
@@ -71,11 +71,23 @@ public class FileStoragePoolConfiguration {
         this.namespacePathMap = map;
     }
 
+    /**
+     * ensures path is available
+     * @param stringPath path as string
+     * @return path
+     * @throws IOException if path cant be created
+     */
     Path ensurePath(String stringPath) throws IOException {
         Path path = Paths.get(stringPath);
         return ensurePath(path);
     }
 
+    /**
+     * ensures path is available
+     * @param path path
+     * @return same path
+     * @throws IOException if path cant be created
+     */
     Path ensurePath(Path path) throws IOException {
         Files.createDirectories(path);
         if (!Files.isWritable(path))

@@ -73,7 +73,7 @@ const RenderStyles : RenderStyle[] = [{
     rot: 0
   }
 } as RenderStyle, {
-  name: 'einzelne Seite',
+  name: 'einzelne Seiten',
   condition(card){
     const folds = card.cardFormat.folds;
     return folds.length === 1 && folds[0].x1 === folds[0].x2;

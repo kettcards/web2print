@@ -1,6 +1,5 @@
 package de.kettcards.web2print.pdf;
 
-import com.kitfox.svg.A;
 import com.kitfox.svg.SVGDiagram;
 import com.kitfox.svg.SVGException;
 import com.kitfox.svg.SVGUniverse;
@@ -10,7 +9,6 @@ import org.apache.pdfbox.pdmodel.graphics.image.JPEGFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.util.Matrix;
-import org.springframework.core.ReactiveAdapterRegistry;
 
 import javax.imageio.ImageIO;
 import java.awt.geom.AffineTransform;
@@ -22,13 +20,18 @@ import java.io.IOException;
 public class ImageBoxData extends BoxData {
 
     private final String contentId;
-    float svgOriginalWidth, svgOriginalHeight;
+    private float svgOriginalWidth, svgOriginalHeight;
 
     public ImageBoxData(float x, float y, float width, float height, String contentId) {
         super(x, y, width, height);
         this.contentId = contentId;
     }
 
+    /**
+     * applies image data
+     * @param doc document
+     * @throws IOException if data cant be written into document
+     */
     @Override
     public void apply(Document doc) throws IOException {
         final Content content = doc.resolveContent(contentId);

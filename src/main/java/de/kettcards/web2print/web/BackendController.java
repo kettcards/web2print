@@ -17,7 +17,7 @@ import java.io.IOException;
 // user content like picutres should be uploaded with ContentController, administrative importing over ImportController
 @RestController
 @RequestMapping("${web2print.links.api-path}/backend")
-public class BackendController extends StorageContextAware {
+public final class BackendController extends StorageContextAware {
 
     private final ImportService importService;
 

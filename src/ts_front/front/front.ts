@@ -1,7 +1,5 @@
 'use strict';
 
-const $toolBox       = $('#toolBox');
-const imgTool        = $('#imgTool');
 const $cardContainer = $('#card-container')
 const rsContainer = get('render-styles-container');
 const $navDotsUl  = $('.floater.bottom>ul');
@@ -27,7 +25,7 @@ const loadCard = function(card : Card) : false | void {
     rsContainer.appendChild(frag);
   }
 
-  Editor.loadedCard = card;
+  Editor.storage.loadedCard = card;
   Editor.fitToContainer();
   Editor.createRuler();
   Editor.enableTransition(true);
@@ -45,35 +43,17 @@ const loadCard = function(card : Card) : false | void {
 // spawning new elements
 // [called inline]
 const hElementsLayerClick = function(e : MouseEvent, target : Node) {
-  if(!state.addOnClick)
+  if(!Editor.storage.addOnClick)
     return;
-  const el = state.addOnClick({left: e.offsetX, top: e.offsetY});
+  e.stopPropagation();
+
+  const el = Editor.storage.addOnClick({left: e.offsetX, top: e.offsetY});
   $(target).append(el);
-  state.addOnClick = undefined;
-};
-
-interface StateObj {
-  addOnClick(css : JQuery.Coordinates) : JQuery,
-  target       : JQuery,
-  dragging     : boolean,
-  resizing     : boolean,
-  dx           : number,
-  dy           : number,
-  range        : Range,
-}
-
-const state : StateObj = {
-  addOnClick: undefined,
-  target: undefined,
-  dragging: false,
-  resizing: false,
-  dx: 0,
-  dy: 0,
-  range: undefined
+  Editor.storage.addOnClick = undefined;
 };
 
 const spawnNewEl = function(objectType : string) {
-  state.addOnClick = Elements[objectType].spawn;
+  Editor.storage.addOnClick = Elements[objectType].spawn;
   // (lucas 10.02.21) todo: dont do this
   if(objectType === 'IMAGE') {
     $fileUpBtn.click();
@@ -103,6 +83,8 @@ const hChangeFontType = function() {
       curr = curr.nextSibling;
     }
   }
+
+  ResizeBars.show(false);
 };
 
 let $body = $('body')
@@ -112,85 +94,71 @@ let $body = $('body')
   .mousedown(function(e) {
     // (lucas 11.02.21) I know e.which is deprecated, but there is no suitable replacement as of now
     if(e.which === 2) {
-      Editor.enableTransition(false);
-      Editor.beginDrag();
-      return false;
-    }
-  })
-  .mousemove(function(e) {
+      switch(Editor.state) {
+        case EditorStates.EL_BEGIN_FOCUS:
+        case EditorStates.EL_FOCUSED:
+        case EditorStates.NONE:
+          Editor.enableTransition(false);
+          Editor.beginDragSelf();
+          return false;
+      }
+    } else
+      switch(Editor.state) {
+        case EditorStates.TXT_EDITING:
+          Editor.state = EditorStates.EL_FOCUSED;
+          break;
+      }
+  }).mousemove(function(e) {
     const ev = e.originalEvent;
     const dx = ev.movementX;
     const dy = ev.movementY;
 
-    if(Editor.isDragging) {
-      Editor.drag(dx, dy);
-      Editor.apply();
-    }
+    switch(Editor.state) {
+      case EditorStates.SELF_DRAGGING:
+        Editor.dragSelf(dx, dy);
+        break;
+      case EditorStates.EL_BEGIN_FOCUS:
+        Editor.beginDragEl();
+      case EditorStates.EL_DRAGGING:
+        Editor.dragEl(dx, dy);
+        break;
+      case EditorStates.EL_RESIZING:
+        ResizeBars.resizeEl(dx, dy);
+        break;
 
-    if(!state.dragging && !state.resizing)
-      return;
-
-    state.dx += dx;
-    state.dy += dy;
-
-    if(state.resizing) {
-      state.target.css({
-        width: '+='+dx,
-        height: '+='+dy,
-      });
-    } else if(state.dragging) {
-      state.target.css('transform', 'translate('+state.dx/Editor.scale+'px, '+state.dy/Editor.scale+'px) rotate('+getRotation()+'deg)');
-      $toolBox.css('transform', 'translate('+state.dx+'px, calc(-100% + '+state.dy+'px))');
-      imgTool.css('transform', 'translate('+state.dx+'px, '+state.dy+'px)');
     }
   }).mouseup(function() {
-    if(Editor.isDragging) {
-      Editor.endDrag();
-      Editor.enableTransition(true);
-    } else if(state.dragging){
-      if(state.dx !== 0 || state.dy !== 0){
-        state.target.css({
-          left: '+='+state.dx/Editor.scale,
-          top : '+='+state.dy/Editor.scale,
-          transform: 'translate('+0+'px, '+0+'px) rotate('+getRotation()+'deg)',
-        });
-        $toolBox.css({
-          left: '+='+state.dx,
-          top : '+='+state.dy,
-          transform: '',
-        });
-        imgTool.css({
-          left: '+='+state.dx,
-          top : '+='+state.dy,
-          transform: '',
-        });
-        state.dx = 0;
-        state.dy = 0;
-      }
-      state.dragging = false;
-    } else if(state.resizing){
-      state.resizing = false;
-      state.dx = 0;
-      state.dy = 0;
-    } else {
-      $toolBox.css('visibility', 'collapse');
-      imgTool .css('visibility', 'collapse');
+    switch(Editor.state) {
+      case EditorStates.SELF_DRAGGING:
+        Editor.endDragSelf();
+        Editor.enableTransition(true);
+        break;
+      case EditorStates.EL_DRAGGING:
+        Editor.endDragEl();
+        break;
+      case EditorStates.EL_RESIZING:
+        ResizeBars.endResizeEl();
+        break;
+      case EditorStates.TXT_EDITING:
+        TextEl.displaySelectedProperties();
+        break;
+      case EditorStates.NONE:
+        break;
+      default:
+        Editor.clearTarget();
     }
   });
-  // disable default browser scroll
+
+// disable default browser scroll
 $(document)
   .keydown(function(e) {
     if(e.ctrlKey) {
       if(e.key === '-') {
         e.preventDefault();
-
-        Editor.scroll( 10);
-        Editor.apply();
+        Editor.zoom( 10);
       } else if(e.key === '+') {
         e.preventDefault();
-
-        Editor.scroll( -10);
-        Editor.apply();
+        Editor.zoom(-10);
       }
     }
   });
@@ -198,19 +166,16 @@ $(document)
 function preventScroll(e : WheelEvent) {
   if(e.ctrlKey) {
     e.preventDefault();
-
     // (lucas 11.02.21) todo: find a better way to actually use the mouse wheel movement
-    // this sadly has to be done this way because the deltaY is inconsistent between browsers
-    Editor.scroll(Math.sign(e.deltaY) * 10);
-    Editor.apply();
-
+    // this sadly have to just be hardcoded steps because the deltaY is inconsistent between browsers
+    Editor.zoom(Math.sign(e.deltaY) * 10);
     return false;
   }
 }
 // haha chrome, very funny.... cant prevent default on passive target...
-document.addEventListener('wheel',          preventScroll, {passive: false});
-document.addEventListener('mousewheel',     preventScroll, {passive: false});
-document.addEventListener('DOMMouseScroll', preventScroll, {passive: false});
+document.addEventListener('wheel',          preventScroll, { passive: false });
+document.addEventListener('mousewheel',     preventScroll, { passive: false });
+document.addEventListener('DOMMouseScroll', preventScroll, { passive: false });
 
 
 interface RenderStyleState {
@@ -260,7 +225,7 @@ function changeRenderStyle(newIndex : number) {
 
   range.selectNodeContents($cardContainer[0]);
   range.deleteContents();
-  $cardContainer.append(renderStyleState.style.pageGen(Editor.loadedCard));
+  $cardContainer.append(renderStyleState.style.pageGen(Editor.storage.loadedCard));
 }
 
 const hPageSwitch = function(direction) {

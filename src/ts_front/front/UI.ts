@@ -9,42 +9,38 @@
   }
 }
 
-$("#resize").mousedown(function(e){
-  state.resizing = true;
-});
-
 $("#logoRotation").change(function(e){
-  state.target.css('transform', 'rotate('+ $(this).val()+'deg)');
+  Editor.storage.$target.css('transform', 'rotate('+ $(this).val()+'deg)');
 }).mouseup(stopPropagation);
 
 $(".alignmentBtn").click(function(){
-  state.target.css('text-align', $(this).val() as string);
+  Editor.storage.$target.css('text-align', $(this).val() as string);
 }).mouseup(stopPropagation);
 
 $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
-
-$('#moveBtn').mousedown(function(){
-  state.dragging = true;
-});
 
 $('#save-btn').click(function() {
   // (lucas 17.02.21) todo: local saving
   submit(false);
 });
 
-const $fontSelect = $<HTMLSelectElement>('#font-select')
-  .mouseup(stopPropagation)
-  .change(hFontChanged);
+$('#tutorial').click(showTutorial);
 
-Fonts.$options.click(function(e) {
-  if(e.target.nodeName !== 'P')
-    return;
+const $fontSelect = $<HTMLDivElement>('#font-select')
+  .mousedown(Editor.saveSelection)
+  .mouseup(stopPropagation);
 
-  const fName = e.target.textContent;
-  Fonts.currentSelection = fName;
-  Fonts.$label.text(fName).css('font-family', fName);
-  $fontSelect.trigger("change");
-});
+Fonts.$options
+  .mousedown(stopPropagation)
+  .click(function(e) {
+    if(e.target.nodeName !== 'P')
+      return;
+
+    Fonts.currentSelection = e.target.textContent;
+    Fonts.displaySelected();
+    Editor.loadSelection();
+    hFontChanged();
+  });
 
 $fontSelect.children('p').click(function(e) {
   e.stopPropagation();
@@ -52,17 +48,11 @@ $fontSelect.children('p').click(function(e) {
 });
 
 const $fontSizeSelect = $<HTMLInputElement>('#fontSizeSelect')
-  .mousedown(function(e){
-    const s = getSel();
-    if(s.rangeCount === 1)
-      state.range = s.getRangeAt(0).cloneRange();
-  })
+  .mousedown(Editor.saveSelection)
   .mouseup(stopPropagation)
   .change(function(e) {
     const fontSize = e.target.value;
-    const sel = getSel();
-    sel.removeAllRanges();
-    sel.addRange(state.range);
+    const sel = Editor.loadSelection();
     makeNodesFromSelection(sel.getRangeAt(0), function(curr) {
       $(curr).css('font-size', fontSize+'pt');
     });

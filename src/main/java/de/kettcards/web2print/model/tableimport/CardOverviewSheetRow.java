@@ -1,6 +1,9 @@
 package de.kettcards.web2print.model.tableimport;
 
-import de.kettcards.web2print.model.db.*;
+import de.kettcards.web2print.model.db.Card;
+import de.kettcards.web2print.model.db.CardFormat;
+import de.kettcards.web2print.model.db.Material;
+import de.kettcards.web2print.model.db.VirtualId;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -14,19 +17,19 @@ import java.util.List;
 @Value
 @AllArgsConstructor
 @Slf4j
-public class CardOverviewSheetRow implements VirtualId {
+public final class CardOverviewSheetRow implements VirtualId {
 
-    String orderId;
+    private String orderId;
 
-    Integer cardFormat;
+    private Integer cardFormat;
 
-    Integer texture;
+    private Integer texture;
 
-    Integer printType;
+    private Integer printType;
 
-    String title;
+    private String title;
 
-    String thumbnailUrl;
+    private String thumbnailUrl;
 
     public static List<CardOverviewSheetRow> parseRows(XSSFSheet cardOverviewSheet) {
         var data = new ArrayList<CardOverviewSheetRow>();

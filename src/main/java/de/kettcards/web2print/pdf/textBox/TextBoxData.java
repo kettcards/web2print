@@ -12,6 +12,9 @@ import java.util.List;
  */
 public abstract class TextBoxData extends BoxData {
 
+    /**
+     * list of paragraphs inside this text box
+     */
     protected final List<TextParagraph> textParagraphs;
 
     /**
@@ -26,6 +29,9 @@ public abstract class TextBoxData extends BoxData {
         this.textParagraphs = textParagraphs;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void apply(Document doc) throws IOException {
         doc.stream().beginText();
@@ -53,7 +59,14 @@ public abstract class TextBoxData extends BoxData {
 
     public abstract void setParagraphEndPosition(Document doc, float paragraphWidth) throws IOException;
 
-
+    /**
+     * writes paragraph into given document
+     * @param doc document
+     * @param paragraph p
+     * @param lastLineDim dim
+     * @return last dim
+     * @throws IOException if writing to doc is not possible
+     */
     public SpanDimension writeParagraph(Document doc, TextParagraph paragraph, SpanDimension lastLineDim) throws IOException {
         SpanDimension largestDim = paragraph.getLargestFontSize(doc);
         float leading;
@@ -79,6 +92,12 @@ public abstract class TextBoxData extends BoxData {
         return largestDim;
     }
 
+    /**
+     * writes span to given document
+     * @param doc document
+     * @param textSpan span
+     * @throws IOException if span cant be written into given document
+     */
     public void writeSpan(Document doc, TextSpan textSpan) throws IOException {
         var font = doc.getFont(textSpan.getFontName(), textSpan.getFontStyle());
         doc.stream().setFont(font.getKey(), textSpan.getFontSize());
