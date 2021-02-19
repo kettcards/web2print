@@ -18,6 +18,17 @@ $('#submitBtn').click(serialize);
 
 $('#tutorial').click(showTutorial);
 
+$('#del-btn')
+    .mouseup(stopPropagation)
+    .click(function () {
+    if(Editor.state === EditorStates.EL_FOCUSED || Editor.state === EditorStates.TXT_EDITING) {
+        const target = Editor.storage.target;
+        target.parentElement.removeChild(target);
+        ResizeBars.hide();
+        Editor.state = EditorStates.NONE;
+    }
+});
+
 const $fontSelect = $<HTMLDivElement>('#font-select')
   .mousedown(Editor.saveSelection)
   .mouseup(stopPropagation);
