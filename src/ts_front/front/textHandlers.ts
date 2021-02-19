@@ -19,6 +19,10 @@ class TextEl {
     switch(Editor.state) {
       case EditorStates.TXT_EDITING:
         break;
+      case EditorStates.EL_DRAGGING:
+      case EditorStates.EL_BEGIN_FOCUS:
+        Editor.displayLineheight();
+        TextEl.displaySelectedProperties();
       default:
         El.hMUp(e);
     }
