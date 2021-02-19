@@ -50,6 +50,16 @@ const $fontSizeSelect = $<HTMLInputElement>('#fontSizeSelect')
     });
   });
 
+const $lhSpinner = $<HTMLInputElement>('#lh-spinner')
+  .mousedown(Editor.saveSelection)
+  .mouseup(stopPropagation)
+  .change(function(e) {
+    const lineHeight = e.target.value;
+    Editor.loadSelection();
+
+    Editor.storage.$target.css('line-height', lineHeight);
+  });
+
 // flipping pages
 $('.right>.nav-btn-inner').click(function() {
   hPageSwitch(+1);
