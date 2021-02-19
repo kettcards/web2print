@@ -437,6 +437,9 @@ class Editor {
         sel.addRange(Editor.storage.range);
         return sel;
     }
+    static displayLineheight() {
+        $lhSpinner[0].value = Editor.storage.target.style.lineHeight;
+    }
 }
 Editor.$transformAnchor = $('#transform-anchor');
 Editor.$editorArea = $('#editor-area');
@@ -461,7 +464,7 @@ Editor.storage = {
 };
 const ElementSpawners = {
     TEXT: function (p) {
-        return $('<div class="text" contenteditable="true"><p><span>Ihr Text Hier!</span></p></div>')
+        return $('<div class="text" contenteditable="true" style="line-height: 1.2;"><p><span>Ihr Text Hier!</span></p></div>')
             .mousedown(TextEl.hMDown)
             .mouseup(TextEl.hMUp)
             .click(stopPropagation)
@@ -503,6 +506,10 @@ class TextEl {
         switch (Editor.state) {
             case EditorStates.TXT_EDITING:
                 break;
+            case EditorStates.EL_DRAGGING:
+            case EditorStates.EL_BEGIN_FOCUS:
+                Editor.displayLineheight();
+                TextEl.displaySelectedProperties();
             default:
                 El.hMUp(e);
         }
@@ -1194,6 +1201,14 @@ const $fontSizeSelect = $('#fontSizeSelect')
     makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
         $(curr).css('font-size', fontSize + 'pt');
     });
+});
+const $lhSpinner = $('#lh-spinner')
+    .mousedown(Editor.saveSelection)
+    .mouseup(stopPropagation)
+    .change(function (e) {
+    const lineHeight = e.target.value;
+    Editor.loadSelection();
+    Editor.storage.$target.css('line-height', lineHeight);
 });
 $('.right>.nav-btn-inner').click(function () {
     hPageSwitch(+1);
