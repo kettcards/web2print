@@ -2,7 +2,7 @@ type Spawner = (css : JQuery.Coordinates) => JQuery;
 
 const ElementSpawners : { [p: string]: Spawner; } = {
   TEXT: function(p) {
-    return $('<div class="text" contenteditable="true"><p><span>Ihr Text Hier!</span></p></div>')
+    return $('<div class="text" contenteditable="true" style="line-height: 1.2;"><p><span>Ihr Text Hier!</span></p></div>')
       .mousedown(TextEl.hMDown)
       .mouseup(TextEl.hMUp)
       .click(stopPropagation)

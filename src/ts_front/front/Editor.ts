@@ -181,4 +181,8 @@ class Editor {
 
     return sel;
   }
+
+  static displayLineheight() : void {
+    $lhSpinner[0].value = Editor.storage.target.style.lineHeight;
+  }
 }
