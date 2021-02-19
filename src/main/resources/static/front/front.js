@@ -437,6 +437,19 @@ class Editor {
         sel.addRange(Editor.storage.range);
         return sel;
     }
+    static deleteElement() {
+        switch (Editor.state) {
+            case EditorStates.EL_FOCUSED:
+            case EditorStates.TXT_EDITING:
+                if (confirm("Wollen Sie das Element wirklich löschen?")) {
+                    const target = Editor.storage.target;
+                    target.parentElement.removeChild(target);
+                    ResizeBars.hide();
+                    Editor.state = EditorStates.NONE;
+                    break;
+                }
+        }
+    }
 }
 Editor.$transformAnchor = $('#transform-anchor');
 Editor.$editorArea = $('#editor-area');
@@ -1099,6 +1112,9 @@ let $body = $('body')
 });
 $(document)
     .keydown(function (e) {
+    if (e.keyCode === 46) {
+        Editor.deleteElement();
+    }
     if (e.ctrlKey) {
         if (e.key === '-') {
             e.preventDefault();
@@ -1170,14 +1186,7 @@ $('#submitBtn').click(serialize);
 $('#tutorial').click(showTutorial);
 $('#del-btn')
     .mouseup(stopPropagation)
-    .click(function () {
-    if (Editor.state === EditorStates.EL_FOCUSED || Editor.state === EditorStates.TXT_EDITING) {
-        const target = Editor.storage.target;
-        target.parentElement.removeChild(target);
-        ResizeBars.hide();
-        Editor.state = EditorStates.NONE;
-    }
-});
+    .click(Editor.deleteElement);
 const $fontSelect = $('#font-select')
     .mousedown(Editor.saveSelection)
     .mouseup(stopPropagation);
