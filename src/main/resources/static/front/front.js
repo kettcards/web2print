@@ -745,6 +745,7 @@ const serializeSide = function ($els, xOffs, target) {
                     let box = Object.assign({
                         t: "t",
                         a: align,
+                        lh: +$el[0].style.lineHeight,
                         r: []
                     }, bounds);
                     let $innerChildren = $el.children();

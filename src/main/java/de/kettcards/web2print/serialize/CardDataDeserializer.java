@@ -51,12 +51,11 @@ public class CardDataDeserializer extends JsonDeserializer<CardData> {
 
         for (var textBoxNode : textBoxArrayNode) {
             //box positioning
-            var x = mm2pt(textBoxNode.get("x").floatValue());
-            var y = mm2pt(textBoxNode.get("y").intValue());
-            var width = mm2pt(textBoxNode.get("w").intValue());
-            var height = mm2pt(textBoxNode.get("h").intValue());
-
-            var lineHeight =  1.2f; //todo: textBoxNode.get("lh").floatValue();
+            var          x = mm2pt(textBoxNode.get("x") .floatValue());
+            var          y = mm2pt(textBoxNode.get("y") .intValue()  );
+            var      width = mm2pt(textBoxNode.get("w") .intValue()  );
+            var     height = mm2pt(textBoxNode.get("h") .intValue()  );
+            var lineHeight = textBoxNode      .get("lh").floatValue();
 
             //type
             var textTypeNode = textBoxNode.get("t");
