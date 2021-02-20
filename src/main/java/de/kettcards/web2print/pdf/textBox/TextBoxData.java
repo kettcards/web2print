@@ -101,6 +101,7 @@ public abstract class TextBoxData extends BoxData {
     public void writeSpan(Document doc, TextSpan textSpan) throws IOException {
         var font = doc.getFont(textSpan.getFontName(), textSpan.getFontStyle());
         doc.stream().setFont(font.getKey(), textSpan.getFontSize());
+        doc.stream().setNonStrokingColor(textSpan.getColor());
         doc.stream().showText(textSpan.getText());
     }
 

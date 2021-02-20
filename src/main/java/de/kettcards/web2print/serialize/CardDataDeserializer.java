@@ -11,6 +11,8 @@ import de.kettcards.web2print.pdf.CardData;
 import de.kettcards.web2print.pdf.ImageBoxData;
 import de.kettcards.web2print.pdf.textBox.*;
 import de.kettcards.web2print.service.CardService;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import org.springframework.boot.jackson.JsonComponent;
 
 import java.io.IOException;
@@ -122,13 +124,17 @@ public class CardDataDeserializer extends JsonDeserializer<CardData> {
         var fontSizeNode = textSpanNode.get("s");
         var fontStyleNode = textSpanNode.get("a");
         var textNode = textSpanNode.get("t");
+        var colorNode = textSpanNode.get("c");
 
         var font = fontNode.textValue();
         var fontSize = fontSizeNode.floatValue();
         var fontStyle = FontStyle.getFontStyle(fontStyleNode.intValue());
         var text = textNode.textValue();
+        var color = colorNode.textValue();
+        var rgb = color.substring(color.lastIndexOf("(")+1, color.lastIndexOf(")")).split(",");
+        float[] values  = {Float.parseFloat(rgb[0])/255f, Float.parseFloat(rgb[1])/255f, Float.parseFloat(rgb[2])/255f};
 
-        return new TextSpan(font, fontSize, fontStyle, text);
+        return new TextSpan(font, fontSize, fontStyle, text, new PDColor(values, PDDeviceRGB.INSTANCE));
     }
 
 
