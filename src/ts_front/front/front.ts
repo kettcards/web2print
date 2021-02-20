@@ -6,9 +6,9 @@ const $navDotsUl  = $('.floater.bottom>ul');
 const $pageLabel  = $('.floater.bottom>span');
 
 // [call once]
-const loadCard = function(card : Card) : false | void {
+const loadCard = function(card : Card) : void {
   if(!card)
-    return false;
+    throw new Error("Keine Karte ausgewählt.");
 
   console.log('loading', card);
   window.history.replaceState({}, card.name+" - Web2Print", stringifyParameters());

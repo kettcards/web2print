@@ -108,14 +108,26 @@ function hUpload(e : ChangeEvent) {
   if (!file)
     return;
 
-  renderStyleState.style.clear();
-  delete Parameters.sId;
-  window.history.replaceState({}, Editor.storage.loadedCard.name+" - Web2Print", stringifyParameters());
   file.text().then(loadElementsCompressed);
 }
 
 function loadElementsCompressed(b64data : string) : void {
-  loadElements(JSON.parse(atob(b64data)));
+  const data : PrintData = JSON.parse(atob(b64data));
+  if(Parameters.card !== data.card) {
+    // (lucas) todo: allow loading of designs associated with a different card
+    // We could prompt here if the user just wants to change the card layout.
+    // The problem with this idea is that we cant easily store the data if we actually navigate to the different address
+    // and the loadCard method is not designed to be called multiple times, so we cant just call it again arnd replace the history.
+
+    alert(`Das Design kann nicht geladen werden, da es zu einer anderen Karte gehört (${data.card}).`);
+    return;
+  }
+
+  renderStyleState.style.clear();
+  delete Parameters.sId;
+  window.history.replaceState({}, Editor.storage.loadedCard.name+" - Web2Print", stringifyParameters());
+
+  loadElements(data);
 }
 function loadElements(data : PrintData) : void {
   console.log('loading data', data);

@@ -898,13 +898,18 @@ function hUpload(e) {
     const file = e.target.files[0];
     if (!file)
         return;
-    renderStyleState.style.clear();
-    delete Parameters.sId;
-    window.history.replaceState({}, Editor.storage.loadedCard.name + " - Web2Print", stringifyParameters());
     file.text().then(loadElementsCompressed);
 }
 function loadElementsCompressed(b64data) {
-    loadElements(JSON.parse(atob(b64data)));
+    const data = JSON.parse(atob(b64data));
+    if (Parameters.card !== data.card) {
+        alert(`Das Design kann nicht geladen werden, da es zu einer anderen Karte gehört (${data.card}).`);
+        return;
+    }
+    renderStyleState.style.clear();
+    delete Parameters.sId;
+    window.history.replaceState({}, Editor.storage.loadedCard.name + " - Web2Print", stringifyParameters());
+    loadElements(data);
 }
 function loadElements(data) {
     console.log('loading data', data);
@@ -1164,7 +1169,7 @@ const $navDotsUl = $('.floater.bottom>ul');
 const $pageLabel = $('.floater.bottom>span');
 const loadCard = function (card) {
     if (!card)
-        return false;
+        throw new Error("Keine Karte ausgewählt.");
     console.log('loading', card);
     window.history.replaceState({}, card.name + " - Web2Print", stringifyParameters());
     document.querySelector('#preview-container>img').src
