@@ -101,6 +101,7 @@ const Elements : ElementsObj = {
           $currentP.append($(make('span'+classString, makeT(run.t))).css({
             'font-family': run.f,
             'font-size'  : run.s+'pt',
+            'color'      : run.c,
           }));
         }
       }
