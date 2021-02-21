@@ -18,6 +18,10 @@ $('#submitBtn').click(serialize);
 
 $('#tutorial').click(showTutorial);
 
+$('#del-btn')
+    .mouseup(stopPropagation)
+    .click(Editor.deleteElement);
+
 const $fontSelect = $<HTMLDivElement>('#font-select')
   .mousedown(Editor.saveSelection)
   .mouseup(stopPropagation);
