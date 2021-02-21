@@ -17,6 +17,7 @@ declare interface ActualTextRun {
   s : number;
   a : number;
   t : string;
+  c : string;
 }
 declare interface ImageBox extends BoundingBox {
   t : "i";
@@ -95,7 +96,8 @@ const serializeSide = function($els : JQuery, xOffs : number, target : Box[]) {
                   f: $span.css('font-family'),
                   s: Math.round((+$span.css('font-size').slice(0,-2)) / 96 * 72),
                   a: attributes,
-                  t: $span.text()
+                  t: $span.text(),
+                  c: $span.css('color')
                 });
               } else {
                 console.warn('cannot serialize element', $span[0]);
