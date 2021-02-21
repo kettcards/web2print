@@ -2,14 +2,16 @@ declare interface RenderStyle {
   name: string;
   condition(card : Card): boolean;
   pageGen(card: Card): DocumentFragment | JQuery<DocumentFragment>;
+  assocPage(side : 'front'|'back', bounds : JQuery.Coordinates) : JQuery<HTMLDivElement>;
+  clear() : void;
   pageLabels: string[];
   initialDotIndex: number;
   hPageChanged(direction: -1 | 0 | 1): void;
 }
 
-const RenderStyles = [{
+const RenderStyles : RenderStyle[] = [{
   name: 'Druckbogen',
-  condition: function(card){ return true; },
+  condition(card){ return true; },
   BgStretchObjs: {
     stretch: {
       'background-size': 'cover',
@@ -18,7 +20,7 @@ const RenderStyles = [{
     },
     //todo: add more tiling modes, should work just fine - the fallback is just no special background styling, page dimensions are still correct
   },
-  pageGen: function(card) {
+  pageGen(card) {
     const width = card.cardFormat.width;
     const height = card.cardFormat.height;
 
@@ -55,12 +57,18 @@ const RenderStyles = [{
 
     return $bundle;
   },
+  clear() : void {
+    this.data.$bundle.find('.elements-layer').html('');
+  },
+  assocPage(side, _) {
+    return this.data.$bundle.children('.'+side);
+  },
   pageLabels: [
     'Innenseite',
     'Außenseite'
   ],
   initialDotIndex: 0,
-  hPageChanged: function(direction) {
+  hPageChanged(direction) {
     this.data.rot += direction * 180;
     this.data.$bundle.css('transform', 'rotateY('+this.data.rot+'deg)');
   },
@@ -70,7 +78,7 @@ const RenderStyles = [{
   }
 } as RenderStyle, {
   name: 'einzelne Seiten',
-  condition: function(card){
+  condition(card){
     const folds = card.cardFormat.folds;
     return folds.length === 1 && folds[0].x1 === folds[0].x2;
   },
@@ -83,7 +91,7 @@ const RenderStyles = [{
     },
     //todo: add more tiling modes, should work just fine - the fallback is just no special background styling, page dimensions are still correct
   },
-  pageGen: function(card) {
+  pageGen(card) {
     const cardWidth = card.cardFormat.width;
     const cardHeight = card.cardFormat.height;
     const w1 = card.cardFormat.folds[0].x1;
@@ -132,13 +140,35 @@ const RenderStyles = [{
 
     return $(document.createDocumentFragment()).append($page1, $page2);
   },
+  clear() : void {
+    this.data.$page1.add(this.data.$page2).find('.elements-layer').html('');
+  },
+  assocPage(side, bounds) {
+    let leftPage, rightPage;
+    if(side === 'back') {
+      leftPage  = this.data.$page1;
+      rightPage = this.data.$page2;
+    } else {
+      rightPage = this.data.$page1;
+      leftPage  = this.data.$page2;
+    }
+
+    const fold = Editor.storage.loadedCard.cardFormat.folds[0].x1 / MMPerPx.x;
+    if(bounds.left > fold) {
+      bounds.left -= fold;
+      // (lucas 16.02.21) todo: this might get slow without caching
+      return rightPage.children('.'+side);
+    } else {
+      return leftPage.children('.'+side);
+    }
+  },
   pageLabels: [
     'Rückseite',
     'Innenseite',
     'Vorderseite'
   ],
   initialDotIndex: 1,
-  hPageChanged: function(direction) {
+  hPageChanged(direction) {
     this.data.state = mod(this.data.state + direction, 3);
 
     let p1z = 0, p2z = 0;
