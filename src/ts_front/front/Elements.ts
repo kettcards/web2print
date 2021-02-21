@@ -39,9 +39,10 @@ const Elements : ElementsObj = {
         default:        align = 'l';
       }
       let data = {
-        t: "t",
-        a: align,
-        r: []
+        t : "t",
+        a : align,
+        lh: +$instance[0].style.lineHeight,
+        r : [],
       };
       let $innerChildren = $instance.children();
       for (let j = 0; j < $innerChildren.length; j++) {
@@ -59,7 +60,8 @@ const Elements : ElementsObj = {
                 f: $span.css('font-family'),
                 s: Math.round((+$span.css('font-size').slice(0,-2)) / 96 * 72),
                 a: attributes,
-                t: $span.text()
+                t: $span.text(),
+                c: $span.css('color'),
               });
             } else {
               console.warn('cannot serialize element', $span[0]);

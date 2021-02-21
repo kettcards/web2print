@@ -106,7 +106,7 @@ function serializeSide($els : JQuery, xOffs : number, target : Box[]) : void {
   }
 }
 
-function hUpload(e : ChangeEvent) {
+function hUpload(e : JQuery.ChangeEvent) {
   const file = e.target.files[0] as File;
   if (!file)
     return;

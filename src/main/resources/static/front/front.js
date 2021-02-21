@@ -473,6 +473,22 @@ class Editor {
         sel.addRange(Editor.storage.range);
         return sel;
     }
+    static deleteElement() {
+        switch (Editor.state) {
+            case EditorStates.EL_FOCUSED:
+            case EditorStates.TXT_EDITING:
+                if (confirm("Wollen Sie das Element wirklich löschen?")) {
+                    const target = Editor.storage.target;
+                    target.parentElement.removeChild(target);
+                    ResizeBars.hide();
+                    Editor.state = EditorStates.NONE;
+                    break;
+                }
+        }
+    }
+    static displayLineheight() {
+        $lhSpinner[0].value = Editor.storage.target.style.lineHeight;
+    }
 }
 Editor.$transformAnchor = $('#transform-anchor');
 Editor.$editorArea = $('#editor-area');
@@ -530,7 +546,8 @@ const Elements = {
             let data = {
                 t: "t",
                 a: align,
-                r: []
+                lh: +$instance[0].style.lineHeight,
+                r: [],
             };
             let $innerChildren = $instance.children();
             for (let j = 0; j < $innerChildren.length; j++) {
@@ -548,7 +565,8 @@ const Elements = {
                                 f: $span.css('font-family'),
                                 s: Math.round((+$span.css('font-size').slice(0, -2)) / 96 * 72),
                                 a: attributes,
-                                t: $span.text()
+                                t: $span.text(),
+                                c: $span.css('color'),
                             });
                         }
                         else {
@@ -642,6 +660,10 @@ class TextEl {
         switch (Editor.state) {
             case EditorStates.TXT_EDITING:
                 break;
+            case EditorStates.EL_DRAGGING:
+            case EditorStates.EL_BEGIN_FOCUS:
+                Editor.displayLineheight();
+                TextEl.displaySelectedProperties();
             default:
                 El.hMUp(e);
         }
@@ -1295,6 +1317,9 @@ let $body = $('body')
 });
 $(document)
     .keydown(function (e) {
+    if (e.keyCode === 46) {
+        Editor.deleteElement();
+    }
     if (e.ctrlKey) {
         if (e.key === '-') {
             e.preventDefault();
@@ -1383,6 +1408,16 @@ $('#save-btn').click(function () {
 const saveSelect = new SelectEx($('#save-select-ex'));
 saveSelect.value = 'Server';
 $('#tutorial').click(showTutorial);
+$('#del-btn')
+    .mouseup(stopPropagation)
+    .click(Editor.deleteElement);
+const $colorpicker = $('#colorpicker').mousedown(Editor.saveSelection).change(function (e) {
+    const sel = Editor.loadSelection();
+    const color = $colorpicker.val();
+    makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
+        $(curr).css('color', color + '');
+    });
+});
 const $fontSelect = $('#font-select')
     .mousedown(Editor.saveSelection)
     .mouseup(stopPropagation);
@@ -1409,6 +1444,14 @@ const $fontSizeSelect = $('#fontSizeSelect')
     makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
         $(curr).css('font-size', fontSize + 'pt');
     });
+});
+const $lhSpinner = $('#lh-spinner')
+    .mousedown(Editor.saveSelection)
+    .mouseup(stopPropagation)
+    .change(function (e) {
+    const lineHeight = e.target.value;
+    Editor.loadSelection();
+    Editor.storage.$target.css('line-height', lineHeight);
 });
 $('.right>.nav-btn-inner').click(function () {
     hPageSwitch(+1);
