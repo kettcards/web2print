@@ -22,6 +22,14 @@ $('#del-btn')
     .mouseup(stopPropagation)
     .click(Editor.deleteElement);
 
+const $colorpicker = $('#colorpicker').mousedown(Editor.saveSelection).change(function(e){
+    const sel = Editor.loadSelection();
+    const color = $colorpicker.val();
+    makeNodesFromSelection(sel.getRangeAt(0), function(curr) {
+        $(curr).css('color', color+'');
+    });
+});
+
 const $fontSelect = $<HTMLDivElement>('#font-select')
   .mousedown(Editor.saveSelection)
   .mouseup(stopPropagation);
