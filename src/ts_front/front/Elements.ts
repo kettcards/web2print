@@ -13,7 +13,7 @@ const Elements : ElementsObj = {
   TEXT: {
     displayName: 'Text',
     spawn(css) : JQuery<HTMLDivElement> {
-      return $<HTMLDivElement> ('<div class="text" contenteditable="true"><p><span>Ihr Text Hier!</span></p></div>')
+      return $<HTMLDivElement> ('<div class="text" contenteditable="true" style="line-height: 1.2;"><p><span>Ihr Text Hier!</span></p></div>')
         .mousedown(TextEl.hMDown)
         .mouseup(TextEl.hMUp)
         .click(stopPropagation)
