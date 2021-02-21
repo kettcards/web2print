@@ -182,6 +182,20 @@ class Editor {
     return sel;
   }
 
+  static deleteElement() : void {
+    switch (Editor.state) {
+      case EditorStates.EL_FOCUSED:
+      case EditorStates.TXT_EDITING:
+        if(confirm("Wollen Sie das Element wirklich löschen?")) {
+          const target = Editor.storage.target;
+          target.parentElement.removeChild(target);
+          ResizeBars.hide();
+          Editor.state = EditorStates.NONE;
+          break;
+        }
+    }
+  }
+
   static displayLineheight() : void {
     $lhSpinner[0].value = Editor.storage.target.style.lineHeight;
   }
