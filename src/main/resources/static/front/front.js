@@ -437,9 +437,6 @@ class Editor {
         sel.addRange(Editor.storage.range);
         return sel;
     }
-    static displayLineheight() {
-        $lhSpinner[0].value = Editor.storage.target.style.lineHeight;
-    }
     static deleteElement() {
         switch (Editor.state) {
             case EditorStates.EL_FOCUSED:
@@ -452,6 +449,9 @@ class Editor {
                     break;
                 }
         }
+    }
+    static displayLineheight() {
+        $lhSpinner[0].value = Editor.storage.target.style.lineHeight;
     }
 }
 Editor.$transformAnchor = $('#transform-anchor');
@@ -777,7 +777,8 @@ const serializeSide = function ($els, xOffs, target) {
                                         f: $span.css('font-family'),
                                         s: Math.round((+$span.css('font-size').slice(0, -2)) / 96 * 72),
                                         a: attributes,
-                                        t: $span.text()
+                                        t: $span.text(),
+                                        c: $span.css('color')
                                     });
                                 }
                                 else {
@@ -1195,6 +1196,13 @@ $('#tutorial').click(showTutorial);
 $('#del-btn')
     .mouseup(stopPropagation)
     .click(Editor.deleteElement);
+const $colorpicker = $('#colorpicker').mousedown(Editor.saveSelection).change(function (e) {
+    const sel = Editor.loadSelection();
+    const color = $colorpicker.val();
+    makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
+        $(curr).css('color', color + '');
+    });
+});
 const $fontSelect = $('#font-select')
     .mousedown(Editor.saveSelection)
     .mouseup(stopPropagation);
