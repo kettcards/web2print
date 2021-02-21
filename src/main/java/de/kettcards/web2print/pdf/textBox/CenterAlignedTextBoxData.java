@@ -10,8 +10,8 @@ import java.util.List;
  */
 public class CenterAlignedTextBoxData extends TextBoxData {
 
-    public CenterAlignedTextBoxData(float x, float y, float width, float height, List<TextParagraph> textParagraphs) {
-        super(x, y, width, height, textParagraphs);
+    public CenterAlignedTextBoxData(float x, float y, float width, float height, List<TextParagraph> textParagraphs, float lineHeight) {
+        super(x, y, width, height, textParagraphs, lineHeight);
     }
 
     /**

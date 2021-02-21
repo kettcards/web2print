@@ -195,4 +195,8 @@ class Editor {
         }
     }
   }
+
+  static displayLineheight() : void {
+    $lhSpinner[0].value = Editor.storage.target.style.lineHeight;
+  }
 }

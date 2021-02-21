@@ -114,9 +114,26 @@ body {
   text-align: right;
   box-sizing: border-box;
   border: solid transparent 1px;
+  border: none;
 }
 #fontSizeSelect:hover,
 #fontSizeSelect:active {
+  border-color: black;
+  background-color: white;
+}
+
+#lh-spinner {
+  outline: none;
+  text-align: right;
+  max-width: 6ex;
+  background: inherit;
+  font-size: inherit;
+  box-sizing: border-box;
+  border: solid transparent 1px;
+  border: none;
+}
+#lh-spinner:hover,
+#lh-spinner:active {
   border-color: black;
   background-color: white;
 }
@@ -319,7 +336,6 @@ body {
   margin: 0;
   transition: background-color 1s;
   outline: none;
-  line-height: 1.2;
 }
 .text:focus,
 .text:hover {

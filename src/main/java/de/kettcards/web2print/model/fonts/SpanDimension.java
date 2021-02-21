@@ -12,14 +12,14 @@ public class SpanDimension {
     /**
      * the default line height for a paragraph (css attribute: line-height)
      */
-    public static final float LINE_HEIGHT = 1.2f;
+    private float lineHeight;
 
-    public SpanDimension(int ascender, int descender, int emHeight, float fontSizeInPoint){
+    public SpanDimension(int ascender, int descender, int emHeight, float fontSizeInPoint, float lineHeight){
         this.ascender = ascender;
         this.descender = descender;
         this.emHeight = emHeight;
         this.fontSizeInPoint = fontSizeInPoint;
-
+        this.lineHeight = lineHeight;
         this.actualClientHeight = (float)(ascender - descender) / emHeight * fontSizeInPoint;
     }
 
