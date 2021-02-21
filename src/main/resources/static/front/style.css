@@ -76,6 +76,7 @@ body {
   display: inline-block;
   vertical-align: top;
   padding: 0 5px;
+  height: 100%;
 }
 .toolbar-row:nth-child(n+2) {
   border-left: solid gray 1px;
@@ -142,10 +143,23 @@ body {
   display: inline-block;
 }
 
+#text-btns {
+  margin-left: 5px;
+  transform: translateY(-1px);
+}
 #text-btns button {
   width: 28px;
   height: 28px;
   padding: 0;
+}
+
+#font-line-select {
+  display: flex;
+  margin-top: 5px;
+}
+
+#font-line-select>div {
+  margin-left: 25px;
 }
 
 #editor-area {
@@ -404,6 +418,7 @@ body {
   position: relative;
   outline: none;
   background-color: white;
+  float: left;
 }
 #font-label {
   min-width: 150px;
@@ -530,6 +545,7 @@ button {
   color: white;
   text-align: center;
   transition: background-color 0.3s,color 0.3s;
+  border-radius: 0;
   outline: none;
 }
 button:hover {
