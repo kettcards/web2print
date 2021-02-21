@@ -1,8 +1,10 @@
 package de.kettcards.web2print.pdf.textBox;
 
 import de.kettcards.web2print.model.fonts.FontStyle;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 
 import java.util.EnumSet;
+
 
 /**
  * immutable span tag representation
@@ -17,11 +19,14 @@ public class TextSpan {
 
     private final String text;
 
-    public TextSpan(String fontName, float fontSize, EnumSet<FontStyle> fontStyle, String text) {
+    private final PDColor color;
+
+    public TextSpan(String fontName, float fontSize, EnumSet<FontStyle> fontStyle, String text, PDColor color) {
         this.fontName = fontName;
         this.fontSize = fontSize;
         this.fontStyle = fontStyle;
         this.text = text;
+        this.color = color;
     }
 
     /**
@@ -54,4 +59,10 @@ public class TextSpan {
     public String getText() {
         return text;
     }
+
+    /**
+     *
+     * @return the text color
+     */
+    public PDColor getColor(){ return color;}
 }

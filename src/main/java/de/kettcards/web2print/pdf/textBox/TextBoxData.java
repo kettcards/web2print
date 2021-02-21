@@ -17,16 +17,20 @@ public abstract class TextBoxData extends BoxData {
      */
     protected final List<TextParagraph> textParagraphs;
 
+    private float lineHeight;
+
     /**
      * @param x              x position in pt
      * @param y              y position in pt
      * @param width          box width
      * @param height         box height
      * @param textParagraphs text paragraphs
+     * @param lineHeight     lineheight of text box
      */
-    public TextBoxData(float x, float y, float width, float height, List<TextParagraph> textParagraphs) {
+    public TextBoxData(float x, float y, float width, float height, List<TextParagraph> textParagraphs, float lineHeight) {
         super(x, y, width, height);
         this.textParagraphs = textParagraphs;
+        this.lineHeight = lineHeight;
     }
 
     /**
@@ -68,12 +72,12 @@ public abstract class TextBoxData extends BoxData {
      * @throws IOException if writing to doc is not possible
      */
     public SpanDimension writeParagraph(Document doc, TextParagraph paragraph, SpanDimension lastLineDim) throws IOException {
-        SpanDimension largestDim = paragraph.getLargestFontSize(doc);
+        SpanDimension largestDim = paragraph.getLargestFontSize(doc, this.lineHeight);
         float leading;
         if(lastLineDim == null) {
-            leading = largestDim.getFirstLineBaseline(SpanDimension.LINE_HEIGHT);
+            leading = largestDim.getFirstLineBaseline(this.lineHeight);
         }else{
-            leading = largestDim.getNextLineBaseline(lastLineDim, SpanDimension.LINE_HEIGHT, SpanDimension.LINE_HEIGHT);
+            leading = largestDim.getNextLineBaseline(lastLineDim, largestDim.getLineHeight(), this.lineHeight);
         }
         doc.stream().setLeading(leading);
         doc.stream().newLine();
@@ -101,6 +105,7 @@ public abstract class TextBoxData extends BoxData {
     public void writeSpan(Document doc, TextSpan textSpan) throws IOException {
         var font = doc.getFont(textSpan.getFontName(), textSpan.getFontStyle());
         doc.stream().setFont(font.getKey(), textSpan.getFontSize());
+        doc.stream().setNonStrokingColor(textSpan.getColor());
         doc.stream().showText(textSpan.getText());
     }
 

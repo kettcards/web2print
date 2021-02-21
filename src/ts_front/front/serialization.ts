@@ -1,5 +1,3 @@
-import ChangeEvent = JQuery.ChangeEvent;
-
 interface PrintData {
   v        : '0.2';
   card     : string;
@@ -8,9 +6,10 @@ interface PrintData {
 }
 type Box = TextBox | ImageBox;
 interface TextBox extends BoundingBox {
-  t : "t";
-  a : 'l' | 'r' | 'c' | 'j';
-  r : TextRun[];
+  t  : "t";
+  a  : 'l' | 'r' | 'c' | 'j';
+  lh : number;
+  r  : TextRun[];
 }
 type TextRun = 'br' | ActualTextRun;
 interface ActualTextRun {
@@ -18,6 +17,7 @@ interface ActualTextRun {
   s : number;
   a : number;
   t : string;
+  c : string;
 }
 interface ImageBox extends BoundingBox {
   t : "i";

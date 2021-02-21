@@ -153,6 +153,9 @@ let $body = $('body')
 // disable default browser scroll
 $(document)
   .keydown(function(e) {
+    if(e.keyCode === 46) {
+      Editor.deleteElement();
+    }
     if(e.ctrlKey) {
       if(e.key === '-') {
         e.preventDefault();

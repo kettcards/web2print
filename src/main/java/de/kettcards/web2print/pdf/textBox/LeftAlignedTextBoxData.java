@@ -10,8 +10,8 @@ import java.util.List;
  */
 public class LeftAlignedTextBoxData extends TextBoxData {
 
-    public LeftAlignedTextBoxData(float x, float y, float width, float height, List<TextParagraph> textParagraphs) {
-        super(x, y, width, height, textParagraphs);
+    public LeftAlignedTextBoxData(float x, float y, float width, float height, List<TextParagraph> textParagraphs, float lineHeight) {
+        super(x, y, width, height, textParagraphs,lineHeight);
     }
 
     /**
@@ -26,7 +26,7 @@ public class LeftAlignedTextBoxData extends TextBoxData {
      * {@inheritDoc}
      */
     @Override
-    public void setParagraphBeginPosition(Document doc, float paragraphWidth) throws IOException {
+    public void setParagraphBeginPosition(Document doc, float paragraphWidth) {
 
     }
 
@@ -34,7 +34,7 @@ public class LeftAlignedTextBoxData extends TextBoxData {
      * {@inheritDoc}
      */
     @Override
-    public void setParagraphEndPosition(Document doc, float paragraphWidth) throws IOException {
+    public void setParagraphEndPosition(Document doc, float paragraphWidth) {
 
     }
 

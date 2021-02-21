@@ -11,8 +11,8 @@ import java.util.List;
 public class RightAlignedTextBoxData extends TextBoxData {
 
 
-    public RightAlignedTextBoxData(float x, float y, float width, float height, List<TextParagraph> textParagraphs) {
-        super(x, y, width, height, textParagraphs);
+    public RightAlignedTextBoxData(float x, float y, float width, float height, List<TextParagraph> textParagraphs, float lineHeight) {
+        super(x, y, width, height, textParagraphs, lineHeight);
     }
 
     /**
