@@ -437,6 +437,22 @@ class Editor {
         sel.addRange(Editor.storage.range);
         return sel;
     }
+    static displayLineheight() {
+        $lhSpinner[0].value = Editor.storage.target.style.lineHeight;
+    }
+    static deleteElement() {
+        switch (Editor.state) {
+            case EditorStates.EL_FOCUSED:
+            case EditorStates.TXT_EDITING:
+                if (confirm("Wollen Sie das Element wirklich löschen?")) {
+                    const target = Editor.storage.target;
+                    target.parentElement.removeChild(target);
+                    ResizeBars.hide();
+                    Editor.state = EditorStates.NONE;
+                    break;
+                }
+        }
+    }
 }
 Editor.$transformAnchor = $('#transform-anchor');
 Editor.$editorArea = $('#editor-area');
@@ -461,7 +477,7 @@ Editor.storage = {
 };
 const ElementSpawners = {
     TEXT: function (p) {
-        return $('<div class="text" contenteditable="true"><p><span>Ihr Text Hier!</span></p></div>')
+        return $('<div class="text" contenteditable="true" style="line-height: 1.2;"><p><span>Ihr Text Hier!</span></p></div>')
             .mousedown(TextEl.hMDown)
             .mouseup(TextEl.hMUp)
             .click(stopPropagation)
@@ -503,6 +519,10 @@ class TextEl {
         switch (Editor.state) {
             case EditorStates.TXT_EDITING:
                 break;
+            case EditorStates.EL_DRAGGING:
+            case EditorStates.EL_BEGIN_FOCUS:
+                Editor.displayLineheight();
+                TextEl.displaySelectedProperties();
             default:
                 El.hMUp(e);
         }
@@ -738,6 +758,7 @@ const serializeSide = function ($els, xOffs, target) {
                     let box = Object.assign({
                         t: "t",
                         a: align,
+                        lh: +$el[0].style.lineHeight,
                         r: []
                     }, bounds);
                     let $innerChildren = $el.children();
@@ -756,8 +777,7 @@ const serializeSide = function ($els, xOffs, target) {
                                         f: $span.css('font-family'),
                                         s: Math.round((+$span.css('font-size').slice(0, -2)) / 96 * 72),
                                         a: attributes,
-                                        t: $span.text(),
-                                        c: $span.css('color')
+                                        t: $span.text()
                                     });
                                 }
                                 else {
@@ -1100,6 +1120,9 @@ let $body = $('body')
 });
 $(document)
     .keydown(function (e) {
+    if (e.keyCode === 46) {
+        Editor.deleteElement();
+    }
     if (e.ctrlKey) {
         if (e.key === '-') {
             e.preventDefault();
@@ -1169,13 +1192,9 @@ $(".alignmentBtn").click(function () {
 $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
 $('#submitBtn').click(serialize);
 $('#tutorial').click(showTutorial);
-const $colorpicker = $('#colorpicker').mousedown(Editor.saveSelection).change(function (e) {
-    const sel = Editor.loadSelection();
-    const color = $colorpicker.val();
-    makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
-        $(curr).css('color', color + '');
-    });
-});
+$('#del-btn')
+    .mouseup(stopPropagation)
+    .click(Editor.deleteElement);
 const $fontSelect = $('#font-select')
     .mousedown(Editor.saveSelection)
     .mouseup(stopPropagation);
@@ -1202,6 +1221,14 @@ const $fontSizeSelect = $('#fontSizeSelect')
     makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
         $(curr).css('font-size', fontSize + 'pt');
     });
+});
+const $lhSpinner = $('#lh-spinner')
+    .mousedown(Editor.saveSelection)
+    .mouseup(stopPropagation)
+    .change(function (e) {
+    const lineHeight = e.target.value;
+    Editor.loadSelection();
+    Editor.storage.$target.css('line-height', lineHeight);
 });
 $('.right>.nav-btn-inner').click(function () {
     hPageSwitch(+1);

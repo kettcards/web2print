@@ -18,6 +18,10 @@ $('#submitBtn').click(serialize);
 
 $('#tutorial').click(showTutorial);
 
+$('#del-btn')
+    .mouseup(stopPropagation)
+    .click(Editor.deleteElement);
+
 const $colorpicker = $('#colorpicker').mousedown(Editor.saveSelection).change(function(e){
     const sel = Editor.loadSelection();
     const color = $colorpicker.val();
@@ -56,6 +60,16 @@ const $fontSizeSelect = $<HTMLInputElement>('#fontSizeSelect')
     makeNodesFromSelection(sel.getRangeAt(0), function(curr) {
       $(curr).css('font-size', fontSize+'pt');
     });
+  });
+
+const $lhSpinner = $<HTMLInputElement>('#lh-spinner')
+  .mousedown(Editor.saveSelection)
+  .mouseup(stopPropagation)
+  .change(function(e) {
+    const lineHeight = e.target.value;
+    Editor.loadSelection();
+
+    Editor.storage.$target.css('line-height', lineHeight);
   });
 
 // flipping pages

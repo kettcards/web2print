@@ -6,9 +6,10 @@ declare interface PrintData {
 }
 declare type Box = TextBox | ImageBox;
 declare interface TextBox extends BoundingBox {
-  t : "t";
-  a : 'l' | 'r' | 'c' | 'j';
-  r : TextRun[];
+  t  : "t";
+  a  : 'l' | 'r' | 'c' | 'j';
+  lh : number;
+  r  : TextRun[];
 }
 declare type TextRun = 'br' | ActualTextRun;
 declare interface ActualTextRun {
@@ -74,9 +75,10 @@ const serializeSide = function($els : JQuery, xOffs : number, target : Box[]) {
           default:        align = 'l';
         }
         let box = Object.assign({
-          t: "t",
-          a: align,
-          r: []
+          t : "t",
+          a : align,
+          lh: +$el[0].style.lineHeight,
+          r : []
         }, bounds) as TextBox;
         let $innerChildren = $el.children();
         for (let j = 0; j < $innerChildren.length; j++) {
