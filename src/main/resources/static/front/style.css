@@ -76,6 +76,7 @@ body {
   display: inline-block;
   vertical-align: top;
   padding: 0 5px;
+  height: 100%;
 }
 .toolbar-row:nth-child(n+2) {
   border-left: solid gray 1px;
