@@ -38,7 +38,10 @@ function submit(_export : boolean) : void {
     .then(function(response : string) {
       Parameters.sId = response;
       window.history.replaceState({}, Editor.storage.loadedCard.name+" - Web2Print", stringifyParameters());
-      alert('Daten gesendet!');
+      let txt = 'Daten erfolgreich gesendet!';
+      if(!_export)
+        txt += ` Sie befinden sich nun auf \n${window.location}\n Besuchen Sie diese Addresse später erneut wird das gespeicherte Design automatisch geladen.`;
+      alert(txt);
     }).catch(function(e){
     alert('Fehler beim Senden der Daten!\n'+JSON.stringify(e));
   });
