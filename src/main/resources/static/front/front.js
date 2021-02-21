@@ -440,6 +440,19 @@ class Editor {
     static displayLineheight() {
         $lhSpinner[0].value = Editor.storage.target.style.lineHeight;
     }
+    static deleteElement() {
+        switch (Editor.state) {
+            case EditorStates.EL_FOCUSED:
+            case EditorStates.TXT_EDITING:
+                if (confirm("Wollen Sie das Element wirklich löschen?")) {
+                    const target = Editor.storage.target;
+                    target.parentElement.removeChild(target);
+                    ResizeBars.hide();
+                    Editor.state = EditorStates.NONE;
+                    break;
+                }
+        }
+    }
 }
 Editor.$transformAnchor = $('#transform-anchor');
 Editor.$editorArea = $('#editor-area');
@@ -1107,6 +1120,9 @@ let $body = $('body')
 });
 $(document)
     .keydown(function (e) {
+    if (e.keyCode === 46) {
+        Editor.deleteElement();
+    }
     if (e.ctrlKey) {
         if (e.key === '-') {
             e.preventDefault();
@@ -1176,6 +1192,9 @@ $(".alignmentBtn").click(function () {
 $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
 $('#submitBtn').click(serialize);
 $('#tutorial').click(showTutorial);
+$('#del-btn')
+    .mouseup(stopPropagation)
+    .click(Editor.deleteElement);
 const $fontSelect = $('#font-select')
     .mousedown(Editor.saveSelection)
     .mouseup(stopPropagation);
