@@ -18,8 +18,18 @@ const stopPropagation = function (e) { e.stopPropagation(); };
 const falsify = function () { return false; };
 const mod = function (a, n) { return ((a % n) + n) % n; };
 Node.prototype.isA = function (n) { return this.nodeName === n; };
+function stringifyParameters() {
+    let s = '?';
+    for (const [k, v] of Object.entries(Parameters)) {
+        if (s.length > 2)
+            s += '&';
+        s += k + '=' + v;
+    }
+    return s;
+}
 const Parameters = (function () {
-    const ret = {}, url = window.location.search;
+    const url = window.location.search;
+    const ret = {};
     if (url) {
         let split = url.substr(1).split('&'), subSplit;
         for (let s of split) {
@@ -168,6 +178,32 @@ const MMPerPx = (function () {
     $resTester.remove();
     return ret;
 })();
+class SelectEx {
+    constructor($target, onChange) {
+        const This = this;
+        This.$target = $target;
+        This.$options = $target.children('.select-ex-options');
+        const $p = $target.children('p')
+            .click(function (e) {
+            e.stopPropagation();
+            This.$options.css('visibility', 'visible');
+        });
+        This.$label = $p.children('.select-ex-label');
+        This.$options
+            .mousedown(stopPropagation)
+            .click(function (e) {
+            if (e.target.nodeName !== 'P')
+                return;
+            if (onChange)
+                onChange(This.value);
+            This.value = e.target.textContent;
+            This.$label.text(This.value);
+        });
+    }
+    close() {
+        this.$options.css('visibility', 'collapse');
+    }
+}
 class ResizeBars {
     static setBoundsToTarget() {
         const eStorage = Editor.storage;
@@ -475,30 +511,136 @@ Editor.storage = {
     addOnClick: undefined,
     range: undefined,
 };
-const ElementSpawners = {
-    TEXT: function (p) {
-        return $('<div class="text" contenteditable="true" style="line-height: 1.2;"><p><span>Ihr Text Hier!</span></p></div>')
-            .mousedown(TextEl.hMDown)
-            .mouseup(TextEl.hMUp)
-            .click(stopPropagation)
-            .on('paste', hTxtPaste)
-            .on('keydown', hTxtKeyDown)
-            .on('keyup', hTxtKeyUp)
-            .on("dragstart", falsify)
-            .on("drop", falsify)
-            .css(Object.assign({
-            'font-family': Fonts.defaultFont,
-            'font-size': '16pt'
-        }, p));
+const Elements = {
+    TEXT: {
+        displayName: 'Text',
+        spawn(css) {
+            return $('<div class="text" contenteditable="true" style="line-height: 1.2;"><p><span>Ihr Text Hier!</span></p></div>')
+                .mousedown(TextEl.hMDown)
+                .mouseup(TextEl.hMUp)
+                .click(stopPropagation)
+                .on('paste', hTxtPaste)
+                .on('keydown', hTxtKeyDown)
+                .on('keyup', hTxtKeyUp)
+                .on("dragstart", falsify)
+                .on("drop", falsify)
+                .css(Object.assign({
+                'font-family': Fonts.defaultFont,
+                'font-size': '16pt'
+            }, css));
+        },
+        serialize($instance) {
+            let align = $instance.css('text-align');
+            switch (align) {
+                case 'justify':
+                    align = 'j';
+                    break;
+                case 'right':
+                    align = 'r';
+                    break;
+                case 'center':
+                    align = 'c';
+                    break;
+                default: align = 'l';
+            }
+            let data = {
+                t: "t",
+                a: align,
+                lh: +$instance[0].style.lineHeight,
+                r: [],
+            };
+            let $innerChildren = $instance.children();
+            for (let j = 0; j < $innerChildren.length; j++) {
+                let $iel = $innerChildren.eq(j);
+                if ($iel[0].isA('P')) {
+                    const $spans = $iel.children();
+                    for (let k = 0; k < $spans.length; k++) {
+                        const $span = $spans.eq(k);
+                        if ($span[0].isA('SPAN')) {
+                            let attributes = 0;
+                            for (const [c, v] of Object.entries(Fonts.FontStyleValues))
+                                if ($span.hasClass(c))
+                                    attributes |= v;
+                            data.r.push({
+                                f: $span.css('font-family'),
+                                s: Math.round((+$span.css('font-size').slice(0, -2)) / 96 * 72),
+                                a: attributes,
+                                t: $span.text(),
+                                c: $span.css('color'),
+                            });
+                        }
+                        else {
+                            console.warn('cannot serialize element', $span[0]);
+                        }
+                    }
+                    data.r.push('br');
+                }
+                else {
+                    console.warn('cannot serialize element', $iel[0]);
+                }
+            }
+            return data;
+        },
+        restore($ownInstance, data) {
+            $ownInstance.html('');
+            let align;
+            switch (data.a) {
+                case 'j':
+                    align = 'justify';
+                    break;
+                case 'r':
+                    align = 'right';
+                    break;
+                case 'c':
+                    align = 'center';
+                    break;
+            }
+            if (align)
+                $ownInstance.css('text-align', align);
+            let $currentP = $(make('p'));
+            for (const run of data.r) {
+                if (run === 'br') {
+                    if ($currentP.children().length < 1)
+                        $currentP.append(make('span'));
+                    $ownInstance.append($currentP);
+                    $currentP = $(make('p'));
+                }
+                else {
+                    let classString = '';
+                    for (const [c, v] of Object.entries(Fonts.FontStyleValues))
+                        if (run.a & v)
+                            classString += '.' + c;
+                    $currentP.append($(make('span' + classString, makeT(run.t))).css({
+                        'font-family': run.f,
+                        'font-size': run.s + 'pt',
+                        'color': run.c,
+                    }));
+                }
+            }
+        }
     },
-    IMAGE: function (p) {
-        return $("<img class='logo' src='" + web2print.links.apiUrl + "content/" + logoContentId + "' alt='" + logoContentId + "' draggable='false'>")
-            .mousedown(ImageEl.hMDown)
-            .mouseup(El.hMUp)
-            .on("dragstart", falsify)
-            .on("drop", falsify)
-            .click(stopPropagation)
-            .css(p);
+    IMAGE: {
+        displayName: 'Bild / Logo',
+        spawn(p) {
+            return $("<img class='logo' src='" + web2print.links.apiUrl + "content/" + logoContentId + "' alt='" + logoContentId + "' draggable='false'>")
+                .mousedown(ImageEl.hMDown)
+                .mouseup(El.hMUp)
+                .on("dragstart", falsify)
+                .on("drop", falsify)
+                .click(stopPropagation)
+                .css(p);
+        },
+        serialize($instance) {
+            return {
+                t: "i",
+                s: $instance[0].alt,
+            };
+        },
+        restore($ownInstance, data) {
+            const img = $ownInstance[0];
+            img.src = `${web2print.links.apiUrl}content/${data.s}`;
+            img.alt = data.s;
+        }
     }
 };
 class TextEl {
@@ -707,7 +849,42 @@ const Fonts = {
         Fonts.$label.text(fName).css('font-family', fName);
     }
 };
-const serialize = function () {
+function submit(_export) {
+    const data = serialize();
+    console.log("sending", data);
+    $.post(`${web2print.links.apiUrl}save/${Parameters.sId || ''}?export=${_export}`, 'data=' + btoa(JSON.stringify(data)))
+        .then(function (response) {
+        Parameters.sId = response;
+        window.history.replaceState({}, Editor.storage.loadedCard.name + " - Web2Print", stringifyParameters());
+        let txt = 'Daten erfolgreich gesendet!';
+        if (!_export)
+            txt += ` Sie befinden sich nun auf \n${window.location}\n Besuchen Sie diese Addresse später erneut wird das gespeicherte Design automatisch geladen.`;
+        alert(txt);
+    }).catch(function (e) {
+        alert('Fehler beim Senden der Daten!\n' + JSON.stringify(e));
+    });
+}
+function download() {
+    const data = serialize();
+    const fileName = `${data.card}.des`;
+    const file = new Blob([btoa(JSON.stringify(data))], { type: 'text/plain' });
+    if (window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(file, fileName);
+    }
+    else {
+        const a = make("a");
+        const url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 0);
+    }
+}
+function serialize() {
     const data = {
         v: '0.2',
         card: Parameters.card,
@@ -721,16 +898,9 @@ const serialize = function () {
         serializeSide($b.find('.front>.elements-layer').children(), offs, data.outerEls);
         serializeSide($b.find('.back>.elements-layer').children(), offs, data.innerEls);
     }
-    console.log("sending", data);
-    const _export = true;
-    $.post(web2print.links.apiUrl + 'save/' + (Parameters.sId || '') + '?export=' + _export, 'data=' + btoa(JSON.stringify(data)))
-        .then(function () {
-        alert('Sent data!');
-    }).catch(function (e) {
-        alert('Send failed: \n' + JSON.stringify(e));
-    });
-};
-const serializeSide = function ($els, xOffs, target) {
+    return data;
+}
+function serializeSide($els, xOffs, target) {
     for (let j = 0; j < $els.length; j++) {
         const $el = $els.eq(j);
         const bounds = {
@@ -741,72 +911,68 @@ const serializeSide = function ($els, xOffs, target) {
         };
         switch ($el[0].nodeName) {
             case 'DIV':
-                {
-                    let align = $el.css('text-align');
-                    switch (align) {
-                        case 'justify':
-                            align = 'j';
-                            break;
-                        case 'right':
-                            align = 'r';
-                            break;
-                        case 'center':
-                            align = 'c';
-                            break;
-                        default: align = 'l';
-                    }
-                    let box = Object.assign({
-                        t: "t",
-                        a: align,
-                        lh: +$el[0].style.lineHeight,
-                        r: []
-                    }, bounds);
-                    let $innerChildren = $el.children();
-                    for (let j = 0; j < $innerChildren.length; j++) {
-                        let $iel = $innerChildren.eq(j);
-                        if ($iel[0].isA('P')) {
-                            const $spans = $iel.children();
-                            for (let k = 0; k < $spans.length; k++) {
-                                const $span = $spans.eq(k);
-                                if ($span[0].isA('SPAN')) {
-                                    let attributes = 0;
-                                    for (const [c, v] of Object.entries(Fonts.FontStyleValues))
-                                        if ($span.hasClass(c))
-                                            attributes |= v;
-                                    box.r.push({
-                                        f: $span.css('font-family'),
-                                        s: Math.round((+$span.css('font-size').slice(0, -2)) / 96 * 72),
-                                        a: attributes,
-                                        t: $span.text(),
-                                        c: $span.css('color')
-                                    });
-                                }
-                                else {
-                                    console.warn('cannot serialize element', $span[0]);
-                                }
-                            }
-                            box.r.push('br');
-                        }
-                        else {
-                            console.warn('cannot serialize element', $iel[0]);
-                        }
-                    }
-                    target.push(box);
-                }
+                target.push(Object.assign(Elements.TEXT.serialize($el), bounds));
                 break;
             case 'IMG':
-                {
-                    let box = Object.assign({
-                        t: "i",
-                        s: $el[0].alt,
-                    }, bounds);
-                    target.push(box);
-                }
+                target.push(Object.assign(Elements.IMAGE.serialize($el), bounds));
                 break;
             default: console.warn('cannot serialize element', $el[0]);
         }
     }
-};
+}
+function hUpload(e) {
+    const file = e.target.files[0];
+    if (!file)
+        return;
+    file.text().then(loadElementsCompressed.bind(null, true));
+}
+function loadElementsCompressed(fileSource, b64data) {
+    const data = JSON.parse(atob(b64data));
+    if (Parameters.card !== data.card) {
+        alert(`Das Design kann nicht geladen werden, da es zu einer anderen Karte gehört (${data.card}).`);
+        throw new Error('invalid card format');
+    }
+    if (fileSource) {
+        renderStyleState.style.clear();
+        delete Parameters.sId;
+    }
+    window.history.replaceState({}, Editor.storage.loadedCard.name + " - Web2Print", stringifyParameters());
+    loadElements(data);
+}
+function loadElements(data) {
+    console.log('loading data', data);
+    loadSide('front', data.outerEls);
+    loadSide('back', data.innerEls);
+}
+function loadSide(side, boxes) {
+    const cardHeight = Editor.storage.loadedCard.cardFormat.height / MMPerPx.y;
+    for (const box of boxes) {
+        const bounds = {
+            left: box.x / MMPerPx.x,
+            width: box.w / MMPerPx.x,
+            top: cardHeight - (box.y + box.h) / MMPerPx.y,
+            height: box.h / MMPerPx.y
+        };
+        const page = renderStyleState.style.assocPage(side, bounds);
+        let el;
+        switch (box.t) {
+            case "i":
+                {
+                    el = Elements.IMAGE.spawn(bounds);
+                    Elements.IMAGE.restore(el, box);
+                }
+                break;
+            case "t":
+                {
+                    el = Elements.TEXT.spawn(bounds);
+                    Elements.TEXT.restore(el, box);
+                }
+                break;
+            default: throw new Error(`Can't deserialize box of type '${box['t']}'.`);
+        }
+        page.children('.elements-layer').append(el);
+    }
+}
 const createFold = function (fold) {
     if (fold.x1 === fold.x2) {
         let vFold = $('<div class="vFold"></div>');
@@ -824,7 +990,7 @@ const createFold = function (fold) {
 };
 const RenderStyles = [{
         name: 'Druckbogen',
-        condition: function (card) { return true; },
+        condition(card) { return true; },
         BgStretchObjs: {
             stretch: {
                 'background-size': 'cover',
@@ -832,7 +998,7 @@ const RenderStyles = [{
                 'background-position': 'center center',
             },
         },
-        pageGen: function (card) {
+        pageGen(card) {
             const width = card.cardFormat.width;
             const height = card.cardFormat.height;
             const $bundle = $(get('page-template').content.firstElementChild.cloneNode(true));
@@ -866,12 +1032,18 @@ const RenderStyles = [{
             this.data.$bundle = $bundle;
             return $bundle;
         },
+        clear() {
+            this.data.$bundle.find('.elements-layer').html('');
+        },
+        assocPage(side, _) {
+            return this.data.$bundle.children('.' + side);
+        },
         pageLabels: [
             'Innenseite',
             'Außenseite'
         ],
         initialDotIndex: 0,
-        hPageChanged: function (direction) {
+        hPageChanged(direction) {
             this.data.rot += direction * 180;
             this.data.$bundle.css('transform', 'rotateY(' + this.data.rot + 'deg)');
         },
@@ -881,7 +1053,7 @@ const RenderStyles = [{
         }
     }, {
         name: 'einzelne Seiten',
-        condition: function (card) {
+        condition(card) {
             const folds = card.cardFormat.folds;
             return folds.length === 1 && folds[0].x1 === folds[0].x2;
         },
@@ -894,7 +1066,7 @@ const RenderStyles = [{
                 };
             },
         },
-        pageGen: function (card) {
+        pageGen(card) {
             const cardWidth = card.cardFormat.width;
             const cardHeight = card.cardFormat.height;
             const w1 = card.cardFormat.folds[0].x1;
@@ -939,13 +1111,35 @@ const RenderStyles = [{
             this.data.state = 1;
             return $(document.createDocumentFragment()).append($page1, $page2);
         },
+        clear() {
+            this.data.$page1.add(this.data.$page2).find('.elements-layer').html('');
+        },
+        assocPage(side, bounds) {
+            let leftPage, rightPage;
+            if (side === 'back') {
+                leftPage = this.data.$page1;
+                rightPage = this.data.$page2;
+            }
+            else {
+                rightPage = this.data.$page1;
+                leftPage = this.data.$page2;
+            }
+            const fold = Editor.storage.loadedCard.cardFormat.folds[0].x1 / MMPerPx.x;
+            if (bounds.left > fold) {
+                bounds.left -= fold;
+                return rightPage.children('.' + side);
+            }
+            else {
+                return leftPage.children('.' + side);
+            }
+        },
         pageLabels: [
             'Rückseite',
             'Innenseite',
             'Vorderseite'
         ],
         initialDotIndex: 1,
-        hPageChanged: function (direction) {
+        hPageChanged(direction) {
             this.data.state = mod(this.data.state + direction, 3);
             let p1z = 0, p2z = 0;
             if (direction === 1) {
@@ -1003,8 +1197,9 @@ const $navDotsUl = $('.floater.bottom>ul');
 const $pageLabel = $('.floater.bottom>span');
 const loadCard = function (card) {
     if (!card)
-        return false;
+        throw new Error("Keine Karte ausgewählt.");
     console.log('loading', card);
+    window.history.replaceState({}, card.name + " - Web2Print", stringifyParameters());
     document.querySelector('#preview-container>img').src
         = web2print.links.thumbnailUrl + card.thumbSlug;
     for (let i = 0; i < RenderStyles.length; i++) {
@@ -1012,14 +1207,20 @@ const loadCard = function (card) {
         if (!renderStyle.condition(card))
             continue;
         const frag = make('button.render-select');
-        $(frag).text(renderStyle.name).attr('onclick', 'hRenderStyleChanged(' + i + ');');
+        $(frag).text(renderStyle.name).attr('onclick', 'hRenderStyleBtnClick(' + i + ');');
         rsContainer.appendChild(frag);
     }
     Editor.storage.loadedCard = card;
     Editor.fitToContainer();
     Editor.createRuler();
     Editor.enableTransition(true);
-    hRenderStyleChanged(0);
+    changeRenderStyle(0);
+    if (Parameters.sId)
+        $.get(`${web2print.links.apiUrl}load/${Parameters.sId}`)
+            .then(loadElementsCompressed.bind(null, false))
+            .catch(function (e) {
+            alert('Es gab einen Fehler beim laden der Elemente!\n' + JSON.stringify(e));
+        });
 };
 const hElementsLayerClick = function (e, target) {
     if (!Editor.storage.addOnClick)
@@ -1029,11 +1230,8 @@ const hElementsLayerClick = function (e, target) {
     $(target).append(el);
     Editor.storage.addOnClick = undefined;
 };
-const hAddElClick = function (e) {
-    spawnNewEl($(e.target).attr('data-enum'));
-};
 const spawnNewEl = function (objectType) {
-    Editor.storage.addOnClick = ElementSpawners[objectType];
+    Editor.storage.addOnClick = Elements[objectType].spawn;
     if (objectType === 'IMAGE') {
         $fileUpBtn.click();
     }
@@ -1063,6 +1261,7 @@ const hChangeFontType = function () {
 let $body = $('body')
     .click(function () {
     Fonts.$options.css('visibility', 'collapse');
+    saveSelect.close();
 })
     .mousedown(function (e) {
     if (e.which === 2) {
@@ -1156,8 +1355,13 @@ const renderStyleState = {
         return this.style.pageLabels[this.currentDotIndex];
     }
 };
-const hRenderStyleChanged = function (index) {
-    renderStyleState.style = RenderStyles[index];
+function hRenderStyleBtnClick(index) {
+    const data = serialize();
+    changeRenderStyle(index);
+    loadElements(data);
+}
+function changeRenderStyle(newIndex) {
+    renderStyleState.style = RenderStyles[newIndex];
     renderStyleState.currentDotIndex = renderStyleState.style.initialDotIndex;
     renderStyleState.dots = new Array(renderStyleState.style.pageLabels.length);
     const range = makeR();
@@ -1175,7 +1379,7 @@ const hRenderStyleChanged = function (index) {
     range.selectNodeContents($cardContainer[0]);
     range.deleteContents();
     $cardContainer.append(renderStyleState.style.pageGen(Editor.storage.loadedCard));
-};
+}
 const hPageSwitch = function (direction) {
     renderStyleState.style.hPageChanged(direction);
     renderStyleState.getActiveDot().removeClass('active');
@@ -1183,7 +1387,12 @@ const hPageSwitch = function (direction) {
     renderStyleState.getActiveDot().addClass('active');
     $pageLabel.text(renderStyleState.getActiveLabel());
 };
-$('.addElBtn').click(hAddElClick);
+{
+    const $addBtnContainer = $('#add-el-btns');
+    for (const [k, v] of Object.entries(Elements)) {
+        $addBtnContainer.append($(`<button class="addElBtn" onclick="spawnNewEl('${k}')">${v.displayName}</button>`));
+    }
+}
 $("#logoRotation").change(function (e) {
     Editor.storage.$target.css('transform', 'rotate(' + $(this).val() + 'deg)');
 }).mouseup(stopPropagation);
@@ -1191,7 +1400,16 @@ $(".alignmentBtn").click(function () {
     Editor.storage.$target.css('text-align', $(this).val());
 }).mouseup(stopPropagation);
 $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
-$('#submitBtn').click(serialize);
+$('#save-btn').click(function () {
+    if (saveSelect.value === 'Server') {
+        submit(false);
+    }
+    else {
+        download();
+    }
+});
+const saveSelect = new SelectEx($('#save-select-ex'));
+saveSelect.value = 'Server';
 $('#tutorial').click(showTutorial);
 $('#del-btn')
     .mouseup(stopPropagation)
@@ -1247,7 +1465,7 @@ $('.left>.nav-btn-inner').click(function () {
 $('#recenter-btn').click(function () {
     Editor.fitToContainer();
 });
-$.get(web2print.links.apiUrl + 'card/' + Parameters.card)
+$.get(`${web2print.links.apiUrl}card/${Parameters.card}`)
     .then(loadCard)
     .catch(function () {
     alert(Parameters.card
@@ -1265,7 +1483,7 @@ if (Cookie.getValue('tutorial') !== 'no') {
 }
 function showTutorial() {
     const $tutOver = $('<div style="position:absolute; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.66)">' +
-        '<div class="center" style="white-space: normal; overflow: auto; max-width:70%; max-height:70%; background-color:lightgray; padding:5px 5px 15px 5px;">' +
+        '<div class="center" style="white-space: normal; overflow: auto; width: 700px; max-width:70%; max-height:70%; background-color:lightgray; padding:5px 5px 15px 5px;">' +
         '<div>' +
         '<h3>Hinzufügen von Text:</h3>' +
         '<img src="./TextTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">' +
@@ -1322,7 +1540,8 @@ function showTutorial() {
         '<input type="checkbox" id="dont-show-again" style="margin:10px 2px 0 0;">' +
         '<label for="dont-show-again">nicht erneut anzeigen</label>' +
         '<button style="padding: 16px 16px; margin:5px 0 0 0;float: right;">Ok</button></div></div>');
-    const dontShowAgain = $tutOver.find('input')[0];
+    const dontShowAgain = $tutOver.find('#dont-show-again')[0];
+    dontShowAgain.checked = Cookie.getValue('tutorial') === 'no';
     $tutOver.find('button').click(function () {
         if (dontShowAgain.checked) {
             Cookie.set('tutorial', 'no');
