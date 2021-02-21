@@ -23,7 +23,7 @@
             <div class="toolbar-buttons">
               <button class="addElBtn" data-enum="TEXT">Text</button>
               <button class="addElBtn" data-enum="IMAGE">Bild / Logo</button>
-              <input id="fileUpload" type="file" accept=".gif,.jpg,.jpeg,.png,.svg,.eps"/>
+              <input id="fileUpload" type="file" accept=".gif,.jpg,.jpeg,.png,.svg"/>
               <button class="addElBtn" data-enum="GEOM" style="display: none">Geometry</button>
             </div>
           </div>
@@ -33,22 +33,21 @@
               <div class="text-tools-block">
                 <div id="font-select">
                   <p><span id="font-label">Schriftart wählen</span><span id="font-label-tick">V</span></p>
-                  <div id="font-options" style="visibility: collapse;">
+                  <div id="font-options" style="visibility: collapse;"></div>
+                </div>
+                <div class="text-tools-block" id="text-btns">
+                  <div class="toolbar-buttons">
+                    <button class="fontTypeButton" style="font-weight: bold" value="b"></button><!--
+                 --><button class="fontTypeButton" style="font-style: italic" value="i"></button>
+                    <button class="alignmentBtn" value="left"></button><!--
+                 --><button class="alignmentBtn" value="center"></button><!--
+                 --><button class="alignmentBtn" value="right"></button>
                   </div>
                 </div>
-                <p><label for="fontSizeSelect">Schriftgrö&szlig;e:&nbsp;</label><input type="number" id="fontSizeSelect" min="1" value="16">Pt</p>
-                <p><label for="lh-spinner">Zeilenabstand:&nbsp;</label><input type="number" id="lh-spinner" min="1" value="1.2" max="2.5" step=".1"></p>
               </div>
-              <div class="text-tools-block" id="text-btns">
-                <div class="toolbar-buttons">
-                  <button class="fontTypeButton" style="font-weight: bold" value="b"></button><!--
-               --><button class="fontTypeButton" style="font-style: italic" value="i"></button>
-                </div>
-                <div class="toolbar-buttons">
-                  <button class="alignmentBtn" value="left"></button><!--
-               --><button class="alignmentBtn" value="center"></button><!--
-               --><button class="alignmentBtn" value="right"></button>
-                </div>
+              <div id="font-line-select">
+                <div><label for="fontSizeSelect">Schriftgrö&szlig;e:&nbsp;</label><input type="number" id="fontSizeSelect" min="1" value="16">Pt</div>
+                <div><label for="lh-spinner">Zeilenabstand:&nbsp;</label><input type="number" id="lh-spinner" min="1" value="1.2" max="2.5" step=".1"></div>
               </div>
             </div>
           </div>
