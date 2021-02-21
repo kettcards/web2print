@@ -6,11 +6,12 @@ const $navDotsUl  = $('.floater.bottom>ul');
 const $pageLabel  = $('.floater.bottom>span');
 
 // [call once]
-const loadCard = function(card : Card) : false | void {
+const loadCard = function(card : Card) : void {
   if(!card)
-    return false;
+    throw new Error("Keine Karte ausgewählt.");
 
   console.log('loading', card);
+  window.history.replaceState({}, card.name+" - Web2Print", stringifyParameters());
 
   document.querySelector<HTMLInputElement>('#preview-container>img').src
       = web2print.links.thumbnailUrl+card.thumbSlug;
@@ -20,7 +21,7 @@ const loadCard = function(card : Card) : false | void {
     if(!renderStyle.condition(card))
       continue;
     const frag = make('button.render-select');
-    $(frag).text(renderStyle.name).attr('onclick', 'hRenderStyleChanged('+i+');');
+    $(frag).text(renderStyle.name).attr('onclick', 'hRenderStyleBtnClick('+i+');');
     rsContainer.appendChild(frag);
   }
 
@@ -29,7 +30,14 @@ const loadCard = function(card : Card) : false | void {
   Editor.createRuler();
   Editor.enableTransition(true);
 
-  hRenderStyleChanged(0);
+  changeRenderStyle(0);
+
+  if(Parameters.sId)
+    $.get(`${web2print.links.apiUrl}load/${Parameters.sId}`)
+      .then(loadElementsCompressed.bind(null, false))
+      .catch(function(e) {
+        alert('Es gab einen Fehler beim laden der Elemente!\n'+JSON.stringify(e));
+      });
 };
 
 // spawning new elements
@@ -44,12 +52,8 @@ const hElementsLayerClick = function(e : MouseEvent, target : Node) {
   Editor.storage.addOnClick = undefined;
 };
 
-//(lucas 10.02.21) todo: rework this to generated elements and inline calls
-const hAddElClick = function(e) {
-  spawnNewEl($(e.target).attr('data-enum') as string);
-}
 const spawnNewEl = function(objectType : string) {
-  Editor.storage.addOnClick = ElementSpawners[objectType];
+  Editor.storage.addOnClick = Elements[objectType].spawn;
   // (lucas 10.02.21) todo: dont do this
   if(objectType === 'IMAGE') {
     $fileUpBtn.click();
@@ -86,6 +90,7 @@ const hChangeFontType = function() {
 let $body = $('body')
   .click(function() {
     Fonts.$options.css('visibility', 'collapse');
+    saveSelect.close();
   })
   .mousedown(function(e) {
     // (lucas 11.02.21) I know e.which is deprecated, but there is no suitable replacement as of now
@@ -196,9 +201,16 @@ const renderStyleState : RenderStyleState = {
     return this.style.pageLabels[this.currentDotIndex];
   }
 };
+
 // [called inline]
-const hRenderStyleChanged = function(index : number) {
-  renderStyleState.style = RenderStyles[index];
+function hRenderStyleBtnClick(index : number) {
+  const data = serialize();
+  changeRenderStyle(index);
+  loadElements(data);
+}
+
+function changeRenderStyle(newIndex : number) {
+  renderStyleState.style = RenderStyles[newIndex];
   renderStyleState.currentDotIndex = renderStyleState.style.initialDotIndex;
   renderStyleState.dots = new Array(renderStyleState.style.pageLabels.length);
 
@@ -218,7 +230,7 @@ const hRenderStyleChanged = function(index : number) {
   range.selectNodeContents($cardContainer[0]);
   range.deleteContents();
   $cardContainer.append(renderStyleState.style.pageGen(Editor.storage.loadedCard));
-};
+}
 
 const hPageSwitch = function(direction) {
   renderStyleState.style.hPageChanged(direction);

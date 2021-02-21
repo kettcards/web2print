@@ -3,7 +3,7 @@
 /// <reference path="./Fonts.ts" />
 /// <reference path="./UI.ts" />
 
-$.get(web2print.links.apiUrl+'card/'+Parameters.card)
+$.get(`${web2print.links.apiUrl}card/${Parameters.card}`)
   .then(loadCard)
   .catch(function() {
     alert(Parameters.card

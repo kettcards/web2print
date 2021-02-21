@@ -2,7 +2,12 @@
 /// <reference path="./serialization.ts" />
 /// <reference path="./textHandlers.ts" />
 
-$('.addElBtn').click(hAddElClick);
+{
+  const $addBtnContainer = $('#add-el-btns');
+  for(const [k, v] of Object.entries(Elements)) {
+    $addBtnContainer.append($(`<button class="addElBtn" onclick="spawnNewEl('${k}')">${v.displayName}</button>`));
+  }
+}
 
 $("#logoRotation").change(function(e){
   Editor.storage.$target.css('transform', 'rotate('+ $(this).val()+'deg)');
@@ -14,7 +19,15 @@ $(".alignmentBtn").click(function(){
 
 $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
 
-$('#submitBtn').click(serialize);
+$('#save-btn').click(function() {
+  if(saveSelect.value === 'Server') {
+    submit(false);
+  } else {
+    download();
+  }
+});
+const saveSelect = new SelectEx($('#save-select-ex'));
+saveSelect.value = 'Server';
 
 $('#tutorial').click(showTutorial);
 
@@ -37,14 +50,14 @@ const $fontSelect = $<HTMLDivElement>('#font-select')
 Fonts.$options
   .mousedown(stopPropagation)
   .click(function(e) {
-  if(e.target.nodeName !== 'P')
-    return;
+    if(e.target.nodeName !== 'P')
+      return;
 
-  Fonts.currentSelection = e.target.textContent;
-  Fonts.displaySelected();
-  Editor.loadSelection();
-  hFontChanged();
-});
+    Fonts.currentSelection = e.target.textContent;
+    Fonts.displaySelected();
+    Editor.loadSelection();
+    hFontChanged();
+  });
 
 $fontSelect.children('p').click(function(e) {
   e.stopPropagation();
