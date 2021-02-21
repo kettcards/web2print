@@ -34,7 +34,7 @@ const loadCard = function(card : Card) : void {
 
   if(Parameters.sId)
     $.get(`${web2print.links.apiUrl}load/${Parameters.sId}`)
-      .then(loadElementsCompressed)
+      .then(loadElementsCompressed.bind(null, false))
       .catch(function(e) {
         alert('Es gab einen Fehler beim laden der Elemente!\n'+JSON.stringify(e));
       });

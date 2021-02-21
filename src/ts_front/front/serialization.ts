@@ -111,10 +111,10 @@ function hUpload(e : JQuery.ChangeEvent) {
   if (!file)
     return;
 
-  file.text().then(loadElementsCompressed);
+  file.text().then(loadElementsCompressed.bind(null, true));
 }
 
-function loadElementsCompressed(b64data : string) : void {
+function loadElementsCompressed(fileSource : Boolean, b64data : string) : void {
   const data : PrintData = JSON.parse(atob(b64data));
   if(Parameters.card !== data.card) {
     // (lucas) todo: allow loading of designs associated with a different card
@@ -123,11 +123,14 @@ function loadElementsCompressed(b64data : string) : void {
     // and the loadCard method is not designed to be called multiple times, so we cant just call it again arnd replace the history.
 
     alert(`Das Design kann nicht geladen werden, da es zu einer anderen Karte gehört (${data.card}).`);
-    return;
+    throw new Error('invalid card format');
   }
 
-  renderStyleState.style.clear();
-  delete Parameters.sId;
+  if(fileSource) {
+    renderStyleState.style.clear();
+    delete Parameters.sId;
+  }
+
   window.history.replaceState({}, Editor.storage.loadedCard.name+" - Web2Print", stringifyParameters());
 
   loadElements(data);

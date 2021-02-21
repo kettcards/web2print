@@ -924,16 +924,18 @@ function hUpload(e) {
     const file = e.target.files[0];
     if (!file)
         return;
-    file.text().then(loadElementsCompressed);
+    file.text().then(loadElementsCompressed.bind(null, true));
 }
-function loadElementsCompressed(b64data) {
+function loadElementsCompressed(fileSource, b64data) {
     const data = JSON.parse(atob(b64data));
     if (Parameters.card !== data.card) {
         alert(`Das Design kann nicht geladen werden, da es zu einer anderen Karte gehört (${data.card}).`);
-        return;
+        throw new Error('invalid card format');
     }
-    renderStyleState.style.clear();
-    delete Parameters.sId;
+    if (fileSource) {
+        renderStyleState.style.clear();
+        delete Parameters.sId;
+    }
     window.history.replaceState({}, Editor.storage.loadedCard.name + " - Web2Print", stringifyParameters());
     loadElements(data);
 }
@@ -1215,7 +1217,7 @@ const loadCard = function (card) {
     changeRenderStyle(0);
     if (Parameters.sId)
         $.get(`${web2print.links.apiUrl}load/${Parameters.sId}`)
-            .then(loadElementsCompressed)
+            .then(loadElementsCompressed.bind(null, false))
             .catch(function (e) {
             alert('Es gab einen Fehler beim laden der Elemente!\n' + JSON.stringify(e));
         });
