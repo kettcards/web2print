@@ -27,7 +27,8 @@ const Elements : ElementsObj = {
         .on("drop", falsify)
         .css(Object.assign({
           'font-family': Fonts.defaultFont,
-          'font-size': '16pt'
+          'font-size': '16pt',
+          'color': Editor.storage.currentColor,
         }, css) as JQuery.PlainObject);
     },
     serialize($instance: JQuery) : any {
@@ -61,7 +62,7 @@ const Elements : ElementsObj = {
                 s: Math.round((+$span.css('font-size').slice(0,-2)) / 96 * 72),
                 a: attributes,
                 t: $span.text(),
-                c: $span.css('color'),
+                c: colorStringToRGB($span.css('color')),
               });
             } else {
               console.warn('cannot serialize element', $span[0]);
@@ -101,7 +102,7 @@ const Elements : ElementsObj = {
           $currentP.append($(make('span'+classString, makeT(run.t))).css({
             'font-family': run.f,
             'font-size'  : run.s+'pt',
-            'color'      : run.c,
+            'color'      : 'rgb('+ run.c[0]+','+run.c[1]+','+run.c[2]+')',
           }));
         }
       }
@@ -131,4 +132,9 @@ const Elements : ElementsObj = {
       img.alt = data.s;
     }
   }
+}
+
+function colorStringToRGB(string){
+  let rgb = string.slice(string.lastIndexOf("(")+1, string.lastIndexOf(")")).split(",");
+  return [parseInt(rgb[0]), parseInt(rgb[1]), parseInt(rgb[2])];
 }

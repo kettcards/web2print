@@ -35,13 +35,20 @@ $('#del-btn')
     .mouseup(stopPropagation)
     .click(Editor.deleteElement);
 
-const $colorpicker = $('#colorpicker').mousedown(Editor.saveSelection).change(function(e){
-    const sel = Editor.loadSelection();
+const $colorpicker = $('#colorpicker').change(function(e){
     const color = $colorpicker.val();
-    makeNodesFromSelection(sel.getRangeAt(0), function(curr) {
-        $(curr).css('color', color+'');
-    });
+    if (typeof color === "string") {
+        Editor.storage.currentColor = color;
+    }
 });
+
+$('#applyColor').mousedown(Editor.saveSelection).click(function(e){
+    const sel = Editor.loadSelection();
+    console.log(Editor.storage.currentColor);
+    makeNodesFromSelection(sel.getRangeAt(0), function(curr){
+        $(curr).css('color', Editor.storage.currentColor);
+    })
+})
 
 const $fontSelect = $<HTMLDivElement>('#font-select')
   .mousedown(Editor.saveSelection)

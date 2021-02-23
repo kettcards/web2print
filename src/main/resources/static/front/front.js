@@ -510,6 +510,7 @@ Editor.storage = {
     $target: undefined,
     addOnClick: undefined,
     range: undefined,
+    currentColor: "0x000000",
 };
 const Elements = {
     TEXT: {
@@ -526,7 +527,8 @@ const Elements = {
                 .on("drop", falsify)
                 .css(Object.assign({
                 'font-family': Fonts.defaultFont,
-                'font-size': '16pt'
+                'font-size': '16pt',
+                'color': Editor.storage.currentColor,
             }, css));
         },
         serialize($instance) {
@@ -566,7 +568,7 @@ const Elements = {
                                 s: Math.round((+$span.css('font-size').slice(0, -2)) / 96 * 72),
                                 a: attributes,
                                 t: $span.text(),
-                                c: $span.css('color'),
+                                c: colorStringToRGB($span.css('color')),
                             });
                         }
                         else {
@@ -613,7 +615,7 @@ const Elements = {
                     $currentP.append($(make('span' + classString, makeT(run.t))).css({
                         'font-family': run.f,
                         'font-size': run.s + 'pt',
-                        'color': run.c,
+                        'color': 'rgb(' + run.c[0] + ',' + run.c[1] + ',' + run.c[2] + ')',
                     }));
                 }
             }
@@ -643,6 +645,10 @@ const Elements = {
         }
     }
 };
+function colorStringToRGB(string) {
+    let rgb = string.slice(string.lastIndexOf("(") + 1, string.lastIndexOf(")")).split(",");
+    return [parseInt(rgb[0]), parseInt(rgb[1]), parseInt(rgb[2])];
+}
 class TextEl {
     static hMDown(e) {
         switch (Editor.state) {
@@ -1414,11 +1420,17 @@ $('#tutorial').click(showTutorial);
 $('#del-btn')
     .mouseup(stopPropagation)
     .click(Editor.deleteElement);
-const $colorpicker = $('#colorpicker').mousedown(Editor.saveSelection).change(function (e) {
-    const sel = Editor.loadSelection();
+const $colorpicker = $('#colorpicker').change(function (e) {
     const color = $colorpicker.val();
+    if (typeof color === "string") {
+        Editor.storage.currentColor = color;
+    }
+});
+$('#applyColor').mousedown(Editor.saveSelection).click(function (e) {
+    const sel = Editor.loadSelection();
+    console.log(Editor.storage.currentColor);
     makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
-        $(curr).css('color', color + '');
+        $(curr).css('color', Editor.storage.currentColor);
     });
 });
 const $fontSelect = $('#font-select')
