@@ -59,7 +59,7 @@ public final class MotiveImportService extends StorageContextAware implements We
         int lastDotIndex = name.lastIndexOf(".");
         String extension = name.substring(lastDotIndex);
         name = name.substring(0, lastDotIndex);
-        Card card = cardRepository.findCardByOrderId(name);
+        Card card = cardRepository.findCardByOrderId(name).orElseGet(null);
 
         if (MediaTypeFileExtension.PDF.isValidFileExtension(extension)) {
             float scaleFactor = getScaleFactor();

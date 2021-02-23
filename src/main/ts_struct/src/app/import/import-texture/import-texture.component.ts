@@ -1,9 +1,10 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ContentTypeFilter, FileState, StatefulWrappedFileType, UniqueEntryFilter, Utils} from "../../lib/utils";
 import {CardMaterial} from "../../lib/card";
 import {ErrorDialogComponent, FileError} from "../../lib/error-dialog/error-dialog.component";
 import {MatDialog} from "@angular/material/dialog";
 import {Api} from "../../lib/api";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-import-texture',
@@ -11,29 +12,49 @@ import {Api} from "../../lib/api";
   styleUrls: ['./import-texture.component.less'],
   providers: [Api]
 })
-export class ImportTextureComponent {
+export class ImportTextureComponent implements OnInit {
 
   FileState: typeof FileState = FileState;
 
-  textures: StatefulWrappedFileType<CardMaterial>[] = [];
+  availableTextures: CardMaterial[] | null = null;
 
-  filters  = [ContentTypeFilter.BITMAP, new UniqueEntryFilter(this.textures)]; // TODO COPY BY VALUE?
+  queuedTextureResources: StatefulWrappedFileType<CardMaterial>[] = [];
 
-  constructor(private dialog: MatDialog) {}
+  filters = [ContentTypeFilter.BITMAP, new UniqueEntryFilter(this.queuedTextureResources)];
+
+  errorLoadMsg: string | null = null;
+
+  constructor(private dialog: MatDialog, private api: Api, private snackbar: MatSnackBar) {
+  }
+
+  ngOnInit(): void {
+    this.loadAvailableTextures();
+  }
+
+  loadAvailableTextures(): void {
+    this.availableTextures = null;
+    console.log('requesting textures');
+    this.api.getTextures().subscribe(
+      response => {
+        this.availableTextures = response;
+      },
+      error => {
+        this.errorLoadMsg = 'Texturen konnten nicht geladen werden.';
+      }
+    );
+  }
 
   onFileAdded(files: File[]): void {
     const invalidFiles: FileError[] = [];
     files.forEach(file => {
       const failedReason = this.filter(file);
       if (failedReason === null) {
-        this.textures.push({
+        let texture = this.findTextureName(file);
+        console.log('selecting texture', texture);
+        this.queuedTextureResources.push({
           file: file,
           state: FileState.AWAIT,
-          type: {
-            name: Utils.fileNameFor(file.name),
-            textureSlug: file.name,
-            tiling: 'REPEAT' // TODO make changeable
-          }
+          type: texture
         });
       } else {
         invalidFiles.push(new FileError(file, failedReason))
@@ -49,6 +70,29 @@ export class ImportTextureComponent {
     }
   }
 
+  findTextureName(file: File): CardMaterial | undefined {
+    console.log('available textures', this.availableTextures);
+    // @ts-ignore
+    this.availableTextures?.forEach(texture => {
+      if (texture.textureSlug === file.name) {
+        return texture;
+      }
+    });
+    // @ts-ignore
+    this.availableTextures?.forEach(texture => {
+      if (Utils.fileNameFor(file.name) === texture.name) {
+        texture.textureSlug = file.name;
+        return texture;
+      }
+    });
+    return {
+      id: -1,
+      name: Utils.fileNameFor(file.name),
+      textureSlug: file.name,
+      tiling: "REPEAT"
+    };
+  }
+
   filter(file: File): string | null {
     for (let i = 0; i < this.filters.length; i++) {
       let e = this.filters[i];
@@ -61,27 +105,29 @@ export class ImportTextureComponent {
     return null;
   }
 
-  deleteAllTextures(): void {
-    this.textures = [];
-  }
-
   deleteTextureEntry(entry: StatefulWrappedFileType<CardMaterial>): void {
-    const index = this.textures.indexOf(entry);
-    if (index >= 0) {
-      this.textures.splice(index, 1);
-    }
+    Utils.remove(this.queuedTextureResources, entry);
   }
 
   importAllTextures(): void {
-    this.textures.forEach((entry, index) => {
+    console.log('starting bulk import');
+    this.queuedTextureResources.forEach((entry, index) => {
       this.importTexture(entry);
       // TODO error checking
-      this.textures.splice(index, 1);
+
     });
   }
 
   importTexture(texture: StatefulWrappedFileType<CardMaterial>): void {
-
+    console.log('importing ', texture);
+    this.api.setTexture(texture).subscribe(
+      response => {
+        texture.state = FileState.SUCCESSFUL;
+      },
+      error => {
+        texture.state = FileState.FAILED;
+      }
+    );
   }
 
 }

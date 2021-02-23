@@ -26,7 +26,6 @@ public final class ResourceLinkController {
     @GetMapping(value = "/define.js", produces = "text/javascript")
     public String getDefineJs() throws IOException {
         var s = objectMapper.writerWithView(Include.Public.class).writeValueAsString(configuration);
-        //String s = objectMapper.writerWithView(Include.Public.class).writeValueAsString(configuration);
         return "const web2print = " + s + ";";
     }
 

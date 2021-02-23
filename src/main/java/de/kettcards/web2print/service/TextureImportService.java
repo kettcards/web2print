@@ -2,8 +2,8 @@ package de.kettcards.web2print.service;
 
 import de.kettcards.web2print.config.ApplicationConfiguration;
 import de.kettcards.web2print.exceptions.importer.DatabaseEntryNotFoundException;
-import de.kettcards.web2print.model.db.Material;
-import de.kettcards.web2print.repository.MaterialRepository;
+import de.kettcards.web2print.model.db.Texture;
+import de.kettcards.web2print.repository.TextureRepository;
 import de.kettcards.web2print.storage.Content;
 import de.kettcards.web2print.storage.StorageContextAware;
 import de.kettcards.web2print.storage.WebContextAware;
@@ -21,7 +21,7 @@ public final class TextureImportService extends StorageContextAware implements W
     private ApplicationConfiguration configuration;
 
     @Autowired
-    private MaterialRepository materialRepository;
+    private TextureRepository textureRepository;
 
     public String importTexture(Content content) throws IOException {
         String name = content.getOriginalFilename();
@@ -38,18 +38,18 @@ public final class TextureImportService extends StorageContextAware implements W
         }
 
         //save texture in database if possible
-        Material material = materialRepository.findMaterialByName(name);
-        if (material == null) {
+        Texture texture = textureRepository.findMaterialByName(name);
+        if (texture == null) {
             throw new DatabaseEntryNotFoundException("file [ " + name + " ] given doesn't have a corresponding database entry");
         }
-        material.setTextureSlug(name + ending);
-        materialRepository.save(material);
+        texture.setTextureSlug(name + ending);
+        textureRepository.save(texture);
 
         return "200";
     }
 
     @Override
     public String getNamespace() {
-        return "textures";
+        return "old_textures";
     }
 }

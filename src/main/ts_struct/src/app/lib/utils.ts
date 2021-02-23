@@ -1,7 +1,15 @@
 import {ErrorDialogComponent, FileError} from "./error-dialog/error-dialog.component";
 import {MatDialog} from "@angular/material/dialog";
 
+// a collection of small helper function
 export class Utils {
+
+  public static remove(list: any[], el: any) {
+    const index = list.indexOf(el);
+    if (index >= 0) {
+      list.splice(index, 1);
+    }
+  }
 
   public static fileNameFor(name: string): string {
     const index = name.lastIndexOf('.');
@@ -49,6 +57,7 @@ export class Utils {
 
 }
 
+// types of content
 export class ContentType {
   public static PNG = 'image/png'
   public static JPG = 'image/jpeg'
@@ -61,6 +70,7 @@ export abstract class Filter<T> {
   public abstract filter(type: T): string | null;
 }
 
+// compares file content type against the given filter
 export class ContentTypeFilter extends Filter<File> {
 
   public static BITMAP = new ContentTypeFilter([ContentType.PNG, ContentType.JPG]);
@@ -81,6 +91,7 @@ export class ContentTypeFilter extends Filter<File> {
 
 }
 
+// compares existing files, returns null if file is not present in list
 export class UniqueEntryFilter extends Filter<any> {
 
   constructor(private entries: WrappedFileType<any>[]) {
@@ -88,7 +99,8 @@ export class UniqueEntryFilter extends Filter<any> {
   }
 
   filter(type: File): string | null {
-    return this.entries.map(e => e.file).indexOf(type) < 0 ? null : 'die Datei wurde bereits hinzugefügt';
+    console.log('entries for compare:', this.entries);
+    return this.entries.map(e => e.file.name).indexOf(type.name) < 0 ? null : 'die Datei wurde bereits hinzugefügt';
   }
 
 }
@@ -98,7 +110,7 @@ export enum FileState {
 }
 
 export interface WrappedFileType<T> {
-  type: T;
+  type?: T;
   file: File;
 }
 
@@ -106,6 +118,7 @@ export interface StatefulWrappedFileType<T> extends WrappedFileType<T> {
   state: FileState;
 }
 
+//TODO impl
 export enum ImportStateChange {
   CREATED,MODIFIED,DELETED
 }
