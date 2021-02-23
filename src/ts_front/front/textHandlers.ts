@@ -62,6 +62,8 @@ const hTxtKeyDown = function(e : JQuery.KeyDownEvent) {
   const ev = e.originalEvent;
   const key = ev.keyCode;
 
+  if(Editor.state == EditorStates.EL_FOCUSED && key !== 46)
+    Editor.state = EditorStates.TXT_EDITING;
   if(ev.shiftKey && key === 13) {
     // (lucas 25.01.21) shift return
     // todo: dont just block it, resolve it properly

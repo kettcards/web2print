@@ -552,6 +552,8 @@ class TextEl {
 const hTxtKeyDown = function (e) {
     const ev = e.originalEvent;
     const key = ev.keyCode;
+    if (Editor.state == EditorStates.EL_FOCUSED && key !== 46)
+        Editor.state = EditorStates.TXT_EDITING;
     if (ev.shiftKey && key === 13) {
         e.preventDefault();
     }
