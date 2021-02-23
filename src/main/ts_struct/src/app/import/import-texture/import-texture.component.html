@@ -1,0 +1,36 @@
+<div class="import-texture">
+  <app-drop-zone
+    [dropPromptText]="'Texturen hier hinzufügen'"
+    (fileAdded)="onFileAdded($event)">
+  </app-drop-zone>
+  <app-drop-controls
+    [list]="textures"
+    (deleteAll)="deleteAllTextures()"
+    (submitAll)="importAllTextures()">
+  </app-drop-controls>
+  <mat-divider></mat-divider>
+  <!-- item list -->
+  <mat-list *ngFor="let texture of textures" class="import-list">
+    <mat-divider></mat-divider>
+    <mat-list-item>
+      <div class="import-list-item">
+        <div class="import-list-item-content">
+          <mat-icon>
+            cancel
+          </mat-icon>
+          <span class="import-list-item-content-name">{{texture.file.name}}</span>
+        </div>
+        <div class="import-list-item-action">
+          <!-- TODO make import file changeable -->
+          <button *ngIf="texture.state == FileState.AWAIT"
+                  mat-raised-button color="primary"> <!-- TODO upload handle-->
+            <mat-icon>publish</mat-icon>
+          </button>
+          <button *ngIf="texture.state != FileState.SUCCESSFUL" mat-raised-button color="warn" (click)="deleteTextureEntry(texture)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+    </mat-list-item>
+  </mat-list>
+</div>
