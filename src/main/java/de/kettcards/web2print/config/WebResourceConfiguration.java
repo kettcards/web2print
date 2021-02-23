@@ -17,6 +17,9 @@ public class WebResourceConfiguration implements WebMvcConfigurer {
         this.storagePool = storagePool;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         var webContext = storagePool.getNamespaceWebMatchingContext();

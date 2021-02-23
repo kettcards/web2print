@@ -9,7 +9,7 @@ import java.io.IOException;
 @Slf4j
 @Component
 @Deprecated
-public class ImportService {
+public final class ImportService {
 
     private final XlsxImportService xlsxImportService;
 

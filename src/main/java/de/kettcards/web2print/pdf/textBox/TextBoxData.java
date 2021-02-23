@@ -1,5 +1,6 @@
 package de.kettcards.web2print.pdf.textBox;
 
+import de.kettcards.web2print.model.fonts.SpanDimension;
 import de.kettcards.web2print.pdf.BoxData;
 import de.kettcards.web2print.pdf.Document;
 
@@ -11,7 +12,12 @@ import java.util.List;
  */
 public abstract class TextBoxData extends BoxData {
 
+    /**
+     * list of paragraphs inside this text box
+     */
     protected final List<TextParagraph> textParagraphs;
+
+    private float lineHeight;
 
     /**
      * @param x              x position in pt
@@ -19,12 +25,17 @@ public abstract class TextBoxData extends BoxData {
      * @param width          box width
      * @param height         box height
      * @param textParagraphs text paragraphs
+     * @param lineHeight     lineheight of text box
      */
-    public TextBoxData(float x, float y, float width, float height, List<TextParagraph> textParagraphs) {
+    public TextBoxData(float x, float y, float width, float height, List<TextParagraph> textParagraphs, float lineHeight) {
         super(x, y, width, height);
         this.textParagraphs = textParagraphs;
+        this.lineHeight = lineHeight;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void apply(Document doc) throws IOException {
         doc.stream().beginText();
@@ -37,8 +48,9 @@ public abstract class TextBoxData extends BoxData {
             return;
 
         setInitialBoxPosition(doc, firstP);
+        SpanDimension lastLineDim = null;
         for (var current = firstP;; current = paragraphIterator.next()) {
-            writeParagraph(doc, current);
+            lastLineDim = writeParagraph(doc, current, lastLineDim);
             if (!paragraphIterator.hasNext())
                 break;
         }
@@ -51,14 +63,28 @@ public abstract class TextBoxData extends BoxData {
 
     public abstract void setParagraphEndPosition(Document doc, float paragraphWidth) throws IOException;
 
-
-    public void writeParagraph(Document doc, TextParagraph paragraph) throws IOException {
-        doc.stream().setLeading(paragraph.getLargestFontSize());
+    /**
+     * writes paragraph into given document
+     * @param doc document
+     * @param paragraph p
+     * @param lastLineDim dim
+     * @return last dim
+     * @throws IOException if writing to doc is not possible
+     */
+    public SpanDimension writeParagraph(Document doc, TextParagraph paragraph, SpanDimension lastLineDim) throws IOException {
+        SpanDimension largestDim = paragraph.getLargestFontSize(doc, this.lineHeight);
+        float leading;
+        if(lastLineDim == null) {
+            leading = largestDim.getFirstLineBaseline(this.lineHeight);
+        }else{
+            leading = largestDim.getNextLineBaseline(lastLineDim, largestDim.getLineHeight(), this.lineHeight);
+        }
+        doc.stream().setLeading(leading);
         doc.stream().newLine();
         float paragraphWidth = 0;
         for(var current : paragraph.iterator()) { //calculate total width
             var font = doc.getFont(current.getFontName(), current.getFontStyle());
-            var runWidth = current.getFontSize() * font.getStringWidth(current.getText()) / 1000;
+            var runWidth = current.getFontSize() * font.getKey().getStringWidth(current.getText()) / 1000;
             paragraphWidth += runWidth;
         }
         setParagraphBeginPosition(doc, paragraphWidth);
@@ -66,11 +92,20 @@ public abstract class TextBoxData extends BoxData {
             writeSpan(doc, current);
         }
         setParagraphEndPosition(doc, paragraphWidth);
+
+        return largestDim;
     }
 
+    /**
+     * writes span to given document
+     * @param doc document
+     * @param textSpan span
+     * @throws IOException if span cant be written into given document
+     */
     public void writeSpan(Document doc, TextSpan textSpan) throws IOException {
         var font = doc.getFont(textSpan.getFontName(), textSpan.getFontStyle());
-        doc.stream().setFont(font, textSpan.getFontSize());
+        doc.stream().setFont(font.getKey(), textSpan.getFontSize());
+        doc.stream().setNonStrokingColor(textSpan.getColor());
         doc.stream().showText(textSpan.getText());
     }
 

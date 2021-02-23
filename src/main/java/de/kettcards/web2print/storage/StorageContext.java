@@ -1,5 +1,6 @@
 package de.kettcards.web2print.storage;
 
+import java.util.Collections;
 import java.util.List;
 
 public interface StorageContext {
@@ -25,14 +26,15 @@ public interface StorageContext {
 
     }
 
-    /*
+    /**
+     * by default no constrains are set
+     *
      * @return constraints for storage context
      */
-    /*
     default List<StorageConstraint> getStorageConstraints() {
-        return new LinkedList<>();
+        return Collections.emptyList();
     }
-    */
+
 
     /**
      * @return whether the storage implementation should keep the file extension

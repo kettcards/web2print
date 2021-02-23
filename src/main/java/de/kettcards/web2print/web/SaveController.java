@@ -13,21 +13,26 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("${web2print.links.api-path}")
-public class SaveController {
+public final class SaveController {
 
     @Autowired
     private LayoutStorageService storageService;
 
     @PostMapping(value = {"/save/", "/save/{storageId}"})
-    public void save(@PathVariable(required = false) String storageId,
+    public String save(@PathVariable(required = false) String storageId,
                      @RequestParam String export,
                      @RequestParam("data") String cardData)
             throws IOException, ParseException {
-        storageService.StoreCard(storageId, cardData);
+        storageId = storageService.storeCard(storageId, cardData);
         if (export.equals("true"))
-            storageService.ExportCard(cardData);
+            storageService.exportCard(cardData);
+        return storageId;
     }
 
+    @GetMapping(value = {"/load/{storageId}"}, produces = "application/octet-stream")
+    public String load(@PathVariable String storageId) throws IOException {
+        return storageService.loadCard(storageId);
+    }
 
     @GetMapping(value = {"/pdfs"})
     public List<String> list() throws IOException, ParseException {
@@ -35,7 +40,7 @@ public class SaveController {
     }
 
     @GetMapping(value = {"/pdfs/{storageId}"}, produces = "application/pdf")
-    public Resource load(@PathVariable(required = false) String storageId) throws IOException, ParseException {
+    public Resource show(@PathVariable(required = false) String storageId) throws IOException {
         return storageService.load(storageId);
     }
 }

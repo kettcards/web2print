@@ -1,8 +1,10 @@
 package de.kettcards.web2print.storage;
 
 
+import de.kettcards.web2print.exceptions.content.ContentException;
+
 public interface StorageConstraint {
 
-    boolean isValid(StorageContext context, Content content);
+    void validate(StorageContext context, Content content) throws ContentException;
 
 }

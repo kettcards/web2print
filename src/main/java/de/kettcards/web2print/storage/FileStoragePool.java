@@ -17,15 +17,15 @@ import java.util.*;
  *
  * @author dt
  */
-public class FileStoragePool extends StoragePool {
+public final class FileStoragePool extends StoragePool {
 
-    protected final FileStoragePoolConfiguration poolConfiguration;
+    private final FileStoragePoolConfiguration poolConfiguration;
 
     public FileStoragePool() throws IOException {
         this(new FileStoragePoolConfiguration(".pool_data"));
     }
 
-    public FileStoragePool(FileStoragePoolConfiguration poolConfiguration) throws IOException {
+    public FileStoragePool(FileStoragePoolConfiguration poolConfiguration) {
         this.poolConfiguration = poolConfiguration;
     }
 
@@ -116,6 +116,9 @@ public class FileStoragePool extends StoragePool {
      */
     @Override
     public void save(StorageContext storageContext, Content content, String contentName) throws IOException {
+        for (var constraint : storageContext.getStorageConstraints()) {
+            constraint.validate(storageContext, content);
+        }
         Path contextDirectory = determineContextDirectory(storageContext);
         Path resolve = safeResolveContentName(contextDirectory, contentName);
         try (var stream = content.getInputStream()) {
@@ -168,6 +171,10 @@ public class FileStoragePool extends StoragePool {
             return true;
         FileSystemUtils.deleteRecursively(resolve);
         return true;
+    }
+
+    public FileStoragePoolConfiguration getPoolConfiguration() {
+        return poolConfiguration;
     }
 
 }
