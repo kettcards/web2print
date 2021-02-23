@@ -2,6 +2,7 @@ package de.kettcards.web2print.storage;
 
 import de.kettcards.web2print.exceptions.content.ContentException;
 import de.kettcards.web2print.storage.contraint.MediaTypeFileExtension;
+import de.kettcards.web2print.storage.contraint.MediaTypeFileExtensionFilter;
 import lombok.NonNull;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -185,7 +186,18 @@ public final class Content implements Resource {
      */
 
     /**
-     * asserts that at least one ContentExtension is matchinf file extension and content type
+     * asserts that at least one ContentExtension is matching file extension and content type
+     *
+     * @param extensionFilter allowed content extensions
+     * @return matching content extension
+     * @throws ContentException if theres no match
+     */
+    public MediaTypeFileExtension assertContentExtension(@NonNull MediaTypeFileExtensionFilter extensionFilter) throws ContentException {
+        return assertContentExtension(extensionFilter.getContentExtensions());
+    }
+
+    /**
+     * asserts that at least one ContentExtension is matching file extension and content type
      *
      * @param contentExtensions allowed content extensions
      * @return matching content extension
