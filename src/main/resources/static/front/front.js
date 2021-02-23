@@ -1393,6 +1393,7 @@ const hPageSwitch = function (direction) {
     renderStyleState.getActiveDot().addClass('active');
     $pageLabel.text(renderStyleState.getActiveLabel());
 };
+var apply = Reflect.apply;
 {
     const $addBtnContainer = $('#add-el-btns');
     for (const [k, v] of Object.entries(Elements)) {
@@ -1420,18 +1421,24 @@ $('#tutorial').click(showTutorial);
 $('#del-btn')
     .mouseup(stopPropagation)
     .click(Editor.deleteElement);
-const $colorpicker = $('#colorpicker').change(function (e) {
-    const color = $colorpicker.val();
-    if (typeof color === "string") {
-        Editor.storage.currentColor = color;
-    }
-});
-$('#applyColor').mousedown(Editor.saveSelection).click(function (e) {
+const $applyColor = $('#applyColor').mousedown(Editor.saveSelection).click(function (e) {
     const sel = Editor.loadSelection();
     console.log(Editor.storage.currentColor);
     makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
         $(curr).css('color', Editor.storage.currentColor);
     });
+});
+const $colorpicker = $('#colorpicker').change(function (e) {
+    const color = $colorpicker.val();
+    if (typeof color === "string") {
+        Editor.storage.currentColor = color;
+        $applyColor.css("background-color", color);
+        $applyColor.trigger("click");
+    }
+});
+$("#colorWrap").click(function () {
+    Editor.saveSelection();
+    $colorpicker.trigger("click");
 });
 const $fontSelect = $('#font-select')
     .mousedown(Editor.saveSelection)
