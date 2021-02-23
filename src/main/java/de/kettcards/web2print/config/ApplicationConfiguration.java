@@ -7,16 +7,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 @Data
-@ConfigurationProperties(prefix = "web2print", ignoreUnknownFields = false)
+@ConfigurationProperties(prefix = "web2print")
 public class ApplicationConfiguration {
 
     @JsonView(Include.Public.class)
     @NestedConfigurationProperty
     private Link links;
-
-    @JsonView(Include.Api.class)
-    @NestedConfigurationProperty
-    private Page page;
 
     @JsonView(Include.Internal.class)
     private String baseDir;
@@ -44,13 +40,6 @@ public class ApplicationConfiguration {
 
         @JsonView(Include.Public.class)
         private String motiveUrl;
-
-    }
-
-    @Data
-    public static class Page {
-
-        private Integer maxPageSize, defaultPageSize;
 
     }
 

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -17,7 +18,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static de.kettcards.web2print.security.Roles.ADMIN;
@@ -53,7 +59,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 //TODO enable csrf, unlikely that its necessary,
                 // however we still embedding content that's pointing to external resources
                 .csrf().disable()
-                .cors().disable() //TODO enable cors
+                .cors(Customizer.withDefaults())
+                //.cors().disable() //TODO enable cors
                 .authorizeRequests()
                 //specify resources that dont need authentication
                 .antMatchers(HttpMethod.GET, "/define.js", "/tileview/**", "/front/**", "/fonts/**", "/textures/**").permitAll();
@@ -73,7 +80,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/" + apiPath + "save/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/" + apiPath + "backend/**").permitAll()
                 //explicitly define protected resources, allows refined access control
-                .antMatchers("/api/**").hasRole(ADMIN.name())
+                .antMatchers("/api/**").permitAll()
                 //everything else also needs authentication
                 .anyRequest().authenticated()
                 .and()
@@ -117,6 +124,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     protected org.springframework.security.authentication.AuthenticationManager getAuthenticationManager() throws Exception {
         return authenticationManager();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Collections.singletonList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET","POST"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
 

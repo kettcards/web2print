@@ -10,7 +10,7 @@ import java.io.Serializable;
 @Data
 @Entity
 @Table(name = "material")
-public final class Material implements Serializable, VirtualId {
+public final class Texture implements Serializable, VirtualId {
 
     @JsonIgnore
     @Id

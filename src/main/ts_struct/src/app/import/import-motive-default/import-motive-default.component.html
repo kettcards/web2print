@@ -1,4 +1,14 @@
-<app-drop-zone
-  [dropPromptText]="'Druckvorlagen für Standardmotive hier hinzufügen'"
-  (fileAdded)="fileAdded($event)"></app-drop-zone>
-<app-drop-controls ></app-drop-controls>
+<app-drop-zone [dropPromptText]="'Druckvorlagen für Standardmotive hier hinzufügen'" (fileAdded)="fileAdded($event)"></app-drop-zone>
+<app-drop-controls [list]="defaultMotives" (deleteAll)="defaultMotives = []" (submitAll)="submitAll()"></app-drop-controls>
+<mat-list>
+  <mat-list-item *ngFor="let motive of defaultMotives">
+    <button mat-raised-button color="primary" (click)="delete(motive)">
+      <mat-icon>delete</mat-icon>
+    </button>
+    <button mat-raised-button color="primary" (click)="submit(motive)">
+      <mat-icon>upload</mat-icon>
+    </button>
+    <span>{{motive.file.name}}</span>
+
+  </mat-list-item>
+</mat-list>

@@ -59,7 +59,7 @@ public class MotiveImportService extends StorageContextAware implements WebConte
         int lastDotIndex = name.lastIndexOf(".");
         String extension = name.substring(lastDotIndex);
         name = name.substring(0, lastDotIndex);
-        Card card = cardRepository.findCardByOrderId(name);
+        Card card = cardRepository.findCardByOrderId(name).orElseGet(null);
 
         if (MediaTypeFileExtension.PDF.isValidFileExtension(extension)) {
             float scaleFactor = getScaleFactor();
@@ -92,7 +92,6 @@ public class MotiveImportService extends StorageContextAware implements WebConte
             // pdf generator), PNG
             throw new IllegalArgumentException("Importing PNG and JPG (" + name + ")isn't implemented yet.");
         }
-        return "200";
     }
 
     public void importDefaultMotive(Content content) throws IOException {

@@ -29,7 +29,7 @@ public final class XlsxImportService {
     private CardRepository cardRepository;
 
     @Autowired
-    private MaterialRepository materialRepository;
+    private TextureRepository textureRepository;
 
     @Autowired
     private CardFormatRepository cardFormatRepository;
@@ -57,7 +57,7 @@ public final class XlsxImportService {
         cardOverviewRows = cardOverviewRows.stream().filter(row -> allowedFormats.contains(row.getCardFormat())).collect(Collectors.toList());
 
 
-        var texturVirtualMapper = buildVirtualMap(materialRepository, textur, MaterialSheetRow::toMaterial);
+        var texturVirtualMapper = buildVirtualMap(textureRepository, textur, MaterialSheetRow::toMaterial);
         var cardFormatVirtualMapper = buildVirtualMap(cardFormatRepository, formatRows, CardFormatSheetRow::toCardFormat);
         buildVirtualMap(foldRepository, formatRows,
                 cardFSRow -> {
@@ -76,7 +76,7 @@ public final class XlsxImportService {
                 Card targetCard = null;
                 for (var dbcard : cardsInsideDb) {
                     if (dbcard.isVirtuallyEqual(sheetCard)) {
-                        targetCard = cardRepository.findCardByOrderId(dbcard.getOrderId());
+                        targetCard = cardRepository.findCardByOrderId(dbcard.getOrderId()).orElse(null);
                         break;
                     }
                 }
@@ -85,15 +85,15 @@ public final class XlsxImportService {
                     Integer formatId = sheetCard.getCardFormat();
                     Integer textureId = sheetCard.getTexture();
                     CardFormat cardFormat = cardFormatVirtualMapper.get(formatId);
-                    Material material = texturVirtualMapper.get(textureId);
-                    targetCard = sheetCard.toCard(material, cardFormat);
+                    Texture texture = texturVirtualMapper.get(textureId);
+                    targetCard = sheetCard.toCard(texture, cardFormat);
                 } else { //overwrite existing card
                     Integer formatId = sheetCard.getCardFormat();
                     Integer textureId = sheetCard.getTexture();
                     CardFormat cardFormat = cardFormatVirtualMapper.get(formatId);
-                    Material material = texturVirtualMapper.get(textureId);
+                    Texture texture = texturVirtualMapper.get(textureId);
                     var oldCardId = targetCard.getId();
-                    targetCard = sheetCard.toCard(material, cardFormat);
+                    targetCard = sheetCard.toCard(texture, cardFormat);
                     targetCard.setId(oldCardId);
 
                 }

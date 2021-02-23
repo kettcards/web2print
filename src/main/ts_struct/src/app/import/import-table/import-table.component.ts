@@ -52,6 +52,7 @@ export class ImportTableComponent {
   }
 
   importFile() {
+    console.log('importing table data');
     //TODO callback feedback
     this.isProcessing = true;
     let importCardTable = this.api.importCardTable(this.file);

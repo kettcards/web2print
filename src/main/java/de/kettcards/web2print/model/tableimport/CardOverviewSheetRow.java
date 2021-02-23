@@ -2,7 +2,7 @@ package de.kettcards.web2print.model.tableimport;
 
 import de.kettcards.web2print.model.db.Card;
 import de.kettcards.web2print.model.db.CardFormat;
-import de.kettcards.web2print.model.db.Material;
+import de.kettcards.web2print.model.db.Texture;
 import de.kettcards.web2print.model.db.VirtualId;
 import lombok.AllArgsConstructor;
 import lombok.Value;
@@ -69,13 +69,13 @@ public final class CardOverviewSheetRow implements VirtualId {
         return orderId.hashCode();
     }
 
-    public Card toCard(Material material, CardFormat cardFormat) {
+    public Card toCard(Texture texture, CardFormat cardFormat) {
         Card card = new Card();
         card.setOrderId(orderId);
         card.setThumbSlug(thumbnailUrl.substring(thumbnailUrl.lastIndexOf("/") + 1)); //TODO impl properly
         card.setName(title);
         card.setCardFormat(cardFormat);
-        card.setMaterial(material);
+        card.setTexture(texture);
         return card;
     }
 

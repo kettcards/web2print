@@ -23,6 +23,8 @@ import {MatFormFieldModule} from "@angular/material/form-field";
 import {FormsModule} from "@angular/forms";
 import {HttpClientModule} from "@angular/common/http";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
+import {ErrorLoadComponent} from './lib/error-load/error-load.component';
+import {MatInputModule} from "@angular/material/input";
 
 const routes: Routes = [
   {path: '', redirectTo: 'cards', pathMatch: 'full'},
@@ -41,7 +43,8 @@ const routes: Routes = [
     ImportMotiveDefaultComponent,
     DropZoneComponent,
     ErrorDialogComponent,
-    DropControlsComponent
+    DropControlsComponent,
+    ErrorLoadComponent
   ],
   imports: [
     RouterModule.forRoot(routes, {useHash: true}),
@@ -52,6 +55,7 @@ const routes: Routes = [
     MatToolbarModule,
     MatListModule,
     MatIconModule,
+    MatInputModule,
     MatButtonModule,
     MatDialogModule,
     MatFormFieldModule,
