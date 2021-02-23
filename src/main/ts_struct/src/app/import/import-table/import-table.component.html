@@ -1,0 +1,19 @@
+<div class="nav">
+  <ng-container *ngIf="file !== null; else awaitUpload">
+    <button (click)="removeSelected()" mat-raised-button color="accent">
+      <mat-icon>remove</mat-icon>
+      <span>Löschen</span>
+    </button>
+    <span>{{file.name}}</span>
+    <button (click)="importFile()" mat-raised-button color="primary">
+      <mat-icon>upload</mat-icon>
+      <span>Importieren</span>
+    </button>
+  </ng-container>
+  <ng-template #awaitUpload>
+    <app-drop-zone
+      [dropPromptText]="'Kartentabelle hier hinzufügen'"
+      (fileAdded)="fileAdded($event)"></app-drop-zone>
+  </ng-template>
+  <mat-spinner *ngIf="isProcessing"></mat-spinner>
+</div>
