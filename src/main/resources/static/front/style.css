@@ -539,7 +539,12 @@ body {
   background-color: black;
 }
 #colorpicker {
-  display: none;
+  visibility: collapse;
+  width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
 }
 
 .hFold{
