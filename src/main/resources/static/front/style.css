@@ -539,9 +539,7 @@ body {
   background-color: black;
 }
 #colorpicker {
-  position: absolute;
-  left: -9999px;
-  top: -9999px;
+  display: none;
 }
 
 .hFold{
