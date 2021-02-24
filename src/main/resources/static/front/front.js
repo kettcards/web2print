@@ -1436,8 +1436,8 @@ const $colorpicker = $('#colorpicker').change(function (e) {
         $applyColor.trigger("click");
     }
 });
-$("#colorWrap").click(function () {
-    Editor.saveSelection();
+$("#colorWrap").mousedown(Editor.saveSelection)
+    .click(function () {
     $colorpicker.trigger("click");
 });
 const $fontSelect = $('#font-select')
