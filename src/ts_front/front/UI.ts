@@ -39,7 +39,6 @@ $('#del-btn')
 
 const $applyColor = $('#applyColor').mousedown(Editor.saveSelection).click(function(e){
   const sel = Editor.loadSelection();
-  console.log(Editor.storage.currentColor);
   makeNodesFromSelection(sel.getRangeAt(0), function(curr){
     $(curr).css('color', Editor.storage.currentColor);
   })

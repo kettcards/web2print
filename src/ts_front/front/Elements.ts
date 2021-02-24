@@ -102,7 +102,7 @@ const Elements : ElementsObj = {
           $currentP.append($(make('span'+classString, makeT(run.t))).css({
             'font-family': run.f,
             'font-size'  : run.s+'pt',
-            'color'      : 'rgb('+ run.c[0]+','+run.c[1]+','+run.c[2]+')',
+            'color'      : run.c,
           }));
         }
       }
@@ -136,5 +136,13 @@ const Elements : ElementsObj = {
 
 function colorStringToRGB(string){
   let rgb = string.slice(string.lastIndexOf("(")+1, string.lastIndexOf(")")).split(",");
-  return [parseInt(rgb[0]), parseInt(rgb[1]), parseInt(rgb[2])];
+  let hex = "#";
+  for(let channel of rgb){
+    channel = parseInt(channel).toString(16);
+    if(channel.length < 2){
+      channel = "0"+channel;
+    }
+    hex = hex + channel;
+  }
+  return hex;
 }

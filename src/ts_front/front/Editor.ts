@@ -48,7 +48,7 @@ class Editor {
     $target    : undefined,
     addOnClick : undefined,
     range      : undefined,
-    currentColor : "0x000000",
+    currentColor : "#000000",
   };
 
   static setTarget(t : HTMLElement) : void {

@@ -510,7 +510,7 @@ Editor.storage = {
     $target: undefined,
     addOnClick: undefined,
     range: undefined,
-    currentColor: "0x000000",
+    currentColor: "#000000",
 };
 const Elements = {
     TEXT: {
@@ -615,7 +615,7 @@ const Elements = {
                     $currentP.append($(make('span' + classString, makeT(run.t))).css({
                         'font-family': run.f,
                         'font-size': run.s + 'pt',
-                        'color': 'rgb(' + run.c[0] + ',' + run.c[1] + ',' + run.c[2] + ')',
+                        'color': run.c,
                     }));
                 }
             }
@@ -647,7 +647,15 @@ const Elements = {
 };
 function colorStringToRGB(string) {
     let rgb = string.slice(string.lastIndexOf("(") + 1, string.lastIndexOf(")")).split(",");
-    return [parseInt(rgb[0]), parseInt(rgb[1]), parseInt(rgb[2])];
+    let hex = "#";
+    for (let channel of rgb) {
+        channel = parseInt(channel).toString(16);
+        if (channel.length < 2) {
+            channel = "0" + channel;
+        }
+        hex = hex + channel;
+    }
+    return hex;
 }
 class TextEl {
     static hMDown(e) {
@@ -1423,7 +1431,6 @@ $('#del-btn')
     .click(Editor.deleteElement);
 const $applyColor = $('#applyColor').mousedown(Editor.saveSelection).click(function (e) {
     const sel = Editor.loadSelection();
-    console.log(Editor.storage.currentColor);
     makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
         $(curr).css('color', Editor.storage.currentColor);
     });
@@ -1436,8 +1443,8 @@ const $colorpicker = $('#colorpicker').change(function (e) {
         $applyColor.trigger("click");
     }
 });
-$("#colorWrap").click(function () {
-    Editor.saveSelection();
+$("#colorWrap").mousedown(Editor.saveSelection)
+    .click(function () {
     $colorpicker.trigger("click");
 });
 const $fontSelect = $('#font-select')
