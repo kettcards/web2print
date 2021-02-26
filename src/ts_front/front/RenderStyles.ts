@@ -3,6 +3,7 @@ declare interface RenderStyle {
   condition(card : Card): boolean;
   pageGen(card: Card): DocumentFragment | JQuery<DocumentFragment>;
   assocPage(side : 'front'|'back', bounds : JQuery.Coordinates) : JQuery<HTMLDivElement>;
+  getOffsetForTarget() : number;
   clear() : void;
   pageLabels: string[];
   initialDotIndex: number;
@@ -62,6 +63,9 @@ const RenderStyles : RenderStyle[] = [{
   },
   assocPage(side, _) {
     return this.data.$bundle.children('.'+side);
+  },
+  getOffsetForTarget() : number {
+    return 0;
   },
   pageLabels: [
     'Innenseite',
@@ -160,6 +164,14 @@ const RenderStyles : RenderStyle[] = [{
       return rightPage.children('.'+side);
     } else {
       return leftPage.children('.'+side);
+    }
+  },
+  getOffsetForTarget() : number {
+    // (lucas) this assumes that you never select elements on paged not visible in the current state
+    switch(this.data.state) {
+      case 0: return 0;
+      case 1: return +Editor.storage.$target.parents('.page-bundle').attr('data-x-offset') / MMPerPx.x;
+      case 2: return Editor.storage.loadedCard.cardFormat.width / 2 / MMPerPx.x;
     }
   },
   pageLabels: [
