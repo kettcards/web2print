@@ -110,7 +110,7 @@ const Elements : ElementsObj = {
   IMAGE: {
     displayName: 'Bild / Logo',
     spawn(p: JQuery.Coordinates | JQuery.PlainObject): JQuery<HTMLImageElement> {
-      return $<HTMLImageElement>("<img class='logo' src='"+web2print.links.apiUrl+"content/"+logoContentId+"' alt='"+logoContentId+"' draggable='false'>")
+      return $<HTMLImageElement>(`<img class="logo" src="${web2print.links.apiUrl}content/${logoContentId}" alt="${logoContentId}" data-aspect-ratio="${imgAR}" draggable="false">`)
         .mousedown(ImageEl.hMDown)
         .mouseup(El.hMUp)
         // as above so below

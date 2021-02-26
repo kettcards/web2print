@@ -82,22 +82,22 @@ class ResizeBars {
     const bounds   = rStorage.bounds;
 
     const css : JQuery.PlainObject = {};
-    /*
     if(rStorage.preserveRatio) {
+      const ar = +eStorage.target.dataset.aspectRatio;
+
       if(Math.abs(dx) > Math.abs(dy)) {
-        dy = dx;
+        dy = dx / ar;
         // (lucas 16.02.21) todo: find clean mathematical solution
         if(rStorage.lockDir === 0b0011 || rStorage.lockDir === 0b1100){
           dy *= -1;
         }
       } else {
-        dx = dy;
+        dx = dy * ar;
         if(rStorage.lockDir === 0b0011 || rStorage.lockDir === 0b1100){
           dx *= -1;
         }
       }
     }
-    */
 
     if(rStorage.lockDir & 0b0001) {
       eStorage.dy += dy;

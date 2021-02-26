@@ -13,25 +13,30 @@ class ImageEl {
 }
 
 let logoContentId;
+let imgAR = 1;
 
-const hFileUploadChanged = function(e) {
+function hFileUploadChanged(e) {
   //file Upload code
-  let file = e.target.files[0];
-  console.log(file.type);
-  //send to server
-  let fd = new FormData();
+  const file = e.target.files[0];
+
+  const fd = new FormData();
   fd.append("file", file);
-  let req = jQuery.ajax({
-    url: web2print.links.apiUrl + "content",
-    method: "POST",
+  $.post({
+    url: web2print.links.apiUrl+"content",
     data: fd,
     processData: false,
-    contentType: false
-  });
-  req.then(function (response) {
-    logoContentId = JSON.parse(response).contentId;
-  }, function (xhr) {
-    console.error('failed to fetch xhr', xhr)
+    contentType: false,
+  }).then(function(response : { contentId : string }) {
+    logoContentId = response.contentId;
+    const img = new Image();
+    img.onload = function() {
+      imgAR = img.width / img.height;
+    };
+    img.src = `${web2print.links.apiUrl}content/${logoContentId}`;
+  }).catch(function(e) {
+    Editor.storage.addOnClick = undefined;
+    console.error('failed to fetch xhr', e);
+    alert("Could not send Image to server:\n"+JSON.stringify(e));
   });
 }
 
