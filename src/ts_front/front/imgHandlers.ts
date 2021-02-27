@@ -1,4 +1,6 @@
 class ImageEl {
+  static contentId = undefined;
+  static imgAR = 1;
   static hMDown(e : JQuery.MouseDownEvent) : void {
     switch(Editor.state) {
       case EditorStates.EL_FOCUSED:
@@ -12,9 +14,6 @@ class ImageEl {
   }
 }
 
-let logoContentId;
-let imgAR = 1;
-
 function hFileUploadChanged(e) {
   //file Upload code
   const file = e.target.files[0];
@@ -27,12 +26,12 @@ function hFileUploadChanged(e) {
     processData: false,
     contentType: false,
   }).then(function(response : { contentId : string }) {
-    logoContentId = response.contentId;
+    ImageEl.contentId = response.contentId;
     const img = new Image();
     img.onload = function() {
-      imgAR = img.width / img.height;
+      ImageEl.imgAR = img.width / img.height;
     };
-    img.src = `${web2print.links.apiUrl}content/${logoContentId}`;
+    img.src = `${web2print.links.apiUrl}content/${ImageEl.contentId}`;
   }).catch(function(e) {
     Editor.storage.addOnClick = undefined;
     $fileUpBtn.val(null); //emptys the Filelist, is needed if the same file is choosen again

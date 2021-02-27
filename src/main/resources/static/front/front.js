@@ -638,7 +638,7 @@ const Elements = {
     IMAGE: {
         displayName: 'Bild / Logo',
         spawn(p) {
-            return $(`<img class="logo" src="${web2print.links.apiUrl}content/${logoContentId}" alt="${logoContentId}" data-aspect-ratio="${imgAR}" draggable="false">`)
+            return $(`<img class="logo" src="${web2print.links.apiUrl}content/${ImageEl.contentId}" alt="${ImageEl.contentId}" data-aspect-ratio="${ImageEl.imgAR}" draggable="false">`)
                 .mousedown(ImageEl.hMDown)
                 .mouseup(El.hMUp)
                 .on("dragstart", falsify)
@@ -650,12 +650,14 @@ const Elements = {
             return {
                 t: "i",
                 s: $instance[0].alt,
+                r: +$instance[0].dataset.aspectRatio,
             };
         },
         restore($ownInstance, data) {
             const img = $ownInstance[0];
             img.src = `${web2print.links.apiUrl}content/${data.s}`;
             img.alt = data.s;
+            img.setAttribute("data-aspect-ratio", String(data.r));
         }
     }
 };
@@ -775,8 +777,8 @@ class ImageEl {
         }
     }
 }
-let logoContentId;
-let imgAR = 1;
+ImageEl.contentId = undefined;
+ImageEl.imgAR = 1;
 function hFileUploadChanged(e) {
     const file = e.target.files[0];
     const fd = new FormData();
@@ -787,12 +789,12 @@ function hFileUploadChanged(e) {
         processData: false,
         contentType: false,
     }).then(function (response) {
-        logoContentId = response.contentId;
+        ImageEl.contentId = response.contentId;
         const img = new Image();
         img.onload = function () {
-            imgAR = img.width / img.height;
+            ImageEl.imgAR = img.width / img.height;
         };
-        img.src = `${web2print.links.apiUrl}content/${logoContentId}`;
+        img.src = `${web2print.links.apiUrl}content/${ImageEl.contentId}`;
     }).catch(function (e) {
         Editor.storage.addOnClick = undefined;
         $fileUpBtn.val(null);
@@ -1415,6 +1417,12 @@ const hPageSwitch = function (direction) {
         $addBtnContainer.append($(`<button class="addElBtn" onclick="spawnNewEl('${k}')">${v.displayName}</button>`));
     }
 }
+$('#removeResize').mousedown(function (e) {
+    Editor.storage.$target.css({
+        width: "",
+        height: "",
+    }).mouseup(stopPropagation);
+});
 $("#logoRotation").change(function (e) {
     Editor.storage.$target.css('transform', 'rotate(' + $(this).val() + 'deg)');
 }).mouseup(stopPropagation);
