@@ -35,6 +35,7 @@ function hFileUploadChanged(e) {
     img.src = `${web2print.links.apiUrl}content/${logoContentId}`;
   }).catch(function(e) {
     Editor.storage.addOnClick = undefined;
+    $fileUpBtn.val(null); //emptys the Filelist, is needed if the same file is choosen again
     console.error('failed to fetch xhr', e);
     alert("Could not send Image to server:\n"+JSON.stringify(e));
   });

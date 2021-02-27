@@ -229,6 +229,7 @@ class ResizeBars {
         }, rStorage.bounds))[rStorage.preserveRatio ? 'addClass' : 'removeClass']('preserve-ratio');
         ResizeBars.visible = true;
         rStorage.$target = ResizeBars.$handles.add(Editor.storage.$target);
+        rStorage.aspectRatio = +Editor.storage.target.dataset.aspectRatio;
     }
     static hBarMDown(e) {
         Editor.state = EditorStates.EL_RESIZING;
@@ -277,6 +278,20 @@ class ResizeBars {
         const rStorage = ResizeBars.storage;
         const bounds = rStorage.bounds;
         const css = {};
+        if (rStorage.preserveRatio) {
+            if (Math.abs(dx) > Math.abs(dy)) {
+                dy = dx / rStorage.aspectRatio;
+                if (rStorage.lockDir === 0b0011 || rStorage.lockDir === 0b1100) {
+                    dy *= -1;
+                }
+            }
+            else {
+                dx = dy * rStorage.aspectRatio;
+                if (rStorage.lockDir === 0b0011 || rStorage.lockDir === 0b1100) {
+                    dx *= -1;
+                }
+            }
+        }
         if (rStorage.lockDir & 0b0001) {
             eStorage.dy += dy;
             Object.assign(css, {
@@ -319,6 +334,7 @@ ResizeBars.storage = {
         top: 0,
         height: 0
     },
+    aspectRatio: 1,
     preserveRatio: false,
     lockDir: 0,
     $target: undefined,
@@ -622,7 +638,7 @@ const Elements = {
     IMAGE: {
         displayName: 'Bild / Logo',
         spawn(p) {
-            return $("<img class='logo' src='" + web2print.links.apiUrl + "content/" + logoContentId + "' alt='" + logoContentId + "' draggable='false'>")
+            return $(`<img class="logo" src="${web2print.links.apiUrl}content/${logoContentId}" alt="${logoContentId}" data-aspect-ratio="${imgAR}" draggable="false">`)
                 .mousedown(ImageEl.hMDown)
                 .mouseup(El.hMUp)
                 .on("dragstart", falsify)
@@ -760,24 +776,30 @@ class ImageEl {
     }
 }
 let logoContentId;
-const hFileUploadChanged = function (e) {
-    let file = e.target.files[0];
-    console.log(file.type);
-    let fd = new FormData();
+let imgAR = 1;
+function hFileUploadChanged(e) {
+    const file = e.target.files[0];
+    const fd = new FormData();
     fd.append("file", file);
-    let req = jQuery.ajax({
+    $.post({
         url: web2print.links.apiUrl + "content",
-        method: "POST",
         data: fd,
         processData: false,
-        contentType: false
+        contentType: false,
+    }).then(function (response) {
+        logoContentId = response.contentId;
+        const img = new Image();
+        img.onload = function () {
+            imgAR = img.width / img.height;
+        };
+        img.src = `${web2print.links.apiUrl}content/${logoContentId}`;
+    }).catch(function (e) {
+        Editor.storage.addOnClick = undefined;
+        $fileUpBtn.val(null);
+        console.error('failed to fetch xhr', e);
+        alert("Could not send Image to server:\n" + JSON.stringify(e));
     });
-    req.then(function (response) {
-        logoContentId = JSON.parse(response).contentId;
-    }, function (xhr) {
-        console.error('failed to fetch xhr', xhr);
-    });
-};
+}
 const $fileUpBtn = $('#fileUpload').change(hFileUploadChanged);
 const getRotation = function () {
     let transformMatrix = Editor.storage.$target.css('transform');
