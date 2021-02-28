@@ -157,6 +157,7 @@ body {
 }
 
 #text-btns {
+  margin-top: 5px;
   margin-left: 5px;
   transform: translateY(-1px);
 }
@@ -483,6 +484,13 @@ body {
 #font-label {
   min-width: 150px;
   max-width: 250px;
+  height: 25px;
+}
+#font-tick {
+  height: 25px;
+  text-align: center;
+  font-size: 16px;
+  width: 25px;
 }
 
 #fontSizeSelect {
@@ -575,6 +583,10 @@ button:active {
   background-color: #007ae1;
   color: white;
 }
+button.active {
+  background-color: #007ae1;
+  color: white;
+}
 
 #resize-handles {
   position: absolute;
@@ -661,4 +673,15 @@ button:active {
   transform: translateY(-100%);
   width: 0.75em;
   cursor: ne-resize;
+}
+
+#upl-des-btn {
+  width: 100%;
+  font-size: 22px;
+  margin-bottom: 5px;
+  padding: 5px 0;
+}
+
+#upl-des {
+  display: none;
 }
