@@ -515,7 +515,8 @@ const Elements = {
     TEXT: {
         displayName: 'Text',
         spawn(css) {
-            return $('<div class="text" contenteditable="true" style="line-height: 1.2;"><p><span>Ihr Text Hier!</span></p></div>')
+            $toggledBtn.toggleClass('active');
+            return $('<div class="text" contenteditable="true" style="line-height: 1.2;"><p><span>Ihr Text hier!</span></p></div>')
                 .mousedown(TextEl.hMDown)
                 .mouseup(TextEl.hMUp)
                 .click(stopPropagation)
@@ -622,6 +623,7 @@ const Elements = {
     IMAGE: {
         displayName: 'Bild / Logo',
         spawn(p) {
+            $toggledBtn.toggleClass('active');
             return $("<img class='logo' src='" + web2print.links.apiUrl + "content/" + logoContentId + "' alt='" + logoContentId + "' draggable='false'>")
                 .mousedown(ImageEl.hMDown)
                 .mouseup(El.hMUp)
@@ -1389,8 +1391,13 @@ const hPageSwitch = function (direction) {
 };
 {
     const $addBtnContainer = $('#add-el-btns');
+    var $toggledBtn;
     for (const [k, v] of Object.entries(Elements)) {
-        $addBtnContainer.append($(`<button class="addElBtn" onclick="spawnNewEl('${k}')">${v.displayName}</button>`));
+        $addBtnContainer.append($(`<button class="addElBtn" onclick="{
+      spawnNewEl('${k}');
+      $toggledBtn = $(this);
+      $toggledBtn.toggleClass('active');
+    }">${v.displayName}</button>`));
     }
 }
 $("#logoRotation").change(function (e) {

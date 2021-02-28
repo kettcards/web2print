@@ -2,10 +2,15 @@
 /// <reference path="./serialization.ts" />
 /// <reference path="./textHandlers.ts" />
 
+let $toggledBtn;
 {
   const $addBtnContainer = $('#add-el-btns');
   for(const [k, v] of Object.entries(Elements)) {
-    $addBtnContainer.append($(`<button class="addElBtn" onclick="spawnNewEl('${k}')">${v.displayName}</button>`));
+    $addBtnContainer.append($(`<button class="addElBtn" onclick="{
+      spawnNewEl('${k}');
+      $toggledBtn = $(this);
+      $toggledBtn.toggleClass('active');
+    }">${v.displayName}</button>`));
   }
 }
 
