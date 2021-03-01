@@ -1,14 +1,13 @@
 /// <reference path="./front.ts" />
 /// <reference path="./serialization.ts" />
 /// <reference path="./textHandlers.ts" />
-
-let $toggledBtn;
 {
   const $addBtnContainer = $('#add-el-btns');
   for(const [k, v] of Object.entries(Elements)) {
     $addBtnContainer.append($(`<button class="addElBtn" onclick="{
+      const $toggledBtn = $(this);
+      Editor.storage.spawnBtn = $toggledBtn;
       spawnNewEl('${k}');
-      $toggledBtn = $(this);
       $toggledBtn.toggleClass('active');
     }">${v.displayName}</button>`));
   }
@@ -51,7 +50,7 @@ const $colorpicker = $('#color-picker').change(function(e){
     const color = $colorpicker.val();
     if (typeof color === "string") {
         Editor.storage.currentColor = color;
-        $applyColor.css("background-color", color);
+        $applyColor.css("color", color);
         $applyColor.trigger("click");
     }
 });

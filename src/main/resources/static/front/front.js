@@ -511,12 +511,15 @@ Editor.storage = {
     addOnClick: undefined,
     range: undefined,
     currentColor: "#000000",
+    spawnBtn: undefined
 };
 const Elements = {
     TEXT: {
         displayName: 'Text',
         spawn(css) {
-            $toggledBtn.toggleClass('active');
+            if (Editor.storage.spawnBtn)
+                Editor.storage.spawnBtn.toggleClass('active');
+            Editor.storage.spawnBtn = undefined;
             return $('<div class="text" contenteditable="true" style="line-height: 1.2;"><p><span>Ihr Text hier!</span></p></div>')
                 .mousedown(TextEl.hMDown)
                 .mouseup(TextEl.hMUp)
@@ -625,7 +628,9 @@ const Elements = {
     IMAGE: {
         displayName: 'Bild / Logo',
         spawn(p) {
-            $toggledBtn.toggleClass('active');
+            if (Editor.storage.spawnBtn)
+                Editor.storage.spawnBtn.toggleClass('active');
+            Editor.storage.spawnBtn = undefined;
             return $("<img class='logo' src='" + web2print.links.apiUrl + "content/" + logoContentId + "' alt='" + logoContentId + "' draggable='false'>")
                 .mousedown(ImageEl.hMDown)
                 .mouseup(El.hMUp)
@@ -1413,13 +1418,13 @@ const hPageSwitch = function (direction) {
     renderStyleState.getActiveDot().addClass('active');
     $pageLabel.text(renderStyleState.getActiveLabel());
 };
-let $toggledBtn;
 {
     const $addBtnContainer = $('#add-el-btns');
     for (const [k, v] of Object.entries(Elements)) {
         $addBtnContainer.append($(`<button class="addElBtn" onclick="{
+      const $toggledBtn = $(this);
+      Editor.storage.spawnBtn = $toggledBtn;
       spawnNewEl('${k}');
-      $toggledBtn = $(this);
       $toggledBtn.toggleClass('active');
     }">${v.displayName}</button>`));
     }
@@ -1455,7 +1460,7 @@ const $colorpicker = $('#color-picker').change(function (e) {
     const color = $colorpicker.val();
     if (typeof color === "string") {
         Editor.storage.currentColor = color;
-        $applyColor.css("background-color", color);
+        $applyColor.css("color", color);
         $applyColor.trigger("click");
     }
 });

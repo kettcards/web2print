@@ -543,8 +543,22 @@ body {
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23B8B8B8" d="M0 0h26v26H0z"/><path fill="none" stroke="%23FFF" stroke-width="2" d="M3.319 5.661h19.362M11.887 10.554h10.794M3.319 15.445h19.362M9.237 20.338h13.444"/></svg>');
 }
 
-#apply-color {
-  background-color: black;
+#color-div {
+  display: flex;
+  margin: 2px
+}
+#toolbar #apply-color {
+  background-color: white;
+  color: black;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+}
+#toolbar #apply-color:hover {
+  background-color: lightgray;
+}
+#toolbar #apply-color:active {
+  background-color: darkgray;
 }
 #color-picker {
   visibility: collapse;
@@ -553,6 +567,13 @@ body {
   padding: 0;
   border: none;
   outline: none;
+}
+#toolbar #color-tick {
+  width: 12px;
+  background-color: rgba(0, 0, 0, 0);
+  background-image: url("expand-arrow.svg");
+  margin: 0;
+  border-left: none;
 }
 
 .hFold{
@@ -578,6 +599,7 @@ body {
 }
 
 button {
+  font-family: Arial, sans-serif;
   background-color: #003f73;
   border: #003f73 solid thin;
   color: white;
