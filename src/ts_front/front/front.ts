@@ -120,8 +120,10 @@ let $body = $('body')
         break;
       case EditorStates.EL_BEGIN_FOCUS:
         Editor.beginDragEl();
+        Colliders.beginDrag(Editor.storage.$target, e);
       case EditorStates.EL_DRAGGING:
-        Editor.dragEl(dx, dy);
+        Editor.dragEl(ev.pageX, ev.pageY);
+        ResizeBars.dragSelf(dx, dy);
         break;
       case EditorStates.EL_RESIZING:
         ResizeBars.resizeEl(dx, dy);

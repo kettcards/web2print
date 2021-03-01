@@ -69,12 +69,12 @@ class Editor {
     Editor.setCursor('move');
     Editor.storage.$target.addClass('no-select');
   }
-  static dragEl(dx : number, dy : number) : void {
-    Editor.storage.dx += dx;
-    Editor.storage.dy += dy;
-
-    ResizeBars.storage.$target.css('transform',
-      `translate(${Editor.storage.dx / Editor.transform.scale}px, ${Editor.storage.dy / Editor.transform.scale}px)`);
+  static dragEl(mouseX, mouseY) {
+    const [x, y] = Colliders.drag(mouseX, mouseY);
+    Editor.storage.$target.css({
+      left: x / Editor.transform.scale,
+      top : y / Editor.transform.scale,
+    });
   }
   static endDragEl() : void {
     Editor.state = EditorStates.EL_FOCUSED;
@@ -84,11 +84,7 @@ class Editor {
     if(storage.dx === 0 && storage.dy === 0)
       return;
 
-    ResizeBars.storage.$target.css({
-      top : `+=${storage.dy / Editor.transform.scale}`,
-      left: `+=${storage.dx / Editor.transform.scale}`,
-      transform: 'rotate('+getRotation()+'deg)',
-    });
+    ResizeBars.endDragSelf();
 
     storage.dx = 0;
     storage.dy = 0;
