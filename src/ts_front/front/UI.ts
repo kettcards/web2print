@@ -1,7 +1,6 @@
 /// <reference path="./front.ts" />
 /// <reference path="./serialization.ts" />
 /// <reference path="./textHandlers.ts" />
-
 {
   const $addBtnContainer = $('#add-el-btns');
   for(const [k, v] of Object.entries(Elements)) {
@@ -35,13 +34,26 @@ $('#del-btn')
     .mouseup(stopPropagation)
     .click(Editor.deleteElement);
 
-const $colorpicker = $('#colorpicker').mousedown(Editor.saveSelection).change(function(e){
-    const sel = Editor.loadSelection();
-    const color = $colorpicker.val();
-    makeNodesFromSelection(sel.getRangeAt(0), function(curr) {
-        $(curr).css('color', color+'');
-    });
+const $applyColor = $('#apply-color').mousedown(Editor.saveSelection).click(function(e){
+  const sel = Editor.loadSelection();
+  makeNodesFromSelection(sel.getRangeAt(0), function(curr){
+    $(curr).css('color', Editor.storage.currentColor);
+  })
 });
+
+const $colorpicker = $('#color-picker').change(function(e){
+    const color = $colorpicker.val();
+    if (typeof color === "string") {
+        Editor.storage.currentColor = color;
+        $applyColor.css("background-color", color);
+        $applyColor.trigger("click");
+    }
+});
+
+$("#color-tick").mousedown(Editor.saveSelection)
+  .click(function () {
+  $colorpicker.trigger("click");
+})
 
 const $fontSelect = $<HTMLDivElement>('#font-select')
   .mousedown(Editor.saveSelection)
