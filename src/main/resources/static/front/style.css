@@ -378,7 +378,6 @@ body {
 .text span {
   font-style: normal;
   font-weight: 400;
-  color: black;
 }
 .text .b {
   font-weight: 700;
@@ -534,6 +533,18 @@ body {
 }
 .alignmentBtn[value=right]:hover {
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23B8B8B8" d="M0 0h26v26H0z"/><path fill="none" stroke="%23FFF" stroke-width="2" d="M3.319 5.661h19.362M11.887 10.554h10.794M3.319 15.445h19.362M9.237 20.338h13.444"/></svg>');
+}
+
+#apply-color {
+  background-color: black;
+}
+#color-picker {
+  visibility: collapse;
+  width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
 }
 
 .hFold{
