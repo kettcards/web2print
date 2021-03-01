@@ -213,7 +213,7 @@ class ResizeBars {
         eStorage.dx = 0;
         eStorage.dy = 0;
         ResizeBars.storage.bounds = {
-            left: eStorage.x + +$target.parents('.page-bundle').attr('data-x-offset') / MMPerPx.x,
+            left: eStorage.x + renderStyleState.style.getOffsetForTarget(),
             width: $target.width(),
             top: eStorage.y,
             height: $target.height()
@@ -510,6 +510,7 @@ Editor.storage = {
     $target: undefined,
     addOnClick: undefined,
     range: undefined,
+    currentColor: "#000000",
 };
 const Elements = {
     TEXT: {
@@ -527,7 +528,8 @@ const Elements = {
                 .on("drop", falsify)
                 .css(Object.assign({
                 'font-family': Fonts.defaultFont,
-                'font-size': '16pt'
+                'font-size': '16pt',
+                'color': Editor.storage.currentColor,
             }, css));
         },
         serialize($instance) {
@@ -567,7 +569,7 @@ const Elements = {
                                 s: Math.round((+$span.css('font-size').slice(0, -2)) / 96 * 72),
                                 a: attributes,
                                 t: $span.text(),
-                                c: $span.css('color'),
+                                c: colorStringToRGB($span.css('color')),
                             });
                         }
                         else {
@@ -645,6 +647,18 @@ const Elements = {
         }
     }
 };
+function colorStringToRGB(string) {
+    let rgb = string.slice(string.lastIndexOf("(") + 1, string.lastIndexOf(")")).split(",");
+    let hex = "#";
+    for (let channel of rgb) {
+        channel = parseInt(channel).toString(16);
+        if (channel.length < 2) {
+            channel = "0" + channel;
+        }
+        hex = hex + channel;
+    }
+    return hex;
+}
 class TextEl {
     static hMDown(e) {
         switch (Editor.state) {
@@ -1040,6 +1054,9 @@ const RenderStyles = [{
         assocPage(side, _) {
             return this.data.$bundle.children('.' + side);
         },
+        getOffsetForTarget() {
+            return 0;
+        },
         pageLabels: [
             'Innenseite',
             'Außenseite'
@@ -1133,6 +1150,13 @@ const RenderStyles = [{
             }
             else {
                 return leftPage.children('.' + side);
+            }
+        },
+        getOffsetForTarget() {
+            switch (this.data.state) {
+                case 0: return 0;
+                case 1: return +Editor.storage.$target.parents('.page-bundle').attr('data-x-offset') / MMPerPx.x;
+                case 2: return Editor.storage.loadedCard.cardFormat.width / 2 / MMPerPx.x;
             }
         },
         pageLabels: [
@@ -1421,12 +1445,23 @@ $('#tutorial').click(showTutorial);
 $('#del-btn')
     .mouseup(stopPropagation)
     .click(Editor.deleteElement);
-const $colorpicker = $('#colorpicker').mousedown(Editor.saveSelection).change(function (e) {
+const $applyColor = $('#apply-color').mousedown(Editor.saveSelection).click(function (e) {
     const sel = Editor.loadSelection();
-    const color = $colorpicker.val();
     makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
-        $(curr).css('color', color + '');
+        $(curr).css('color', Editor.storage.currentColor);
     });
+});
+const $colorpicker = $('#color-picker').change(function (e) {
+    const color = $colorpicker.val();
+    if (typeof color === "string") {
+        Editor.storage.currentColor = color;
+        $applyColor.css("background-color", color);
+        $applyColor.trigger("click");
+    }
+});
+$("#color-tick").mousedown(Editor.saveSelection)
+    .click(function () {
+    $colorpicker.trigger("click");
 });
 const $fontSelect = $('#font-select')
     .mousedown(Editor.saveSelection)
