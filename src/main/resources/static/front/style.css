@@ -571,7 +571,7 @@ body {
 #toolbar #color-tick {
   width: 12px;
   background-color: rgba(0, 0, 0, 0);
-  background-image: url("expand-arrow.svg");
+  background-image: url('data:image/svg+xml;utf8,<svg width="10" height="26" xmlns="http://www.w3.org/2000/svg"><path fill="%23707070" d="M1.074 7.63l3.927 10.737L8.927 7.63H1.074z"/></svg>');
   margin: 0;
   border-left: none;
 }
