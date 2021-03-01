@@ -1389,9 +1389,9 @@ const hPageSwitch = function (direction) {
     renderStyleState.getActiveDot().addClass('active');
     $pageLabel.text(renderStyleState.getActiveLabel());
 };
+let $toggledBtn;
 {
     const $addBtnContainer = $('#add-el-btns');
-    var $toggledBtn;
     for (const [k, v] of Object.entries(Elements)) {
         $addBtnContainer.append($(`<button class="addElBtn" onclick="{
       spawnNewEl('${k}');
