@@ -213,7 +213,7 @@ class ResizeBars {
         eStorage.dx = 0;
         eStorage.dy = 0;
         ResizeBars.storage.bounds = {
-            left: eStorage.x + +$target.parents('.page-bundle').attr('data-x-offset') / MMPerPx.x,
+            left: eStorage.x + renderStyleState.style.getOffsetForTarget(),
             width: $target.width(),
             top: eStorage.y,
             height: $target.height()
@@ -1054,6 +1054,9 @@ const RenderStyles = [{
         assocPage(side, _) {
             return this.data.$bundle.children('.' + side);
         },
+        getOffsetForTarget() {
+            return 0;
+        },
         pageLabels: [
             'Innenseite',
             'Außenseite'
@@ -1147,6 +1150,13 @@ const RenderStyles = [{
             }
             else {
                 return leftPage.children('.' + side);
+            }
+        },
+        getOffsetForTarget() {
+            switch (this.data.state) {
+                case 0: return 0;
+                case 1: return +Editor.storage.$target.parents('.page-bundle').attr('data-x-offset') / MMPerPx.x;
+                case 2: return Editor.storage.loadedCard.cardFormat.width / 2 / MMPerPx.x;
             }
         },
         pageLabels: [
@@ -1403,10 +1413,9 @@ const hPageSwitch = function (direction) {
     renderStyleState.getActiveDot().addClass('active');
     $pageLabel.text(renderStyleState.getActiveLabel());
 };
-var apply = Reflect.apply;
+let $toggledBtn;
 {
     const $addBtnContainer = $('#add-el-btns');
-    var $toggledBtn;
     for (const [k, v] of Object.entries(Elements)) {
         $addBtnContainer.append($(`<button class="addElBtn" onclick="{
       spawnNewEl('${k}');
@@ -1436,23 +1445,12 @@ $('#tutorial').click(showTutorial);
 $('#del-btn')
     .mouseup(stopPropagation)
     .click(Editor.deleteElement);
-const $applyColor = $('#applyColor').mousedown(Editor.saveSelection).click(function (e) {
+const $colorpicker = $('#colorpicker').mousedown(Editor.saveSelection).change(function (e) {
     const sel = Editor.loadSelection();
-    makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
-        $(curr).css('color', Editor.storage.currentColor);
-    });
-});
-const $colorpicker = $('#colorpicker').change(function (e) {
     const color = $colorpicker.val();
-    if (typeof color === "string") {
-        Editor.storage.currentColor = color;
-        $applyColor.css("background-color", color);
-        $applyColor.trigger("click");
-    }
-});
-$("#colorWrap").mousedown(Editor.saveSelection)
-    .click(function () {
-    $colorpicker.trigger("click");
+    makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
+        $(curr).css('color', color + '');
+    });
 });
 const $fontSelect = $('#font-select')
     .mousedown(Editor.saveSelection)
