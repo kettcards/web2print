@@ -14,6 +14,7 @@ type EditorStorage = {
   $target    : JQuery      | undefined;
   addOnClick : Spawner     | undefined;
   range      : Range;
+  currentColor : string;
 };
 
 enum EditorStates {
@@ -47,6 +48,7 @@ class Editor {
     $target    : undefined,
     addOnClick : undefined,
     range      : undefined,
+    currentColor : "#000000",
   };
 
   static setTarget(t : HTMLElement) : void {
