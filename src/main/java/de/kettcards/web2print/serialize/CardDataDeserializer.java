@@ -130,9 +130,12 @@ public class CardDataDeserializer extends JsonDeserializer<CardData> {
         var fontSize = fontSizeNode.floatValue();
         var fontStyle = FontStyle.getFontStyle(fontStyleNode.intValue());
         var text = textNode.textValue();
-        var color = colorNode.textValue();
-        var rgb = color.substring(color.lastIndexOf("(")+1, color.lastIndexOf(")")).split(",");
-        float[] values  = {Float.parseFloat(rgb[0])/255f, Float.parseFloat(rgb[1])/255f, Float.parseFloat(rgb[2])/255f};
+        var color = colorNode.textValue().substring(1);
+        float[] values = new float[3];
+        for(int i = 0; i < values.length; i++){
+            String hex = ""+color.charAt(i*2)+color.charAt(i*2+1);
+            values[i] = Integer.parseInt(hex, 16)/255f;
+        }
 
         return new TextSpan(font, fontSize, fontStyle, text, new PDColor(values, PDDeviceRGB.INSTANCE));
     }
