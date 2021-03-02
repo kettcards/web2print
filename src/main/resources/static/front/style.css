@@ -348,9 +348,21 @@ body {
   height: 100%;
 }
 .folds-layer,
-.collider-layer {
+.colliders-layer {
   pointer-events: none;
 }
+.colliders-layer>* {
+  position: absolute;
+}
+.colliders-layer>.visible {
+  background: repeating-linear-gradient(-45deg, #e21414, #e21414 10px, #d496b9 10px, #d496b9 20px);
+}
+
+.colliders-layer>.intrinsic.top    { top   : -50mm; height: 55mm; left: -50mm; width : calc(100% + 100mm); }
+.colliders-layer>.intrinsic.right  { right : -50mm; width : 55mm; top : -50mm; height: calc(100% + 100mm); }
+.colliders-layer>.intrinsic.bottom { bottom: -50mm; height: 55mm; left: -50mm; width : calc(100% + 100mm); }
+.colliders-layer>.intrinsic.left   { left  : -50mm; width : 55mm; top : -50mm; height: calc(100% + 100mm); }
+
 .page.front {
   position: absolute;
   left: 0;

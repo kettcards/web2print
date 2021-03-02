@@ -27,13 +27,14 @@ class Colliders {
     const $colliders = $(page).find('.colliders-layer' as JQuery.Selector).children();
     const newColliders : ColliderBox[] = new Array($colliders.length);
     for(let i = 0; i < $colliders.length; i++) {
-      const rect = $colliders[i].getBoundingClientRect();
+      const $collider = $colliders.eq(i);
+      const { left: x, width: w, top: y, height: h } = $collider.css(['left', 'width', 'top', 'height'])
       newColliders[i] = {
-        x : rect.x,
-        r : rect.right,
-        y : rect.y,
-        b : rect.bottom,
-        $t: $colliders.eq(i),
+        x : pxToNum(x),
+        r : pxToNum(x) + pxToNum(w),
+        y : pxToNum(y),
+        b : pxToNum(y) + pxToNum(h),
+        $t: $collider,
       };
     }
 
@@ -99,16 +100,16 @@ class Colliders {
     // (lucas 01.03.21) do the collision twice with halve the distance to stabilize the simulation
     for(const c of colliders) {
       if(Colliders.collides(ix, iy, ix + w, iy + h, c)) {
-        c.$t.css('background-color', 'yellow');
+        c.$t.addClass('visible');
 
         [ix, iy] = Colliders.resolveCollisionsUnstable(ox, oy, ox + w, oy + h, hdx, hdy, c);
       } else
-        c.$t.css('background-color', '');
+        c.$t.removeClass('visible');
     }
 
     for(const c of colliders) {
       if(Colliders.collides(ix, iy, ix + w, iy + h, c)) {
-        c.$t.css('background-color', 'yellow');
+        c.$t.addClass('visible');
 
         [ix, iy] = Colliders.resolveCollisionsUnstable(ix, iy, ix + w, iy + h, hdx, hdy, c);
       }
