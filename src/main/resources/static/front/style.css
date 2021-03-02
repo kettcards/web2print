@@ -155,7 +155,7 @@ body {
   transform: scale(1, 1);
   transition: transform 0.25s;
   height: 100%;
-  background-image: url("./arrowr.svg");
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="68" height="57"><path fill="%23003F73" d="M36.034 0H14.723l20.72 20.732H0v15.092h35.442l-20.72 20.732h21.312S55.941 35.91 67.9 28.278C55.941 20.646 36.034 0 36.034 0z"/></svg>');
   background-size: contain;
   background-repeat: round;
 }
