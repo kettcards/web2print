@@ -1,5 +1,6 @@
 type ResizeBarsStorage = {
   bounds : {
+    transform: string,
     left   : number;
     width  : number;
     top    : number;
@@ -15,6 +16,7 @@ class ResizeBars {
   static visible = false;
   static storage : ResizeBarsStorage = {
     bounds : {
+      transform: '',
       left  : 0,
       width : 0,
       top   : 0,
@@ -28,12 +30,13 @@ class ResizeBars {
   static setBoundsToTarget() {
     const eStorage = Editor.storage;
     const $target = eStorage.$target;
-    eStorage.x  = +$target.css('left').slice(0, -2);
-    eStorage.y  = +$target.css('top') .slice(0, -2);
+    eStorage.x  = pxToNum($target.css('left'));
+    eStorage.y  = pxToNum($target.css('top') );
     eStorage.dx = 0;
     eStorage.dy = 0;
     ResizeBars.storage.bounds = {
-      left  : eStorage.x + renderStyleState.style.getOffsetForTarget(),
+      transform: `translateX(${renderStyleState.style.getOffsetForTarget()}px)`,
+      left  : eStorage.x,
       width : $target.width(),
       top   : eStorage.y,
       height: $target.height()
@@ -45,8 +48,7 @@ class ResizeBars {
     ResizeBars.setBoundsToTarget();
     ResizeBars.$handles.css(
       Object.assign({
-        visibility: 'visible',
-        transform: ''
+        visibility: 'visible'
       }, rStorage.bounds) as JQuery.PlainObject)
     [rStorage.preserveRatio?'addClass':'removeClass']('preserve-ratio');
 
