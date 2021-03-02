@@ -63,31 +63,23 @@ class Editor {
   }
 
   static beginDragEl() : void {
-    Editor.storage.dx = 0;
-    Editor.storage.dy = 0;
     Editor.state = EditorStates.EL_DRAGGING;
     Editor.setCursor('move');
     Editor.storage.$target.addClass('no-select');
+
+    Colliders.beginDrag();
   }
-  static dragEl(mouseX, mouseY) {
-    const [x, y] = Colliders.drag(mouseX, mouseY);
-    Editor.storage.$target.css({
-      left: x / Editor.transform.scale,
-      top : y / Editor.transform.scale,
+  static dragEl(dx, dy) {
+    const [x, y] = Colliders.drag(dx, dy);
+    ResizeBars.storage.$target.css({
+      left: x,
+      top : y,
     });
   }
   static endDragEl() : void {
     Editor.state = EditorStates.EL_FOCUSED;
     Editor.setCursor('auto');
 
-    const storage = Editor.storage;
-    if(storage.dx === 0 && storage.dy === 0)
-      return;
-
-    ResizeBars.endDragSelf();
-
-    storage.dx = 0;
-    storage.dy = 0;
     Editor.storage.$target.removeClass('no-select');
   }
 

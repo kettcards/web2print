@@ -130,21 +130,6 @@ class ResizeBars {
     ResizeBars.$handles.css('visibility', 'collapse');
     ResizeBars.visible = false;
   }
-
-  static dragSelf(dx : number, dy : number) : void {
-    Editor.storage.dx += dx;
-    Editor.storage.dy += dy;
-
-    ResizeBars.$handles.css('transform',
-      `translate(${Editor.storage.dx / Editor.transform.scale}px, ${Editor.storage.dy / Editor.transform.scale}px)`);
-  }
-  static endDragSelf() : void {
-    ResizeBars.$handles.css({
-      top : `+=${Editor.storage.dy / Editor.transform.scale}`,
-      left: `+=${Editor.storage.dx / Editor.transform.scale}`,
-      transform: 'rotate('+getRotation()+'deg)',
-    });
-  }
 }
 
 ResizeBars.$handles.children().mousedown(ResizeBars.hBarMDown);

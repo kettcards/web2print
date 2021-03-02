@@ -8,10 +8,6 @@ type ColliderBox = StripedBox & { $t : JQuery };
 
 
 type CollidersStorage = {
-  cx : number;
-  cy : number;
-  dx : number;
-  dy : number;
   ox : number;
   oy : number;
   w  : number;
@@ -46,10 +42,6 @@ class Colliders {
   }
 
   static storage : CollidersStorage = {
-    cx: 0,
-    cy: 0,
-    dx: 0,
-    dy: 0,
     ox: 0,
     oy: 0,
     w : 0,
@@ -61,39 +53,36 @@ class Colliders {
     console.assert(false, "stub");
   }
 
-  //todo: call from window.resize
-  static updateContainerPos($container : JQuery) {
-    const { left: cx, top: cy } = $container.offset();
-    Colliders.storage.cx = cx;
-    Colliders.storage.cy = cy;
-  }
-
-  static beginDrag($target : JQuery, e : JQuery.MouseDownEvent | JQuery.MouseMoveEvent) {
+  static beginDrag() {
     const cStorage = Colliders.storage;
+    const eStorage = Editor.storage;
 
-    cStorage.dx = e.offsetX;
-    cStorage.dy = e.offsetY;
+    const $target= eStorage.$target;
 
-    cStorage.ox = e.pageX - cStorage.cx - cStorage.dx;
-    cStorage.oy = e.pageY - cStorage.cy - cStorage.dy;
+    const ox = pxToNum(eStorage.target.style.left);
+    const oy = pxToNum(eStorage.target.style.top);
+    eStorage.x = ox;
+    eStorage.y = oy;
+    cStorage.ox = ox;
+    cStorage.oy = oy;
 
     cStorage.w = pxToNum($target.css('width') );
     cStorage.h = pxToNum($target.css('height'));
 
     const $page = $target.parents('.page');
     cStorage.colliders = Colliders.getColliders($page[0]);
-    Colliders.updateContainerPos($page);
   }
 
-  static drag(mouseX, mouseY) : [nx : number, ny : number] {
+  static drag(dx, dy) : [nx : number, ny : number] {
     const cStorage = Colliders.storage;
+    const eStorage = Editor.storage;
 
-    const nx = mouseX - cStorage.cx - cStorage.dx;
-    const ny = mouseY - cStorage.cy - cStorage.dy;
+    eStorage.x += dx / Editor.transform.scale;
+    eStorage.y += dy / Editor.transform.scale;
 
     [cStorage.ox, cStorage.oy] = Colliders.resolveCollisions(
       cStorage.ox, cStorage.oy, cStorage.w, cStorage.h,
-      nx - cStorage.ox, ny - cStorage.oy,
+      eStorage.x - cStorage.ox, eStorage.y - cStorage.oy,
       cStorage.colliders
     );
 

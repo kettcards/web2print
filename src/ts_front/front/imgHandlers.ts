@@ -4,7 +4,6 @@ class ImageEl {
       case EditorStates.EL_FOCUSED:
         if(Editor.storage.target === e.delegateTarget) {
           Editor.beginDragEl();
-          Colliders.beginDrag(Editor.storage.$target, e);
           break;
         }
       default:
