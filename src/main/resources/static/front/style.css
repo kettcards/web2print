@@ -85,6 +85,7 @@ body {
   padding: 5px 0;
 }
 .toolbar-row {
+  background-color: inherit;
   position: relative;
   display: inline-block;
   vertical-align: top;
@@ -115,6 +116,10 @@ body {
   margin: 2px;
 }
 
+#tools-div {
+  display: flex;
+}
+
 #fontSelect {
   outline: none;
   display: block;
@@ -123,33 +128,23 @@ body {
 #fontSizeSelect {
   outline: none;
   max-width: 6ex;
-  background: inherit;
+  background: white;
   font-size: inherit;
   text-align: right;
   box-sizing: border-box;
   border: solid transparent 1px;
   border: none;
-}
-#fontSizeSelect:hover,
-#fontSizeSelect:active {
-  border-color: black;
-  background-color: white;
 }
 
 #lh-spinner {
   outline: none;
   text-align: right;
   max-width: 6ex;
-  background: inherit;
+  background: white;
   font-size: inherit;
   box-sizing: border-box;
   border: solid transparent 1px;
   border: none;
-}
-#lh-spinner:hover,
-#lh-spinner:active {
-  border-color: black;
-  background-color: white;
 }
 
 .text-tools-block {
@@ -169,6 +164,7 @@ body {
 
 #font-line-select {
   display: flex;
+  flex-direction: column;
   margin-top: 5px;
 }
 

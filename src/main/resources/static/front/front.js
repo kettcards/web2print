@@ -409,6 +409,7 @@ class Editor {
         storage.dx = 0;
         storage.dy = 0;
         Editor.state = EditorStates.SELF_DRAGGING;
+        Editor.transform.manuallyModified = true;
         Editor.setCursor('move');
     }
     static dragSelf(dx, dy) {
@@ -427,20 +428,27 @@ class Editor {
     static zoom(steps) {
         const scale = Editor.transform.scale;
         Editor.transform.scale = Math.min(Math.max(scale + scale * steps * -0.01, 0.1), 5);
+        Editor.transform.manuallyModified = true;
         Editor.applyTransform();
         Editor.displayZoom();
     }
     static fitToContainer() {
-        Editor.transform.scale = Math.min(Editor.$editorArea.width() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.width + 55), Editor.$editorArea.height() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.height + 55)) * 0.9;
-        Editor.transform.translateX = 0;
-        Editor.transform.translateY = 0;
-        Editor.transform.rotate = 0;
+        const transform = Editor.transform;
+        transform.scale = Math.min(Editor.$editorArea.width() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.width + 55), Editor.$editorArea.height() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.height + 55)) * 0.9;
+        transform.translateX = 0;
+        transform.translateY = 0;
+        transform.rotate = 0;
+        transform.manuallyModified = false;
         Editor.applyTransform();
         Editor.displayZoom();
     }
     static applyTransform() {
         const transform = Editor.transform;
         Editor.$transformAnchor.css('transform', `scale(${transform.scale}) translate(${transform.translateX}px,${transform.translateY}px) rotateY(${transform.rotate}deg)`);
+    }
+    static hWindowResized() {
+        if (!Editor.transform.manuallyModified)
+            Editor.fitToContainer();
     }
     static showHandlesOnTarget() {
         ResizeBars.show(Editor.storage.target.isA('IMG'));
@@ -497,7 +505,8 @@ Editor.transform = {
     scale: 1,
     translateX: 0,
     translateY: 1,
-    rotate: 0
+    rotate: 0,
+    manuallyModified: false,
 };
 Editor.state = EditorStates.NONE;
 Editor.storage = {
@@ -1512,6 +1521,7 @@ $('.left>.nav-btn-inner').click(function () {
 $('#recenter-btn').click(function () {
     Editor.fitToContainer();
 });
+$(window).resize(Editor.hWindowResized);
 $.get(`${web2print.links.apiUrl}card/${Parameters.card}`)
     .then(loadCard)
     .catch(function () {
