@@ -113,3 +113,5 @@ $('.left>.nav-btn-inner').click(function() {
 $('#recenter-btn').click(function() {
   Editor.fitToContainer();
 });
+
+$(window).resize(Editor.hWindowResized)
