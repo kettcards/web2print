@@ -657,7 +657,7 @@ const Elements = {
             const img = $ownInstance[0];
             img.src = `${web2print.links.apiUrl}content/${data.s}`;
             img.alt = data.s;
-            img.setAttribute("data-aspect-ratio", String(data.r));
+            img.dataset.aspectRatio = String(data.r);
         }
     }
 };

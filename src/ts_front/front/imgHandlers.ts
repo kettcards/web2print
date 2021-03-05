@@ -1,6 +1,6 @@
 class ImageEl {
-  static contentId = undefined;
-  static imgAR = 1;
+  static contentId  : string = undefined;
+  static imgAR      : number = 1;
   static hMDown(e : JQuery.MouseDownEvent) : void {
     switch(Editor.state) {
       case EditorStates.EL_FOCUSED:
@@ -36,7 +36,7 @@ function hFileUploadChanged(e) {
     Editor.storage.addOnClick = undefined;
     $fileUpBtn.val(null); //emptys the Filelist, is needed if the same file is choosen again
     console.error('failed to fetch xhr', e);
-    alert("Die ausgewählte Datei konnte nicht hochgeladen werden.\nBitte stellen Sie sicher, dass das Dateiformat: .jpg,.jpeg,.png,.svg ist \nund die Dateigröße nicht 5MB überschreitet");
+    alert("Die ausgewählte Datei konnte nicht hochgeladen werden.\nBitte stellen Sie sicher, dass das Dateiformat: .jpg,.jpeg,.png,.svg ist \nund die Dateigröße nicht 10MB überschreitet.");
   });
 }
 
