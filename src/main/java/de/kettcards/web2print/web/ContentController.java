@@ -1,14 +1,10 @@
 package de.kettcards.web2print.web;
 
 
-import de.kettcards.web2print.storage.Content;
-import de.kettcards.web2print.storage.StorageConstraint;
-import de.kettcards.web2print.storage.StorageContextAware;
+import de.kettcards.web2print.storage.*;
 import de.kettcards.web2print.storage.contraint.MediaTypeFileExtensionFilter;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,7 +28,7 @@ public final class ContentController extends StorageContextAware {
         return new ResponseEntity<>(load, httpHeaders, HttpStatus.OK);
     }
 
-    @PostMapping
+    @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public String setContent(@RequestParam("file") MultipartFile file) throws IOException {
         Content content = Content.from(file);
         String contentId = save(content);
