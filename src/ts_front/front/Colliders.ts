@@ -50,8 +50,14 @@ class Colliders {
     colliders: undefined
   };
 
-  static hCollidersLayerClick(e : MouseEvent, source : HTMLDivElement) {
-    console.assert(false, "stub");
+  static hCollidersLayerClick(e : MouseEvent) {
+    if(!Editor.storage.addOnClick)
+      return;
+    if(!(e.target as Node).parentElement.classList.contains('colliders-layer'))
+      return;
+
+    const $t = $(e.target).removeClass('ping');
+    setTimeout(function() { $t.addClass('ping'); }, 100);
   }
 
   static beginDrag() {
