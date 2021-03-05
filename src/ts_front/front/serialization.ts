@@ -20,6 +20,7 @@ interface ActualTextRun {
   c : string;
 }
 interface ImageBox extends BoundingBox {
+  r: number;
   t : "i";
   s : string;
 }
