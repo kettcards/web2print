@@ -799,7 +799,7 @@ function hFileUploadChanged(e) {
         Editor.storage.addOnClick = undefined;
         $fileUpBtn.val(null);
         console.error('failed to fetch xhr', e);
-        alert("Could not send Image to server:\n" + JSON.stringify(e));
+        alert("Die ausgewählte Datei konnte nicht hochgeladen werden.\nBitte stellen Sie sicher, dass das Dateiformat: .jpg,.jpeg,.png,.svg ist \nund die Dateigröße nicht 5MB überschreitet");
     });
 }
 const $fileUpBtn = $('#fileUpload').change(hFileUploadChanged);
@@ -1417,12 +1417,6 @@ const hPageSwitch = function (direction) {
         $addBtnContainer.append($(`<button class="addElBtn" onclick="spawnNewEl('${k}')">${v.displayName}</button>`));
     }
 }
-$('#removeResize').mousedown(function (e) {
-    Editor.storage.$target.css({
-        width: "",
-        height: "",
-    }).mouseup(stopPropagation);
-});
 $("#logoRotation").change(function (e) {
     Editor.storage.$target.css('transform', 'rotate(' + $(this).val() + 'deg)');
 }).mouseup(stopPropagation);
