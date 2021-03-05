@@ -111,7 +111,7 @@ const Elements : ElementsObj = {
   IMAGE: {
     displayName: 'Bild / Logo',
     spawn(p: JQuery.Coordinates | JQuery.PlainObject): JQuery<HTMLImageElement> {
-      return $<HTMLImageElement>(`<img class="logo" src="${web2print.links.apiUrl}content/${logoContentId}" alt="${logoContentId}" data-aspect-ratio="${imgAR}" draggable="false">`)
+      return $<HTMLImageElement>(`<img class="logo" src="${web2print.links.apiUrl}content/${ImageEl.contentId}" alt="${ImageEl.contentId}" data-aspect-ratio="${ImageEl.imgAR}" draggable="false">`)
         .mousedown(ImageEl.hMDown)
         .mouseup(El.hMUp)
         // as above so below
@@ -124,12 +124,14 @@ const Elements : ElementsObj = {
       return {
         t: "i",
         s: ($instance[0] as HTMLImageElement).alt,
+        r: +($instance[0] as HTMLImageElement).dataset.aspectRatio,
       };
     },
     restore($ownInstance: JQuery, data: ImageBox) : void {
       const img = ($ownInstance as JQuery<HTMLImageElement>)[0];
       img.src = `${web2print.links.apiUrl}content/${data.s}`;
       img.alt = data.s;
+      img.dataset.aspectRatio = String(data.r);
     }
   }
 }
