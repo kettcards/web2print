@@ -83,6 +83,12 @@ public final class Document extends PDDocument {
         fontStyleMap.put(fontFace.getFontStyle(), new AbstractMap.SimpleEntry<>(fontFace.embed(this),fontFace.getFont()));
     }
 
+    /**
+     * creates a newPage for new Content
+     * @param width page width in pt
+     * @param height page width in pt
+     * @throws IOException
+     */
     public void newPage(float width, float height) throws IOException {
         closeCurrentPage();
         this.currentPage = new PDPage(new PDRectangle(width, height));
@@ -132,6 +138,7 @@ public final class Document extends PDDocument {
         }
         if (currentPage != null) {
             this.addPage(currentPage);
+            currentPage = null;
         }
     }
 
