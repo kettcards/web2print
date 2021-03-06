@@ -102,19 +102,19 @@ public final class MotiveImportService extends StorageContextAware implements We
         var format = cardFormatRepository.findById(Integer.parseInt(id)).orElseThrow();
 
         if (MediaTypeFileExtension.PDF.isValidFileExtension(extension)) {
-            try {
-                var streams = printPdfToImage(content.getInputStream(), getScaleFactor());
-                if (streams.get(0) != null) {
-                    saveDefaultFormat(format, streams.get(0), "-front.png");
-                }
+            var streams = printPdfToImage(content.getInputStream(), getScaleFactor());
+            if (streams.get(0) != null) {
+                saveDefaultFormat(format, streams.get(0), "-front.png");
+            }
 
-        if (streams.get(1) != null) {
-            saveDefaultFormat(format, streams.get(1), "-back.png");
+            if (streams.get(1) != null) {
+                saveDefaultFormat(format, streams.get(1), "-back.png");
+            }
+
+            save(content, DEFAULT_PREFIX.concat(originalFilename));
+            Motive motive = new Motive();
+            motive.setTextureSlug(originalFilename);
         }
-
-        save(content, DEFAULT_PREFIX.concat(originalFilename));
-        Motive motive = new Motive();
-        motive.setTextureSlug(originalFilename);
 
     }
 
