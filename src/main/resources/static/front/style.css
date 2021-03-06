@@ -347,9 +347,36 @@ body {
   left: 0;
   height: 100%;
 }
-.page>.folds-layer {
+.folds-layer,
+.colliders-layer {
   pointer-events: none;
 }
+.colliders-layer>* {
+  pointer-events: initial;
+  position: absolute;
+}
+.colliders-layer>.visible,
+.colliders-layer>.ping {
+  background: repeating-linear-gradient(-45deg, #e21414, #e21414 10px, #d496b9 10px, #d496b9 20px);
+}
+.colliders-layer>.ping {
+  animation: pingAnim .4s;
+}
+.colliders-layer>.ping:not(.visible) {
+  opacity: 0;
+}
+
+@keyframes pingAnim {
+    0% { opacity: 0; }
+   50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.colliders-layer>.intrinsic.top    { top   : -50mm; height: 55mm; left: -50mm; width : calc(100% + 100mm); }
+.colliders-layer>.intrinsic.right  { right : -50mm; width : 55mm; top : -50mm; height: calc(100% + 100mm); }
+.colliders-layer>.intrinsic.bottom { bottom: -50mm; height: 55mm; left: -50mm; width : calc(100% + 100mm); }
+.colliders-layer>.intrinsic.left   { left  : -50mm; width : 55mm; top : -50mm; height: calc(100% + 100mm); }
+
 .page.front {
   position: absolute;
   left: 0;
