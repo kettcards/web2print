@@ -6,6 +6,7 @@ declare interface Fold {
 }
 
 declare interface Card {
+  name       : string;
   thumbSlug  : string;
   cardFormat : {
     width  : number;

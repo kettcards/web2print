@@ -5,6 +5,7 @@ type ResizeBarsStorage = {
     top    : number;
     height : number;
   };
+  aspectRatio   : number;
   preserveRatio : boolean;
   lockDir : number;
   $target : JQuery;
@@ -20,6 +21,7 @@ class ResizeBars {
       top   : 0,
       height: 0
     },
+    aspectRatio   : 1,
     preserveRatio : false,
     lockDir : 0,
     $target : undefined,
@@ -33,7 +35,7 @@ class ResizeBars {
     eStorage.dx = 0;
     eStorage.dy = 0;
     ResizeBars.storage.bounds = {
-      left  : eStorage.x + +$target.parents('.page-bundle').attr('data-x-offset') / MMPerPx.x,
+      left  : eStorage.x + renderStyleState.style.getOffsetForTarget(),
       width : $target.width(),
       top   : eStorage.y,
       height: $target.height()
@@ -52,6 +54,7 @@ class ResizeBars {
 
     ResizeBars.visible = true;
     rStorage.$target = ResizeBars.$handles.add(Editor.storage.$target);
+    rStorage.aspectRatio = +Editor.storage.target.dataset.aspectRatio;
   }
   static hBarMDown(e : JQuery.MouseDownEvent) : void {
     Editor.state = EditorStates.EL_RESIZING;
@@ -82,22 +85,20 @@ class ResizeBars {
     const bounds   = rStorage.bounds;
 
     const css : JQuery.PlainObject = {};
-    /*
     if(rStorage.preserveRatio) {
       if(Math.abs(dx) > Math.abs(dy)) {
-        dy = dx;
+        dy = dx / rStorage.aspectRatio;
         // (lucas 16.02.21) todo: find clean mathematical solution
         if(rStorage.lockDir === 0b0011 || rStorage.lockDir === 0b1100){
           dy *= -1;
         }
       } else {
-        dx = dy;
+        dx = dy * rStorage.aspectRatio;
         if(rStorage.lockDir === 0b0011 || rStorage.lockDir === 0b1100){
           dx *= -1;
         }
       }
     }
-    */
 
     if(rStorage.lockDir & 0b0001) {
       eStorage.dy += dy;

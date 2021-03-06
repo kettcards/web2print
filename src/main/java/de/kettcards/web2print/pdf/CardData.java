@@ -68,21 +68,21 @@ public class CardData {
                 xLR = page.getWidth() - CardData.pageBorder,xUR = page.getUpperRightX() - CardData.pageBorder, yLR = yLL,yUR = page.getUpperRightY() - CardData.pageBorder;
         content.setLineWidth(1);
         content.moveTo(xLL,0);
-        content.lineTo(xLL,yLL);
+        content.lineTo(xLL,yLL - 5);
         content.moveTo(0,yLL);
-        content.lineTo(xLL,yLL);
+        content.lineTo(xLL - 5,yLL);
         content.moveTo(xUL,page.getHeight());
-        content.lineTo(xUL,yUL);
+        content.lineTo(xUL,yUL  + 5);
         content.moveTo(0,yUL);
-        content.lineTo(xUL,yUL);
+        content.lineTo(xUL - 5,yUL);
         content.moveTo(xLR,0);
-        content.lineTo(xLR, yLR);
+        content.lineTo(xLR, yLR - 5);
         content.moveTo(page.getWidth(),yLR);
-        content.lineTo(xLR,yLR);
+        content.lineTo(xLR + 5,yLR);
         content.moveTo(xUR,page.getHeight());
-        content.lineTo(xUR,yUR);
+        content.lineTo(xUR,yUR + 5);
         content.moveTo(page.getWidth(),yUR);
-        content.lineTo(xUR,yUR);
+        content.lineTo(xUR + 5,yUR);
         content.stroke();
     }
 
