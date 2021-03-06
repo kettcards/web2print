@@ -23,3 +23,5 @@ declare interface Node {
   isA(n: string) : boolean;
 }
 Node.prototype.isA = function(n : string) : boolean {return this.nodeName === n;};
+
+function pxToNum(pxs) { return +pxs.slice(0, -2); }
