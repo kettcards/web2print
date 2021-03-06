@@ -148,7 +148,11 @@ const RenderStyles : RenderStyle[] = [{
     //intrinsic colliders
     $page1.add($page2).find('.colliders-layer' as JQuery.Selector)
       .append(make('div.intrinsic.top')   )
-      .append(make('div.intrinsic.bottom'));
+      .append(make('div.intrinsic.bottom'))
+      .append(make('div.intrinsic.left')  )  // (lucas) remove those two lines and uncomment the section below
+      .append(make('div.intrinsic.right') ); // to remove the colliders in the middle of the card fold
+    // the colliders are here since we currently dont display elements tht where moved from one page to another
+    /*
     $page1.find('.back>.colliders-layer' as JQuery.Selector)
       .append(make('div.intrinsic.left')  );
     $page1.find('.front>.colliders-layer' as JQuery.Selector)
@@ -157,7 +161,7 @@ const RenderStyles : RenderStyle[] = [{
       .append(make('div.intrinsic.right') );
     $page2.find('.front>.colliders-layer' as JQuery.Selector)
       .append(make('div.intrinsic.left')  );
-
+    */
 
     this.data.p1r = 0;
     this.data.p2r = 0;
