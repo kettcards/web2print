@@ -123,7 +123,7 @@ const RenderStyles : RenderStyle[] = [{
     //todo: add more tiling modes, should work just fine - the fallback is just no special background styling, page dimensions are still correct
   },
   pageGen(card) {
-    const cardWidth = card.cardFormat.width;
+    const cardWidth  = card.cardFormat.width;
     const cardHeight = card.cardFormat.height;
     const w1 = card.cardFormat.folds[0].x1;
     const w2 = cardWidth - w1;
@@ -163,6 +163,19 @@ const RenderStyles : RenderStyle[] = [{
     if(mBack) {
       $page1.find<HTMLImageElement>('.back>.motive-layer' as JQuery.Selector).css({ left:           0, width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mBack;
       $page2.find<HTMLImageElement>('.back>.motive-layer' as JQuery.Selector).css({ left: '-'+w1+'mm', width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mBack;
+    }
+
+    Snaplines.LineMap = [];
+    for(const $p of [$page1, $page2]) {
+      for(const side of [".front", ".back"]) {
+        Snaplines.LineMap.push(Snaplines.makeLines($p.children(side), [{
+          dir   : 'h',
+          offset: cardHeight / MMPerPx.y / 2,
+        }, {
+          dir   : 'v',
+          offset: cardWidth  / MMPerPx.x * 0.25,
+        }]));
+      }
     }
 
     //intrinsic colliders
