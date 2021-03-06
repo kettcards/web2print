@@ -8,10 +8,13 @@ import de.kettcards.web2print.model.tableimport.CardOverviewSheetRow;
 import de.kettcards.web2print.model.tableimport.MaterialSheetRow;
 import de.kettcards.web2print.repository.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,12 +46,12 @@ public final class XlsxImportService {
     @Autowired
     private MotiveRepository motiveRepository;
 
-    public void importCards(InputStream xlsxFile) throws IOException {
+    public synchronized void importCards(InputStream xlsxFile) throws IOException {
         XSSFWorkbook workBook = new XSSFWorkbook(xlsxFile);
 
-        List<MaterialSheetRow> textur = MaterialSheetRow.parseRows(workBook.getSheet("Textur"));
-        List<CardFormatSheetRow> formatRows = CardFormatSheetRow.parseRows(workBook.getSheet("Kartenformate"));
-        List<CardOverviewSheetRow> cardOverviewRows = CardOverviewSheetRow.parseRows(workBook.getSheet("Kartenübersicht"));
+        List<MaterialSheetRow> textur = MaterialSheetRow.parseRows(parseSheet(workBook, "Textur"));
+        List<CardFormatSheetRow> formatRows = CardFormatSheetRow.parseRows(parseSheet(workBook, "Kartenformate"));
+        List<CardOverviewSheetRow> cardOverviewRows = CardOverviewSheetRow.parseRows(parseSheet(workBook,"Kartenübersicht"));
 
         //filters out non-supported types, TODO: entweder in ner Config-File oder im Verwaltungswerkzeug änderbar machen
         formatRows = formatRows.stream().filter(cardFSRow -> cardFSRow.getFoldType().equals("links") || cardFSRow.getFoldType().equals("oben"))
@@ -57,7 +60,7 @@ public final class XlsxImportService {
         cardOverviewRows = cardOverviewRows.stream().filter(row -> allowedFormats.contains(row.getCardFormat())).collect(Collectors.toList());
 
 
-        var texturVirtualMapper = buildVirtualMap(textureRepository, textur, MaterialSheetRow::toMaterial);
+        var texturVirtualMapper = buildVirtualMap(textureRepository, texture, MaterialSheetRow::toMaterial);
         var cardFormatVirtualMapper = buildVirtualMap(cardFormatRepository, formatRows, CardFormatSheetRow::toCardFormat);
         buildVirtualMap(foldRepository, formatRows,
                 cardFSRow -> {
@@ -140,6 +143,13 @@ public final class XlsxImportService {
             }
 
         }
+    }
+
+    private XSSFSheet parseSheet(XSSFWorkbook workbook, String name) {
+        var textureSheet = workbook.getSheet(name);
+        if (textureSheet == null)
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Tabelle'" + name +"' kann nicht gefunden werden");
+        return textureSheet;
     }
 
     private void invalidCard(Card card) throws IllegalArgumentException {
