@@ -10,6 +10,7 @@
     "../MMPerPx.ts",
     "../SelectEx.ts",
     "./ResizeBars.ts",
+    "./Colliders.ts",
     "./El.ts",
     "./Editor.ts",
     "./Elements.ts",
