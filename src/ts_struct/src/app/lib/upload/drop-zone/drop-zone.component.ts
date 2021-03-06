@@ -10,7 +10,7 @@ export class DropZoneComponent {
   @Input()
   dropPromptText = 'Dateien hier hinzufügen';
   @Input()
-  dropBackgroundDefault = 'rgba(0, 0, 0, 0.0)';
+  dropBackgroundDefault = '#ffffff';
   @Input()
   dropBackgroundActive = '#388e3c';
   @Input()

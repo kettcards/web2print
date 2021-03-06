@@ -5,7 +5,7 @@
      (dragleave)="onDragLeave()"
      (dragover)="onDragOver($event)"
      (drop)="onDrop($event)">
-  <div class="upload-drop-area-content">
+  <div class="upload-drop-area-content" *ngIf="dropBackground!=dropBackgroundActive; else awaitDrop">
     <h3>{{dropPromptText}}</h3>
     <ng-container *ngIf="enableSelectionButton">
       <h4>oder</h4>
@@ -13,4 +13,7 @@
       <input type="file" hidden #sectionDialog (change)="onFileSelected($event)"/>
     </ng-container>
   </div>
+  <ng-template class="upload-drop-area-content" #awaitDrop>
+    <h2>Loslassen zum hinzufügen</h2>
+  </ng-template>
 </div>
