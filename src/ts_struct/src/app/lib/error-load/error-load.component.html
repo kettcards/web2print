@@ -1,0 +1,11 @@
+<div *ngIf="errorMessage != null; else showLoad">
+  <div [innerHTML]="errorMessage"></div>
+  <button mat-raised-button color="primary" (click)="onRetry.emit()">
+    <mat-icon>retry</mat-icon>
+    Erneut Versuchen
+  </button>
+</div>
+
+<ng-template #showLoad>
+  <mat-spinner></mat-spinner>
+</ng-template>
