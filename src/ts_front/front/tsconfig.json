@@ -11,6 +11,7 @@
     "../SelectEx.ts",
     "./Snaplines.ts",
     "./ResizeBars.ts",
+    "./Colliders.ts",
     "./El.ts",
     "./Editor.ts",
     "./Elements.ts",
