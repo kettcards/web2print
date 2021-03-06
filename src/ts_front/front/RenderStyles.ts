@@ -1,4 +1,4 @@
-declare interface RenderStyle {
+interface RenderStyle {
   name: string;
   condition(card : Card): boolean;
   pageGen(card: Card): DocumentFragment | JQuery<DocumentFragment>;
@@ -39,19 +39,39 @@ const RenderStyles : RenderStyle[] = [{
       $bundle.find('.folds-layer' as JQuery.Selector).append(createFold(fold));
     }
 
-    let mFront, mBack;
+    const $back  = $bundle.children('.back');
+    const $front = $bundle.children('.front');
+
     for(const motive of card.motive) {
       switch(motive.side) {
-        case 'FRONT': mFront = motive.textureSlug; break;
-        case 'BACK':  mBack  = motive.textureSlug; break;
+        case 'FRONT': $front.children('.motive-layer')[0].src = web2print.links.motiveUrl+motive.textureSlug; break;
+        case 'BACK' : $back .children('.motive-layer')[0].src = web2print.links.motiveUrl+motive.textureSlug; break;
         default: throw new Error("unknown motive side '"+motive.side+"'");
       }
     }
 
-    if(mBack)
-      $bundle.find<HTMLImageElement>('.back>.motive-layer'  as JQuery.Selector)[0].src = web2print.links.motiveUrl+mBack;
-    if(mFront)
-      $bundle.find<HTMLImageElement>('.front>.motive-layer' as JQuery.Selector)[0].src = web2print.links.motiveUrl+mFront;
+    Snaplines.LineMap = [
+      Snaplines.makeLines($front, [{
+        dir   : 'h',
+        offset: height / MMPerPx.y / 2,
+      }, {
+        dir   : 'v',
+        offset: width / MMPerPx.x * 0.25,
+      }, {
+        dir   : 'v',
+        offset: width / MMPerPx.x * 0.75,
+      }]),
+      Snaplines.makeLines($back, [{
+        dir   : 'h',
+        offset: height / MMPerPx.y / 2,
+      }, {
+        dir   : 'v',
+        offset: width / MMPerPx.x * 0.25,
+      }, {
+        dir   : 'v',
+        offset: width / MMPerPx.x * 0.75,
+      }]),
+    ];
 
     this.data.rot     = 0;
     this.data.$bundle = $bundle;

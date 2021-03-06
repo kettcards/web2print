@@ -9,6 +9,7 @@
     "../nodesFromSelection.ts",
     "../MMPerPx.ts",
     "../SelectEx.ts",
+    "./Snaplines.ts",
     "./ResizeBars.ts",
     "./El.ts",
     "./Editor.ts",

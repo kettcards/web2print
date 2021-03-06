@@ -359,6 +359,19 @@ body {
   transform: rotateY(-180deg);
 }
 
+.snap-lines-layer>* {
+  position: absolute;
+  background-color: red;
+}
+.snap-lines-layer>*.h {
+  height: 1px;
+  width: 100%;
+}
+.snap-lines-layer>*.v {
+  height: 100%;
+  width: 1px;
+}
+
 .text {
   position: absolute;
   margin: 0;
