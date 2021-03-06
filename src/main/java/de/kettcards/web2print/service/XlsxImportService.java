@@ -60,7 +60,7 @@ public final class XlsxImportService {
         cardOverviewRows = cardOverviewRows.stream().filter(row -> allowedFormats.contains(row.getCardFormat())).collect(Collectors.toList());
 
 
-        var texturVirtualMapper = buildVirtualMap(textureRepository, texture, MaterialSheetRow::toMaterial);
+        var texturVirtualMapper = buildVirtualMap(textureRepository, textur, MaterialSheetRow::toMaterial);
         var cardFormatVirtualMapper = buildVirtualMap(cardFormatRepository, formatRows, CardFormatSheetRow::toCardFormat);
         buildVirtualMap(foldRepository, formatRows,
                 cardFSRow -> {
