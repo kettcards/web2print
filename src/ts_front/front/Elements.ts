@@ -110,8 +110,39 @@ const Elements : ElementsObj = {
   },
   IMAGE: {
     displayName: 'Bild / Logo',
-    spawn(p: JQuery.Coordinates | JQuery.PlainObject): JQuery<HTMLImageElement> {
-      return $<HTMLImageElement>(`<img class="logo" src="${web2print.links.apiUrl}content/${ImageEl.contentId}" alt="${ImageEl.contentId}" data-aspect-ratio="${ImageEl.imgAR}" draggable="false">`)
+    spawn(p: JQuery.Coordinates | JQuery.PlainObject) : JQuery<HTMLImageElement> {
+
+      const img = new Image();
+      img.className = 'logo';
+      img.draggable = false;
+      img.alt = ImageEl.contentId;
+      img.onload = function() {
+        const ar = img.width / img.height;
+        img.dataset.aspectRatio = String(ar);
+
+        const maxRight  = Editor.storage.loadedCard.cardFormat.width  * 0.9 / MMPerPx.x;
+        const maxBottom = Editor.storage.loadedCard.cardFormat.height * 0.9 / MMPerPx.y;
+        const dims = {
+          width : img.width,
+          height: img.height,
+        }
+
+        if(p.left + img.width > maxRight) {
+          dims.width  = maxRight - p.left;
+          dims.height = dims.width / ar;
+        }
+        if(p.top + dims.height > maxBottom) {
+          dims.height = maxBottom - p.top;
+          dims.width  = dims.height * ar;
+        }
+
+        $(img).css(dims);
+
+        img.onload = undefined;
+      };
+      img.src = `${web2print.links.apiUrl}content/${ImageEl.contentId}`;
+
+      return $<HTMLImageElement>(img)
         .mousedown(ImageEl.hMDown)
         .mouseup(El.hMUp)
         // as above so below
