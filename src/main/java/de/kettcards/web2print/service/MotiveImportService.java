@@ -31,9 +31,9 @@ import java.util.List;
 
 @Slf4j
 @Component
-public final class MotiveImportService extends StorageContextAware implements WebContextAware {
+public class MotiveImportService extends StorageContextAware implements WebContextAware {
 
-    private static final String DEFAULT_PREFIX = "default/";
+    private static final String defaultPrefix = "default/";
 
     private final MotiveRepository motiveRepository;
 
@@ -102,25 +102,32 @@ public final class MotiveImportService extends StorageContextAware implements We
         var format = cardFormatRepository.findById(Integer.parseInt(id)).orElseThrow();
 
         if (MediaTypeFileExtension.PDF.isValidFileExtension(extension)) {
-            var streams = printPdfToImage(content.getInputStream(), getScaleFactor());
-            if (streams.get(0) != null) {
-                saveDefaultFormat(format, streams.get(0), "-front.png");
-            }
+            try {
+                var streams = printPdfToImage(content.getInputStream(), getScaleFactor());
+                if (streams.get(0) != null) {
+                    saveDefaultFormat(format, streams.get(0), "-front.png");
+                }
 
-            if (streams.get(1) != null) {
-                saveDefaultFormat(format, streams.get(1), "-back.png");
+                if (streams.get(1) != null) {
+                    saveDefaultFormat(format, streams.get(1), "-back.png");
+                }
+                save(content, defaultPrefix.concat(originalFilename));
+            } catch (IOException exception) {
+                throw new IOException("500: encountered IOException while importing " + originalFilename);
             }
-
-            save(content, DEFAULT_PREFIX.concat(originalFilename));
-            Motive motive = new Motive();
-            motive.setTextureSlug(originalFilename);
+        } else {
+            //TODO: implement JPG(probably convert to PNG and also image quality probably not good enough for
+            // pdf generator), PNG
+            throw new IllegalArgumentException("Importing PNG and JPG (" + originalFilename + ")isn't implemented yet.");
         }
+        Motive motive = new Motive();
+        motive.setTextureSlug(originalFilename);
 
     }
 
     private void saveDefaultFormat(CardFormat cardFormat, ByteArrayOutputStream stream, String suffix) throws IOException {
         if (stream != null) {
-            var name = DEFAULT_PREFIX + cardFormat.getId() + suffix;
+            var name = defaultPrefix + cardFormat.getId() + suffix;
             save(new Content(new InMemoryResource(stream.toByteArray())), name);
             Motive motive = new Motive();
             motive.setTextureSlug(name);
