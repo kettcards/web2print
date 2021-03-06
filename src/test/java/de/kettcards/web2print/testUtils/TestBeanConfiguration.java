@@ -75,10 +75,6 @@ public class TestBeanConfiguration implements EnvironmentAware {
         else
             l.setThumbnailUrl("https://www.kettcards.de/img/");
         c.setLinks(l);
-        var p = new ApplicationConfiguration.Page();
-        p.setDefaultPageSize(5);
-        p.setMaxPageSize(10);
-        c.setPage(p);
         System.out.println(c);
         return c;
     }
