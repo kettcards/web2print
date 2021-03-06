@@ -54,20 +54,33 @@ body {
   margin-left: 2px;
 }
 
-#submitBtn {
-  position: absolute;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
+.lower-btn {
   width: 200px;
-  max-width: 67%;
-  height: 75px;
-  font-size: 26px;
+  max-width: 90%;
+  display: inline-block;
+  margin-bottom: 5px;
+}
+
+#save-btn {
+  width: 100%;
+  font-size: 22px;
+}
+
+#submit-btn {
+  font-size: 22px;
+  margin: 0 0 5px 0;
+}
+#save-btn {
+  box-sizing: border-box;
+  display: inline-block;
+}
+
+#submit-btn,
+#save-btn {
+  padding: 10px;
 }
 
 #toolbar {
-  position: relative;
-  z-index: 1;
   background-color: lightgray;
   padding: 5px 0;
 }
@@ -76,6 +89,7 @@ body {
   display: inline-block;
   vertical-align: top;
   padding: 0 5px;
+  height: 100%;
 }
 .toolbar-row:nth-child(n+2) {
   border-left: solid gray 1px;
@@ -114,9 +128,26 @@ body {
   text-align: right;
   box-sizing: border-box;
   border: solid transparent 1px;
+  border: none;
 }
 #fontSizeSelect:hover,
 #fontSizeSelect:active {
+  border-color: black;
+  background-color: white;
+}
+
+#lh-spinner {
+  outline: none;
+  text-align: right;
+  max-width: 6ex;
+  background: inherit;
+  font-size: inherit;
+  box-sizing: border-box;
+  border: solid transparent 1px;
+  border: none;
+}
+#lh-spinner:hover,
+#lh-spinner:active {
   border-color: black;
   background-color: white;
 }
@@ -125,13 +156,27 @@ body {
   display: inline-block;
 }
 
+#text-btns {
+  margin-left: 5px;
+  transform: translateY(-1px);
+}
 #text-btns button {
   width: 28px;
   height: 28px;
   padding: 0;
 }
 
+#font-line-select {
+  display: flex;
+  margin-top: 5px;
+}
+
+#font-line-select>div {
+  margin-left: 25px;
+}
+
 #editor-area {
+  overflow: hidden;
   position: relative;
   flex-grow: 1;
 }
@@ -319,7 +364,6 @@ body {
   margin: 0;
   transition: background-color 1s;
   outline: none;
-  line-height: 1.2;
 }
 .text:focus,
 .text:hover {
@@ -352,6 +396,9 @@ body {
   text-align: center;
   padding: 10px;
   box-sizing: border-box;
+}
+
+#editor-area .floater {
   z-index: 1;
 }
 
@@ -384,39 +431,36 @@ body {
   background-color: #8c8585;
 }
 
-#font-select {
+.select-ex {
   position: relative;
-  outline: none;
-  background-color: white;
 }
-#font-label {
-  min-width: 150px;
-  max-width: 250px;
+.select-ex-label {
   overflow: clip;
 }
-#font-select>p {
+.select-ex>p {
   border: solid gray 1px;
+  background-color: white;
   transition: border-color .25s;
   margin: 0;
   padding: 0;
 }
-#font-select>p:hover {
+.select-ex>p:hover {
   border-color: black;
 }
-#font-label-tick {
+.select-ex-tick {
   float: right;
   transition: border-color .25s, background-color .25s;
   border-left: solid transparent 1px;
 }
-#font-select>p span {
-  padding: 5px 10px;
-  display: inline-block;
-}
-#font-select>p:hover>#font-label-tick {
+.select-ex>p:hover>.select-ex-tick {
   background-color: lightgray;
   border-left-color: black;
 }
-#font-options {
+.select-ex>p span {
+  padding: 5px 10px;
+  display: inline-block;
+}
+.select-ex-options {
   position: absolute;
   border: solid gray 1px;
   box-sizing: border-box;
@@ -426,13 +470,18 @@ body {
   background-color: white;
   z-index: 1;
 }
-#font-options>p {
+.select-ex-options>p {
   margin: 0;
   padding: 5px 10px;
 }
-#font-options>p:hover {
+.select-ex-options>p:hover {
   background-color: lightgray;
   transition: background-color .25s;
+}
+
+#font-label {
+  min-width: 150px;
+  max-width: 250px;
 }
 
 #fontSizeSelect {
@@ -486,6 +535,18 @@ body {
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23B8B8B8" d="M0 0h26v26H0z"/><path fill="none" stroke="%23FFF" stroke-width="2" d="M3.319 5.661h19.362M11.887 10.554h10.794M3.319 15.445h19.362M9.237 20.338h13.444"/></svg>');
 }
 
+#apply-color {
+  background-color: black;
+}
+#color-picker {
+  visibility: collapse;
+  width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+}
+
 .hFold{
   position: absolute;
   background-color: deeppink;
@@ -514,6 +575,7 @@ button {
   color: white;
   text-align: center;
   transition: background-color 0.3s,color 0.3s;
+  border-radius: 0;
   outline: none;
 }
 button:hover {

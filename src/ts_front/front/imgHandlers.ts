@@ -1,4 +1,6 @@
 class ImageEl {
+  static contentId  : string = undefined;
+  static imgAR      : number = 1;
   static hMDown(e : JQuery.MouseDownEvent) : void {
     switch(Editor.state) {
       case EditorStates.EL_FOCUSED:
@@ -12,26 +14,29 @@ class ImageEl {
   }
 }
 
-let logoContentId;
-
-const hFileUploadChanged = function(e) {
+function hFileUploadChanged(e) {
   //file Upload code
-  let file = e.target.files[0];
-  console.log(file.type);
-  //send to server
-  let fd = new FormData();
+  const file = e.target.files[0];
+
+  const fd = new FormData();
   fd.append("file", file);
-  let req = jQuery.ajax({
-    url: web2print.links.apiUrl + "content",
-    method: "POST",
+  $.post({
+    url: web2print.links.apiUrl+"content",
     data: fd,
     processData: false,
-    contentType: false
-  });
-  req.then(function (response) {
-    logoContentId = JSON.parse(response).contentId;
-  }, function (xhr) {
-    console.error('failed to fetch xhr', xhr)
+    contentType: false,
+  }).then(function(response : { contentId : string }) {
+    ImageEl.contentId = response.contentId;
+    const img = new Image();
+    img.onload = function() {
+      ImageEl.imgAR = img.width / img.height;
+    };
+    img.src = `${web2print.links.apiUrl}content/${ImageEl.contentId}`;
+  }).catch(function(e) {
+    Editor.storage.addOnClick = undefined;
+    $fileUpBtn.val(null); //emptys the Filelist, is needed if the same file is choosen again
+    console.error('failed to fetch xhr', e);
+    alert("Die ausgewählte Datei konnte nicht hochgeladen werden.\nBitte stellen Sie sicher, dass das Dateiformat: .jpg,.jpeg,.png,.svg ist \nund die Dateigröße nicht 10MB überschreitet.");
   });
 }
 

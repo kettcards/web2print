@@ -14,6 +14,7 @@ type EditorStorage = {
   $target    : JQuery      | undefined;
   addOnClick : Spawner     | undefined;
   range      : Range;
+  currentColor : string;
 };
 
 enum EditorStates {
@@ -34,7 +35,8 @@ class Editor {
     scale     : 1,
     translateX: 0,
     translateY: 1,
-    rotate    : 0
+    rotate    : 0,
+    manuallyModified : false,
   };
   static state : EditorStates = EditorStates.NONE;
   static storage : EditorStorage = {
@@ -47,6 +49,7 @@ class Editor {
     $target    : undefined,
     addOnClick : undefined,
     range      : undefined,
+    currentColor : "#000000",
   };
 
   static setTarget(t : HTMLElement) : void {
@@ -102,6 +105,7 @@ class Editor {
     storage.dx = 0;
     storage.dy = 0;
     Editor.state = EditorStates.SELF_DRAGGING;
+    Editor.transform.manuallyModified = true;
 
     Editor.setCursor('move');
   }
@@ -123,18 +127,21 @@ class Editor {
   static zoom(steps : number) : void {
     const scale = Editor.transform.scale;
     Editor.transform.scale = Math.min(Math.max(scale + scale * steps * -0.01, 0.1), 5);
+    Editor.transform.manuallyModified = true;
     Editor.applyTransform();
     Editor.displayZoom();
   }
   static fitToContainer() : void {
+    const transform = Editor.transform;
     // 55 additional pixels for the rulers
-    Editor.transform.scale = Math.min(
+    transform.scale = Math.min(
       Editor.$editorArea. width() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.width  + 55),
       Editor.$editorArea.height() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.height + 55)
     ) * 0.9;
-    Editor.transform.translateX = 0;
-    Editor.transform.translateY = 0;
-    Editor.transform.rotate     = 0;
+    transform.translateX = 0;
+    transform.translateY = 0;
+    transform.rotate     = 0;
+    transform.manuallyModified = false;
     Editor.applyTransform();
     Editor.displayZoom();
   }
@@ -142,6 +149,11 @@ class Editor {
     const transform = Editor.transform;
     // (lucas) cant use the proper matrix solution because the browser gets confused with the rotation direction :(
     Editor.$transformAnchor.css('transform', `scale(${transform.scale}) translate(${transform.translateX}px,${transform.translateY}px) rotateY(${transform.rotate}deg)`);
+  }
+
+  static hWindowResized() : void {
+    if(!Editor.transform.manuallyModified)
+      Editor.fitToContainer();
   }
 
   static showHandlesOnTarget(): void {
@@ -180,5 +192,23 @@ class Editor {
     sel.addRange(Editor.storage.range);
 
     return sel;
+  }
+
+  static deleteElement() : void {
+    switch (Editor.state) {
+      case EditorStates.EL_FOCUSED:
+      case EditorStates.TXT_EDITING:
+        if(confirm("Wollen Sie das Element wirklich löschen?")) {
+          const target = Editor.storage.target;
+          target.parentElement.removeChild(target);
+          ResizeBars.hide();
+          Editor.state = EditorStates.NONE;
+          break;
+        }
+    }
+  }
+
+  static displayLineheight() : void {
+    $lhSpinner[0].value = Editor.storage.target.style.lineHeight;
   }
 }

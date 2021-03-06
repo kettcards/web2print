@@ -1,34 +1,76 @@
-declare interface PrintData {
+interface PrintData {
   v        : '0.2';
   card     : string;
   outerEls : Box[];
   innerEls : Box[];
 }
-declare type Box = TextBox | ImageBox;
-declare interface TextBox extends BoundingBox {
-  t : "t";
-  a : 'l' | 'r' | 'c' | 'j';
-  r : TextRun[];
+type Box = TextBox | ImageBox;
+interface TextBox extends BoundingBox {
+  t  : "t";
+  a  : 'l' | 'r' | 'c' | 'j';
+  lh : number;
+  r  : TextRun[];
 }
-declare type TextRun = 'br' | ActualTextRun;
-declare interface ActualTextRun {
+type TextRun = 'br' | ActualTextRun;
+interface ActualTextRun {
   f : string;
   s : number;
   a : number;
   t : string;
+  c : string;
 }
-declare interface ImageBox extends BoundingBox {
+interface ImageBox extends BoundingBox {
+  r: number;
   t : "i";
   s : string;
 }
-declare interface BoundingBox {
+interface BoundingBox {
   x : number;
   y : number;
   w : number;
   h : number;
 }
 
-const serialize = function() {
+function submit(_export : boolean) : void {
+  const data = serialize();
+
+  console.log("sending", data);
+  $.post(`${web2print.links.apiUrl}save/${Parameters.sId || ''}?export=${_export}`, 'data='+btoa(JSON.stringify(data)))
+    .then(function(response : string) {
+      Parameters.sId = response;
+      window.history.replaceState({}, Editor.storage.loadedCard.name+" - Web2Print", stringifyParameters());
+      let txt = 'Daten erfolgreich gesendet!';
+      if(!_export)
+        txt += ` Sie befinden sich nun auf \n${window.location}\n Besuchen Sie diese Addresse später erneut wird das gespeicherte Design automatisch geladen.`;
+      alert(txt);
+    }).catch(function(e){
+    alert('Fehler beim Senden der Daten!\n'+JSON.stringify(e));
+  });
+}
+
+function download() {
+  const data     = serialize();
+  const fileName = `${data.card}.des`;
+  // (lucas) taken from
+  // https://stackoverflow.com/questions/13405129/javascript-create-and-save-file
+    const file = new Blob([btoa(JSON.stringify(data))], { type: 'text/plain' });
+  if (window.navigator.msSaveOrOpenBlob) { // IE10+
+    window.navigator.msSaveOrOpenBlob(file, fileName);
+  } else { // Others
+    const a = make("a") as HTMLAnchorElement;
+    const url = URL.createObjectURL(file);
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function() {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 0);
+  }
+}
+
+function serialize() : PrintData {
   const data : PrintData = {
     v: '0.2',
     card: Parameters.card,
@@ -44,17 +86,10 @@ const serialize = function() {
     serializeSide($b.find('.back>.elements-layer' as JQuery.Selector).children() , offs, data.innerEls);
   }
 
-  console.log("sending", data);
-  const _export = true;
-  $.post(web2print.links.apiUrl+'save/'+(Parameters.sId || '')+'?export='+_export, 'data='+btoa(JSON.stringify(data)))
-    .then(function() {
-      alert('Sent data!');
-    }).catch(function(e){
-    alert('Send failed: \n'+JSON.stringify(e));
-  });
+  return data;
 }
 
-const serializeSide = function($els : JQuery, xOffs : number, target : Box[]) {
+function serializeSide($els : JQuery, xOffs : number, target : Box[]) : void {
   for(let j = 0; j < $els.length; j++) {
     const $el = $els.eq(j);
     const bounds : BoundingBox = {
@@ -64,58 +99,71 @@ const serializeSide = function($els : JQuery, xOffs : number, target : Box[]) {
       h: $el.height() * MMPerPx.y
     };
     switch($el[0].nodeName){
-      case 'DIV': {
-        let align = $el.css('text-align');
-        switch (align) {
-          case 'justify': align = 'j'; break;
-          case 'right':   align = 'r'; break;
-          case 'center':  align = 'c'; break;
-          default:        align = 'l';
-        }
-        let box = Object.assign({
-          t: "t",
-          a: align,
-          r: []
-        }, bounds) as TextBox;
-        let $innerChildren = $el.children();
-        for (let j = 0; j < $innerChildren.length; j++) {
-          let $iel = $innerChildren.eq(j);
-          if(($iel[0] as Node).isA('P')) {
-            const $spans = $iel.children();
-            for(let k = 0; k < $spans.length; k++) {
-              const $span = $spans.eq(k);
-              if(($span[0] as Node).isA('SPAN')) {
-                let attributes = 0;
-                for(const [c, v] of Object.entries(Fonts.FontStyleValues))
-                  if ($span.hasClass(c))
-                    attributes |= v;
-                box.r.push({
-                  f: $span.css('font-family'),
-                  s: Math.round((+$span.css('font-size').slice(0,-2)) / 96 * 72),
-                  a: attributes,
-                  t: $span.text()
-                });
-              } else {
-                console.warn('cannot serialize element', $span[0]);
-              }
-            }
-            box.r.push('br');
-          } else {
-            console.warn('cannot serialize element', $iel[0]);
-          }
-        }
-        target.push(box);
-      } break;
-
-      case 'IMG':{
-        let box = Object.assign({
-          t: "i",
-          s: ($el[0] as HTMLImageElement).alt,
-        }, bounds) as ImageBox;
-        target.push(box);
-      } break;
+      case 'DIV': target.push(Object.assign(Elements.TEXT .serialize($el), bounds)); break;
+      case 'IMG': target.push(Object.assign(Elements.IMAGE.serialize($el), bounds)); break;
 
       default: console.warn('cannot serialize element', $el[0]);
     }
   }
-};
+}
+
+function hUpload(e : JQuery.ChangeEvent) {
+  const file = e.target.files[0] as File;
+  if (!file)
+    return;
+
+  file.text().then(loadElementsCompressed.bind(null, true));
+}
+
+function loadElementsCompressed(fileSource : Boolean, b64data : string) : void {
+  const data : PrintData = JSON.parse(atob(b64data));
+  if(Parameters.card !== data.card) {
+    // (lucas) todo: allow loading of designs associated with a different card
+    // We could prompt here if the user just wants to change the card layout.
+    // The problem with this idea is that we cant easily store the data if we actually navigate to the different address
+    // and the loadCard method is not designed to be called multiple times, so we cant just call it again arnd replace the history.
+
+    alert(`Das Design kann nicht geladen werden, da es zu einer anderen Karte gehört (${data.card}).`);
+    throw new Error('invalid card format');
+  }
+
+  if(fileSource) {
+    renderStyleState.style.clear();
+    delete Parameters.sId;
+  }
+
+  window.history.replaceState({}, Editor.storage.loadedCard.name+" - Web2Print", stringifyParameters());
+
+  loadElements(data);
+}
+function loadElements(data : PrintData) : void {
+  console.log('loading data', data);
+
+  loadSide('front', data.outerEls);
+  loadSide('back' , data.innerEls);
+}
+function loadSide(side : 'front'|'back', boxes : Box[]) : void {
+  const cardHeight = Editor.storage.loadedCard.cardFormat.height / MMPerPx.y;
+  for(const box of boxes) {
+    const bounds = {
+      left  : box.x / MMPerPx.x,
+      width : box.w / MMPerPx.x,
+      top   : cardHeight - (box.y + box.h) / MMPerPx.y,
+      height: box.h / MMPerPx.y
+    };
+    const page = renderStyleState.style.assocPage(side, bounds);
+    let el : JQuery;
+    switch(box.t) {
+      case "i": {
+        el = Elements.IMAGE.spawn(bounds);
+        Elements.IMAGE.restore(el, box);
+      } break;
+      case "t": {
+        el = Elements.TEXT.spawn(bounds);
+        Elements.TEXT.restore(el, box);
+      } break;
+      default: throw new Error(`Can't deserialize box of type '${box['t']}'.`);
+    }
+    page.children('.elements-layer').append(el);
+  }
+}
