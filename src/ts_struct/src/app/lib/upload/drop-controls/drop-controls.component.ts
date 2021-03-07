@@ -13,9 +13,13 @@ export class DropControlsComponent {
   showDeleteAll = true;
   @Input()
   showSubmitAll = true;
+  @Input()
+  showClearSuccessful = false;
   @Output()
   deleteAll = new EventEmitter<MouseEvent>();
   @Output()
   submitAll = new EventEmitter<MouseEvent>();
+  @Output()
+  clearSuccessful = new EventEmitter<MouseEvent>();
 
 }
