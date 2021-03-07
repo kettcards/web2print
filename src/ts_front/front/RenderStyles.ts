@@ -50,27 +50,38 @@ const RenderStyles : RenderStyle[] = [{
       }
     }
 
+    //snaplines for all axis aligned folds
+    const lineDefs : SnapLineDef[] = [];
+    let lx = 0;
+    let ly = 0;
+    for(const fold of card.cardFormat.folds) {
+      if(fold.x1 === fold.x2) {
+        lineDefs.push({
+          dir   : 'v',
+          offset: (lx + (fold.x1 - lx) / 2) / MMPerPx.x,
+        })
+        lx = fold.x1;
+      } else if (fold.y1 === fold.y2) {
+        lineDefs.push({
+          dir   : 'h',
+          offset: (ly + (fold.y1 - ly) / 2) / MMPerPx.y,
+        })
+        ly = fold.y1;
+      } else {
+        console.log("can't create snapline from none axis aligned fold");
+      }
+    }
+    lineDefs.push({
+      dir   : 'v',
+      offset: (lx + (width - lx) / 2) / MMPerPx.x,
+    })
+    lineDefs.push({
+      dir   : 'h',
+      offset: (ly + (height - ly) / 2) / MMPerPx.y,
+    })
     Snaplines.LineMap = [
-      Snaplines.makeLines($front, [{
-        dir   : 'h',
-        offset: height / MMPerPx.y / 2,
-      }, {
-        dir   : 'v',
-        offset: width / MMPerPx.x * 0.25,
-      }, {
-        dir   : 'v',
-        offset: width / MMPerPx.x * 0.75,
-      }]),
-      Snaplines.makeLines($back, [{
-        dir   : 'h',
-        offset: height / MMPerPx.y / 2,
-      }, {
-        dir   : 'v',
-        offset: width / MMPerPx.x * 0.25,
-      }, {
-        dir   : 'v',
-        offset: width / MMPerPx.x * 0.75,
-      }]),
+      Snaplines.makeLines($front, lineDefs),
+      Snaplines.makeLines($back , lineDefs),
     ];
 
     //intrinsic colliders
