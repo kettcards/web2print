@@ -5,8 +5,10 @@
   </app-drop-zone>
   <app-drop-controls
     [list]="queuedTextureResources"
+    [showClearSuccessful]="hasSuccessfulUploadedInQueue"
     (deleteAll)="deleteAllTextureEntry()"
-    (submitAll)="importAllTextures()">
+    (submitAll)="importAllTextures()"
+    (clearSuccessful)="clearSubmittedTextures()">
   </app-drop-controls>
   <!-- item list -->
   <mat-list *ngFor="let texture of queuedTextureResources" class="import-list">
@@ -35,7 +37,7 @@
                 mat-raised-button color="primary" (click)="importTexture(texture)">
           <mat-icon>publish</mat-icon>
         </button>
-        <button *ngIf="texture.state != FileState.SUCCESSFUL" mat-raised-button color="warn"
+        <button mat-raised-button color="warn"
                 (click)="deleteTextureEntry(texture)">
           <mat-icon>delete</mat-icon>
         </button>

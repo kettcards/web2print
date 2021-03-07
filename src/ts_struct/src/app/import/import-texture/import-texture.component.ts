@@ -1,4 +1,4 @@
-import {Component, Inject, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ContentTypeFilter, FileState, StatefulWrappedFileType, UniqueEntryFilter, Utils} from "../../lib/utils";
 import {CardMaterial} from "../../lib/card";
 import {ErrorDialogComponent, FileError} from "../../lib/error-dialog/error-dialog.component";
@@ -19,6 +19,8 @@ export class ImportTextureComponent implements OnInit {
   FileState: typeof FileState = FileState;
 
   availableTextures: CardMaterial[] | null = null;
+
+  hasSuccessfulUploadedInQueue = false;
 
   queuedTextureResources: StatefulWrappedFileType<CardMaterial>[] = [];
 
@@ -144,6 +146,7 @@ export class ImportTextureComponent implements OnInit {
     this.api.setTexture(texture).subscribe(
       response => {
         texture.state = FileState.SUCCESSFUL;
+        this.hasSuccessfulUploadedInQueue = true;
       },
       error => {
         texture.state = FileState.FAILED;
@@ -158,10 +161,19 @@ export class ImportTextureComponent implements OnInit {
         options: this.availableTextures
       }
     });
-    ref.afterClosed().subscribe(result => {
+    ref.afterClosed().subscribe(result => { //TODO ignore cancel closes
       console.log('setting result:', result);
       texture.type = result;
     });
+  }
+
+  clearSubmittedTextures() {
+    this.queuedTextureResources.forEach((texture, index) => {
+      if (texture.state == FileState.SUCCESSFUL) {
+        this.queuedTextureResources.splice(index, 1);
+      }
+    });
+    this.hasSuccessfulUploadedInQueue = false;
   }
 }
 

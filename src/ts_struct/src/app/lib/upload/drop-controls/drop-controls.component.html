@@ -9,7 +9,7 @@
       <span>Alle Löschen</span>
     </button>
     <span class="max-hgrow"></span>
-    <button *ngIf="showSubmitAll" mat-raised-button color="primary" (click)="submitAll.emit($event)">
+    <button *ngIf="showClearSuccessful" mat-raised-button color="primary" (click)="clearSuccessful.emit($event)">
       <span>Erfolgreiche Entfernen</span>
     </button>
   </ng-container>
