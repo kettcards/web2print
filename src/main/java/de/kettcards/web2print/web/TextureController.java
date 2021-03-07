@@ -100,6 +100,12 @@ public class TextureController extends StorageContextAware {
     @PostMapping("/{id}/texture")
     public void setTextureResource(@PathVariable Integer id, @RequestParam("file") MultipartFile file) throws IOException {
         var texture = getTexture(id);
+        var name = texture.getTextureSlug();
+        if (name == null || name.trim().isBlank()) { //no texture name specified at import
+            name = file.getOriginalFilename();
+            texture.setTextureSlug(name); //update db
+            textureRepository.save(texture);
+        }
         save(Content.from(file), texture.getTextureSlug());
     }
 

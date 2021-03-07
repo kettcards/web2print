@@ -2,7 +2,7 @@ import {Component, Inject, OnInit} from '@angular/core';
 import {ContentTypeFilter, FileState, StatefulWrappedFileType, UniqueEntryFilter, Utils} from "../../lib/utils";
 import {CardMaterial} from "../../lib/card";
 import {ErrorDialogComponent, FileError} from "../../lib/error-dialog/error-dialog.component";
-import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
+import {MatDialog} from "@angular/material/dialog";
 import {Api} from "../../lib/api";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {FormControl} from "@angular/forms";
