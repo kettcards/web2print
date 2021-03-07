@@ -12,7 +12,6 @@ import java.io.Serializable;
 @Table(name = "material")
 public final class Texture implements Serializable, VirtualId {
 
-    @JsonIgnore
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)

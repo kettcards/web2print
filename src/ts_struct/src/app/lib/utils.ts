@@ -110,7 +110,7 @@ export enum FileState {
 }
 
 export interface WrappedFileType<T> {
-  type: T;
+  type?: T;
   file: File;
 }
 

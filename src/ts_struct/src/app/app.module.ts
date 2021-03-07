@@ -28,6 +28,9 @@ import {MatInputModule} from "@angular/material/input";
 import {AutoChipsComponent} from './lib/auto-chips/auto-chips.component';
 import {MatChipsModule} from "@angular/material/chips";
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
+import {MatSelectModule} from "@angular/material/select";
+import { MappingDialogComponent } from './import/import-texture/mapping-dialog/mapping-dialog.component';
+import {MatOptionModule} from "@angular/material/core";
 
 const routes: Routes = [
   {path: '', redirectTo: 'cards', pathMatch: 'full'},
@@ -48,7 +51,8 @@ const routes: Routes = [
     ErrorDialogComponent,
     DropControlsComponent,
     ErrorLoadComponent,
-    AutoChipsComponent
+    AutoChipsComponent,
+    MappingDialogComponent
   ],
   imports: [
     RouterModule.forRoot(routes, {useHash: true}),
@@ -68,7 +72,10 @@ const routes: Routes = [
     MatProgressSpinnerModule,
     MatChipsModule,
     ReactiveFormsModule,
-    MatAutocompleteModule
+    MatAutocompleteModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatFormFieldModule
   ],
   exports: [
     RouterModule,

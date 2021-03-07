@@ -1,10 +1,12 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {ContentTypeFilter, FileState, StatefulWrappedFileType, UniqueEntryFilter, Utils} from "../../lib/utils";
 import {CardMaterial} from "../../lib/card";
 import {ErrorDialogComponent, FileError} from "../../lib/error-dialog/error-dialog.component";
-import {MatDialog} from "@angular/material/dialog";
+import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from "@angular/material/dialog";
 import {Api} from "../../lib/api";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {FormControl} from "@angular/forms";
+import {MappingDialogComponent} from "./mapping-dialog/mapping-dialog.component";
 
 @Component({
   selector: 'app-import-texture',
@@ -23,6 +25,8 @@ export class ImportTextureComponent implements OnInit {
   filters = [ContentTypeFilter.BITMAP, new UniqueEntryFilter(this.queuedTextureResources)];
 
   errorLoadMsg: string | null = null;
+
+  formControl = new FormControl();
 
   constructor(private dialog: MatDialog, private api: Api, private snackbar: MatSnackBar) {
   }
@@ -71,7 +75,7 @@ export class ImportTextureComponent implements OnInit {
     }
   }
 
-  findTextureName(file: File): CardMaterial {
+  findTextureName(file: File): CardMaterial | undefined {
     console.log('available textures', this.availableTextures);
     const fileName = Utils.fileNameFor(file.name);
 
@@ -95,12 +99,15 @@ export class ImportTextureComponent implements OnInit {
         return texture;
       }
     });
+    /*
     return {
       id: undefined,
       name: Utils.fileNameFor(file.name),
       textureSlug: file.name,
       tiling: "REPEAT"
     };
+     */
+    return undefined;
   }
 
   filter(file: File): string | null {
@@ -116,7 +123,7 @@ export class ImportTextureComponent implements OnInit {
   }
 
   deleteAllTextureEntry(): void {
-    this.queuedTextureResources = [];
+    this.queuedTextureResources.length = 0;
   }
 
   deleteTextureEntry(entry: StatefulWrappedFileType<CardMaterial>): void {
@@ -144,4 +151,18 @@ export class ImportTextureComponent implements OnInit {
     );
   }
 
+  changeMapping(texture: StatefulWrappedFileType<CardMaterial>): void {
+    const ref = this.dialog.open(MappingDialogComponent, {
+      data: {
+        selected: texture,
+        options: this.availableTextures
+      }
+    });
+    ref.afterClosed().subscribe(result => {
+      console.log('setting result:', result);
+      texture.type = result;
+    });
+  }
 }
+
+
