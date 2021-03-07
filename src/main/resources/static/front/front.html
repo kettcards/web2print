@@ -21,7 +21,7 @@
           <div class="toolbar-row" >
             <span class="toolbar-label">Hinzufügen</span>
             <div class="toolbar-buttons" id="add-el-btns">
-              <input id="fileUpload" type="file" accept=".gif,.jpg,.jpeg,.png,.svg,.eps"/>
+              <input id="fileUpload" type="file" accept=".jpg,.jpeg,.png,.svg"/>
             </div>
           </div>
           <div class="toolbar-row">
@@ -75,11 +75,13 @@
               <div class="page front">
                 <img class="motive-layer" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
                 <div class="elements-layer" onclick="hElementsLayerClick(event, this);"></div>
+                <div class="colliders-layer" onclick="Colliders.hCollidersLayerClick(event);"></div>
                 <div class="folds-layer"></div>
               </div>
               <div class="page back">
                 <img class="motive-layer" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
                 <div class="elements-layer" onclick="hElementsLayerClick(event, this);"></div>
+                <div class="colliders-layer" onclick="Colliders.hCollidersLayerClick(event);"></div>
                 <div class="folds-layer"></div>
               </div>
             </div>

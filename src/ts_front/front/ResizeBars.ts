@@ -1,10 +1,12 @@
 type ResizeBarsStorage = {
   bounds : {
+    transform: string,
     left   : number;
     width  : number;
     top    : number;
     height : number;
   };
+  aspectRatio   : number;
   preserveRatio : boolean;
   lockDir : number;
   $target : JQuery;
@@ -15,11 +17,13 @@ class ResizeBars {
   static visible = false;
   static storage : ResizeBarsStorage = {
     bounds : {
+      transform: '',
       left  : 0,
       width : 0,
       top   : 0,
       height: 0
     },
+    aspectRatio   : 1,
     preserveRatio : false,
     lockDir : 0,
     $target : undefined,
@@ -28,12 +32,13 @@ class ResizeBars {
   static setBoundsToTarget() {
     const eStorage = Editor.storage;
     const $target = eStorage.$target;
-    eStorage.x  = +$target.css('left').slice(0, -2);
-    eStorage.y  = +$target.css('top') .slice(0, -2);
+    eStorage.x  = pxToNum($target.css('left'));
+    eStorage.y  = pxToNum($target.css('top') );
     eStorage.dx = 0;
     eStorage.dy = 0;
     ResizeBars.storage.bounds = {
-      left  : eStorage.x + renderStyleState.style.getOffsetForTarget(),
+      transform: `translateX(${renderStyleState.style.getOffsetForTarget()}px)`,
+      left  : eStorage.x,
       width : $target.width(),
       top   : eStorage.y,
       height: $target.height()
@@ -45,13 +50,13 @@ class ResizeBars {
     ResizeBars.setBoundsToTarget();
     ResizeBars.$handles.css(
       Object.assign({
-        visibility: 'visible',
-        transform: ''
+        visibility: 'visible'
       }, rStorage.bounds) as JQuery.PlainObject)
     [rStorage.preserveRatio?'addClass':'removeClass']('preserve-ratio');
 
     ResizeBars.visible = true;
     rStorage.$target = ResizeBars.$handles.add(Editor.storage.$target);
+    rStorage.aspectRatio = +Editor.storage.target.dataset.aspectRatio;
   }
   static hBarMDown(e : JQuery.MouseDownEvent) : void {
     Editor.state = EditorStates.EL_RESIZING;
@@ -82,22 +87,20 @@ class ResizeBars {
     const bounds   = rStorage.bounds;
 
     const css : JQuery.PlainObject = {};
-    /*
     if(rStorage.preserveRatio) {
       if(Math.abs(dx) > Math.abs(dy)) {
-        dy = dx;
+        dy = dx / rStorage.aspectRatio;
         // (lucas 16.02.21) todo: find clean mathematical solution
         if(rStorage.lockDir === 0b0011 || rStorage.lockDir === 0b1100){
           dy *= -1;
         }
       } else {
-        dx = dy;
+        dx = dy * rStorage.aspectRatio;
         if(rStorage.lockDir === 0b0011 || rStorage.lockDir === 0b1100){
           dx *= -1;
         }
       }
     }
-    */
 
     if(rStorage.lockDir & 0b0001) {
       eStorage.dy += dy;

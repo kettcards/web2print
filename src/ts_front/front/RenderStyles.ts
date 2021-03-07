@@ -53,6 +53,13 @@ const RenderStyles : RenderStyle[] = [{
     if(mFront)
       $bundle.find<HTMLImageElement>('.front>.motive-layer' as JQuery.Selector)[0].src = web2print.links.motiveUrl+mFront;
 
+    //intrinsic colliders
+    $bundle.find('.colliders-layer' as JQuery.Selector)
+      .append(make('div.intrinsic.top')   )
+      .append(make('div.intrinsic.right') )
+      .append(make('div.intrinsic.bottom'))
+      .append(make('div.intrinsic.left')  );
+
     this.data.rot     = 0;
     this.data.$bundle = $bundle;
 
@@ -137,6 +144,35 @@ const RenderStyles : RenderStyle[] = [{
       $page1.find<HTMLImageElement>('.back>.motive-layer' as JQuery.Selector).css({ left:           0, width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mBack;
       $page2.find<HTMLImageElement>('.back>.motive-layer' as JQuery.Selector).css({ left: '-'+w1+'mm', width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mBack;
     }
+
+    //intrinsic colliders
+    $page1.add($page2).find('.colliders-layer' as JQuery.Selector)
+      .append(make('div.intrinsic.top')   )
+      .append(make('div.intrinsic.bottom'));
+    const $rightInnerCollider = $(make('div')).css({
+      right : `-${cardWidth / 2 + 50}mm`,
+      width :  `${cardWidth / 2 + 55}mm`,
+      top   :  `-50mm`,
+      height:  `calc(100% + 100mm)`,
+    });
+    const $leftInnerCollider = $(make('div')).css({
+      left  : `-${cardWidth / 2 + 50}mm`,
+      width :  `${cardWidth / 2 + 55}mm`,
+      top   :  `-50mm`,
+      height:  `calc(100% + 100mm)`,
+    });
+    $page1.find('.back>.colliders-layer' as JQuery.Selector)
+      .append(make('div.intrinsic.left')  )
+      .append($rightInnerCollider.clone() );
+    $page1.find('.front>.colliders-layer' as JQuery.Selector)
+      .append(make('div.intrinsic.right') )
+      .append($leftInnerCollider.clone()  );
+    $page2.find('.back>.colliders-layer' as JQuery.Selector)
+      .append(make('div.intrinsic.right') )
+      .append($leftInnerCollider          );
+    $page2.find('.front>.colliders-layer' as JQuery.Selector)
+      .append(make('div.intrinsic.left')  )
+      .append($rightInnerCollider         );
 
     this.data.p1r = 0;
     this.data.p2r = 0;

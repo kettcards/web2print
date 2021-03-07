@@ -68,35 +68,23 @@ class Editor {
   }
 
   static beginDragEl() : void {
-    Editor.storage.dx = 0;
-    Editor.storage.dy = 0;
     Editor.state = EditorStates.EL_DRAGGING;
     Editor.setCursor('move');
     Editor.storage.$target.addClass('no-select');
-  }
-  static dragEl(dx : number, dy : number) : void {
-    Editor.storage.dx += dx;
-    Editor.storage.dy += dy;
 
-    ResizeBars.storage.$target.css('transform',
-      `translate(${Editor.storage.dx / Editor.transform.scale}px, ${Editor.storage.dy / Editor.transform.scale}px)`);
+    Colliders.beginDrag();
+  }
+  static dragEl(dx, dy) {
+    const [x, y] = Colliders.drag(dx, dy);
+    ResizeBars.storage.$target.css({
+      left: x,
+      top : y,
+    });
   }
   static endDragEl() : void {
     Editor.state = EditorStates.EL_FOCUSED;
     Editor.setCursor('auto');
 
-    const storage = Editor.storage;
-    if(storage.dx === 0 && storage.dy === 0)
-      return;
-
-    ResizeBars.storage.$target.css({
-      top : `+=${storage.dy / Editor.transform.scale}`,
-      left: `+=${storage.dx / Editor.transform.scale}`,
-      transform: 'rotate('+getRotation()+'deg)',
-    });
-
-    storage.dx = 0;
-    storage.dy = 0;
     Editor.storage.$target.removeClass('no-select');
   }
 
@@ -197,16 +185,11 @@ class Editor {
   }
 
   static deleteElement() : void {
-    switch (Editor.state) {
-      case EditorStates.EL_FOCUSED:
-      case EditorStates.TXT_EDITING:
-        if(confirm("Wollen Sie das Element wirklich löschen?")) {
-          const target = Editor.storage.target;
-          target.parentElement.removeChild(target);
-          ResizeBars.hide();
-          Editor.state = EditorStates.NONE;
-          break;
-        }
+    if(confirm("Wollen Sie das Element wirklich löschen?")) {
+      const target = Editor.storage.target;
+      target.parentElement.removeChild(target);
+      ResizeBars.hide();
+      Editor.state = EditorStates.NONE;
     }
   }
 

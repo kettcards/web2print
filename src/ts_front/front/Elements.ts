@@ -112,10 +112,41 @@ const Elements : ElementsObj = {
   },
   IMAGE: {
     displayName: 'Bild / Logo',
-    spawn(p): JQuery<HTMLImageElement> {
+    spawn(p: JQuery.Coordinates | JQuery.PlainObject) : JQuery<HTMLImageElement> {
       if(Editor.storage.spawnBtn) Editor.storage.spawnBtn.toggleClass('active');
       Editor.storage.spawnBtn = undefined;
-      return $<HTMLImageElement>("<img class='logo' src='"+web2print.links.apiUrl+"content/"+logoContentId+"' alt='"+logoContentId+"' draggable='false'>")
+
+      const img = new Image();
+      img.className = 'logo';
+      img.draggable = false;
+      img.alt = ImageEl.contentId;
+      img.onload = function() {
+        const ar = img.width / img.height;
+        img.dataset.aspectRatio = String(ar);
+
+        const maxRight  = Editor.storage.loadedCard.cardFormat.width  * 0.9 / MMPerPx.x;
+        const maxBottom = Editor.storage.loadedCard.cardFormat.height * 0.9 / MMPerPx.y;
+        const dims = {
+          width : img.width,
+          height: img.height,
+        }
+
+        if(p.left + img.width > maxRight) {
+          dims.width  = maxRight - p.left;
+          dims.height = dims.width / ar;
+        }
+        if(p.top + dims.height > maxBottom) {
+          dims.height = maxBottom - p.top;
+          dims.width  = dims.height * ar;
+        }
+
+        $(img).css(dims);
+
+        img.onload = undefined;
+      };
+      img.src = `${web2print.links.apiUrl}content/${ImageEl.contentId}`;
+
+      return $<HTMLImageElement>(img)
         .mousedown(ImageEl.hMDown)
         .mouseup(El.hMUp)
         // as above so below
@@ -128,16 +159,17 @@ const Elements : ElementsObj = {
       return {
         t: "i",
         s: ($instance[0] as HTMLImageElement).alt,
+        r: +($instance[0] as HTMLImageElement).dataset.aspectRatio,
       };
     },
     restore($ownInstance: JQuery, data: ImageBox) : void {
       const img = ($ownInstance as JQuery<HTMLImageElement>)[0];
       img.src = `${web2print.links.apiUrl}content/${data.s}`;
       img.alt = data.s;
+      img.dataset.aspectRatio = String(data.r);
     }
   }
 }
-
 function colorStringToRGB(string){
   let rgb = string.slice(string.lastIndexOf("(")+1, string.lastIndexOf(")")).split(",");
   let hex = "#";
