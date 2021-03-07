@@ -37,6 +37,7 @@ export class ImportTextureComponent implements OnInit {
     this.api.getTextures().subscribe(
       response => {
         this.availableTextures = response;
+        console.log('response textures:', this.availableTextures);
       },
       error => {
         this.errorLoadMsg = 'Texturen konnten nicht geladen werden.';
@@ -70,23 +71,32 @@ export class ImportTextureComponent implements OnInit {
     }
   }
 
-  findTextureName(file: File): CardMaterial | undefined {
+  findTextureName(file: File): CardMaterial {
     console.log('available textures', this.availableTextures);
+    const fileName = Utils.fileNameFor(file.name);
+
     // @ts-ignore
-    this.availableTextures?.forEach(texture => {
+    this.availableTextures?.forEach(texture => { // look for id based name
+      if (texture.id != undefined && texture.id.toString() == fileName) {
+        return texture;
+      }
+    });
+
+    // @ts-ignore
+    this.availableTextures?.forEach(texture => { //look for texture slug
       if (texture.textureSlug === file.name) {
         return texture;
       }
     });
     // @ts-ignore
-    this.availableTextures?.forEach(texture => {
+    this.availableTextures?.forEach(texture => { // TODO maybe unnecessary
       if (Utils.fileNameFor(file.name) === texture.name) {
         texture.textureSlug = file.name;
         return texture;
       }
     });
     return {
-      id: -1,
+      id: undefined,
       name: Utils.fileNameFor(file.name),
       textureSlug: file.name,
       tiling: "REPEAT"
@@ -103,6 +113,10 @@ export class ImportTextureComponent implements OnInit {
       }
     }
     return null;
+  }
+
+  deleteAllTextureEntry(): void {
+    this.queuedTextureResources = [];
   }
 
   deleteTextureEntry(entry: StatefulWrappedFileType<CardMaterial>): void {

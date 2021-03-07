@@ -20,11 +20,14 @@ import {DropZoneComponent} from './lib/upload/drop-zone/drop-zone.component';
 import {ErrorDialogComponent} from './lib/error-dialog/error-dialog.component';
 import {DropControlsComponent} from './lib/upload/drop-controls/drop-controls.component';
 import {MatFormFieldModule} from "@angular/material/form-field";
-import {FormsModule} from "@angular/forms";
+import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {HttpClientModule} from "@angular/common/http";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {ErrorLoadComponent} from './lib/error-load/error-load.component';
 import {MatInputModule} from "@angular/material/input";
+import {AutoChipsComponent} from './lib/auto-chips/auto-chips.component';
+import {MatChipsModule} from "@angular/material/chips";
+import {MatAutocompleteModule} from "@angular/material/autocomplete";
 
 const routes: Routes = [
   {path: '', redirectTo: 'cards', pathMatch: 'full'},
@@ -44,7 +47,8 @@ const routes: Routes = [
     DropZoneComponent,
     ErrorDialogComponent,
     DropControlsComponent,
-    ErrorLoadComponent
+    ErrorLoadComponent,
+    AutoChipsComponent
   ],
   imports: [
     RouterModule.forRoot(routes, {useHash: true}),
@@ -61,7 +65,10 @@ const routes: Routes = [
     MatFormFieldModule,
     FormsModule,
     HttpClientModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatChipsModule,
+    ReactiveFormsModule,
+    MatAutocompleteModule
   ],
   exports: [
     RouterModule,
