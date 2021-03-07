@@ -80,13 +80,14 @@ export class ImportTextureComponent implements OnInit {
   findTextureName(file: File): CardMaterial | undefined {
     console.log('available textures', this.availableTextures);
     const fileName = Utils.fileNameFor(file.name);
-
-    // @ts-ignore
-    this.availableTextures?.forEach(texture => { // look for id based name
-      if (texture.id != undefined && texture.id.toString() == fileName) {
-        return texture;
+    return Utils.predChain([
+      e => { //look based on number
+        return e.id?.toString() === fileName;
+      },
+      e => {
+        return e.name === fileName
       }
-    });
+    ], this.availableTextures);
 
     // @ts-ignore
     this.availableTextures?.forEach(texture => { //look for texture slug

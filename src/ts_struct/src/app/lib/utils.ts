@@ -1,5 +1,7 @@
 import {ErrorDialogComponent, FileError} from "./error-dialog/error-dialog.component";
 import {MatDialog} from "@angular/material/dialog";
+import {Predicate} from "@angular/core";
+import {CardMaterial} from "./card";
 
 // a collection of small helper function
 export class Utils {
@@ -19,6 +21,19 @@ export class Utils {
       return name.substr(0, index);
     }
   }
+
+  public static predChain(chain: Predicate<any>[], data: CardMaterial[] | null): any {
+    if (data == null) {
+      return undefined;
+    }
+    for (let pred of chain) {
+      let find = data.find(pred);
+      if (find !== undefined)
+        return find;
+    }
+    return undefined
+  }
+
 
   public static filterFile(file: File, filters: Filter<any>[]): string | null {
     let ret: string | null = null;
