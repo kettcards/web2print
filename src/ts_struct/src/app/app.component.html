@@ -4,16 +4,13 @@
                [mode]="(isHandset$ | async) ? 'over' : 'side'"
                [opened]="(isHandset$ | async) === false">
     <mat-toolbar>
-      Menu
+      Web2Print
     </mat-toolbar>
     <mat-nav-list>
       <mat-list-item routerLink="/import-table" routerLinkActive="active">Kartenimport</mat-list-item>
       <mat-list-item routerLink="/import-motive" routerLinkActive="active">Motiveimport</mat-list-item>
       <mat-list-item routerLink="/import-motive-default" routerLinkActive="active">Standartmotiveimport</mat-list-item>
       <mat-list-item routerLink="/import-texture" routerLinkActive="active">Texturenimport</mat-list-item>
-      <!--<mat-list-item routerLink="/cards" routerLinkActive="active">Karten</mat-list-item>
-      <mat-list-item routerLink="/format" routerLinkActive="active">Formate</mat-list-item> TODO add routes
-      <mat-list-item routerLink="/format" routerLinkActive="active">Formate</mat-list-item>-->
     </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content>
@@ -26,9 +23,8 @@
         *ngIf="isHandset$ | async">
         <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
       </button>
-      <span>web2print-struct</span>
       <span class="max-hgrow"></span>
-      <span>Abmelden</span>
+      <a id="logout" href="../logout">Abmelden</a>
     </mat-toolbar>
     <router-outlet></router-outlet>
   </mat-sidenav-content>
