@@ -81,14 +81,14 @@ body {
 }
 
 #toolbar {
+  display: flex;
   background-color: lightgray;
   padding: 5px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 .toolbar-row {
   background-color: inherit;
-  position: relative;
-  display: inline-block;
-  vertical-align: top;
   padding: 0 5px;
   height: 100%;
 }
@@ -428,6 +428,9 @@ body {
   background-color: #8c8585;
 }
 
+#font-select {
+  position: static;
+}
 .select-ex {
   position: relative;
 }
