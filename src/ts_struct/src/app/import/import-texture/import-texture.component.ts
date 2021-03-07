@@ -78,7 +78,6 @@ export class ImportTextureComponent implements OnInit {
   }
 
   findTextureName(file: File): CardMaterial | undefined {
-    console.log('available textures', this.availableTextures);
     const fileName = Utils.fileNameFor(file.name);
     return Utils.predChain([
       e => { //look based on number
@@ -88,29 +87,6 @@ export class ImportTextureComponent implements OnInit {
         return e.name === fileName
       }
     ], this.availableTextures);
-
-    // @ts-ignore
-    this.availableTextures?.forEach(texture => { //look for texture slug
-      if (texture.textureSlug === file.name) {
-        return texture;
-      }
-    });
-    // @ts-ignore
-    this.availableTextures?.forEach(texture => { // TODO maybe unnecessary
-      if (Utils.fileNameFor(file.name) === texture.name) {
-        texture.textureSlug = file.name;
-        return texture;
-      }
-    });
-    /*
-    return {
-      id: undefined,
-      name: Utils.fileNameFor(file.name),
-      textureSlug: file.name,
-      tiling: "REPEAT"
-    };
-     */
-    return undefined;
   }
 
   filter(file: File): string | null {
