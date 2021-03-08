@@ -15,17 +15,27 @@ class ImageEl {
 }
 
 function hFileUploadChanged(e) {
+  let  $progressBar;
   //file Upload code
   const file = e.target.files[0];
 
   const fd = new FormData();
   fd.append("file", file);
+
   $.post({
     url: web2print.links.apiUrl+"content",
     data: fd,
     processData: false,
     contentType: false,
+    beforeSend: function(){
+      $progressBar = $('<div style="position:absolute; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.66)">' +
+          '<div class="center" style="white-space: normal; overflow: auto; max-width:70%; max-height:70%; background-color:lightgray; padding:5px 5px 15px 5px;">' +
+          '<label for="prog">Hochladen:</label><progress id="prog" value="0" max="100">0%</progress></div></div>');
+      $body.append($progressBar);
+    },
+    xhr: xhrProvider,
   }).then(function(response : { contentId : string }) {
+    $progressBar.remove();
     ImageEl.contentId = response.contentId;
     const img = new Image();
     img.onload = function() {
@@ -33,12 +43,28 @@ function hFileUploadChanged(e) {
     };
     img.src = `${web2print.links.apiUrl}content/${ImageEl.contentId}`;
   }).catch(function(e) {
+    $progressBar.remove();
     Editor.storage.addOnClick = undefined;
     $fileUpBtn.val(null); //emptys the Filelist, is needed if the same file is choosen again
     console.error('failed to fetch xhr', e);
     alert("Die ausgewählte Datei konnte nicht hochgeladen werden.\nBitte stellen Sie sicher, dass das Dateiformat: .jpg,.jpeg,.png,.svg ist \nund die Dateigröße nicht 10MB überschreitet.");
   });
+
 }
+
+const xhrProvider = function(){
+  let xhr = jQuery.ajaxSettings.xhr();
+  let bar = $('#prog');
+  xhr.upload.addEventListener("progress", function(e){
+    if(e.lengthComputable){
+      let percent = e.loaded/e.total;
+      percent = percent * 100;
+      console.log(percent);
+      bar.val(percent);
+    }
+  }, false);
+  return xhr;
+};
 
 const $fileUpBtn = $<HTMLInputElement>('#fileUpload').change(hFileUploadChanged);
 
