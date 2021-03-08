@@ -16,8 +16,6 @@ export class AppComponent {
   // @ts-ignore
   contactFormGroup: FormGroup;
 
-  // @ts-ignore
-  secondFormGroup: FormGroup;
   isEditable = true;
 
   constructor(private formBuilder: FormBuilder) {}
@@ -32,8 +30,10 @@ export class AppComponent {
       address: ['', Validators.required],
       region: ['', Validators.required],
     });
-    this.secondFormGroup = this.formBuilder.group({
-      secondCtrl: new FormControl()
-    });
+  }
+
+  submit(): void {
+    let a = this.contactFormGroup.controls['firstname'];
+    console.log(a.value);
   }
 }

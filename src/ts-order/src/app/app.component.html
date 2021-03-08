@@ -29,7 +29,7 @@
           <input matInput formControlName="zip" required>
         </mat-form-field>
         <mat-form-field>
-          <mat-label>Ort</mat-label>
+          <mat-label>Adresse</mat-label>
           <input matInput formControlName="address" required>
         </mat-form-field>
         <mat-form-field>
@@ -62,7 +62,7 @@
     <p>You are now done.</p>
     <div>
       <button mat-button matStepperPrevious>Back</button>
-      <button mat-button (click)="stepper.reset()">Submit</button>
+      <button mat-button (click)="submit()">Submit</button>
     </div>
   </mat-step>
 </mat-horizontal-stepper>
