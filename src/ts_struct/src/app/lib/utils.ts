@@ -1,7 +1,6 @@
 import {ErrorDialogComponent, FileError} from "./error-dialog/error-dialog.component";
 import {MatDialog} from "@angular/material/dialog";
 import {Predicate} from "@angular/core";
-import {CardMaterial} from "./card";
 
 // a collection of small helper function
 export class Utils {
@@ -127,6 +126,7 @@ export enum FileState {
 export interface WrappedFileType<T> {
   type?: T;
   file: File;
+  additionalAttributes?: string[];
 }
 
 export interface StatefulWrappedFileType<T> extends WrappedFileType<T> {

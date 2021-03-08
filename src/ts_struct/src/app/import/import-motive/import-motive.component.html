@@ -1,23 +1,54 @@
-<div class="nav-content import-motive">
+<div *ngIf="orderIds != null; else onLoad" class="nav-content import-motive">
   <app-drop-zone
-    [dropPromptText]="'Motive hier hinzufügen'"
+    [dropPromptText]="'Druckvorlagen für Motive hier hinzufügen'"
     (fileAdded)="onFileAdded($event)">
   </app-drop-zone>
   <app-drop-controls
     [list]="elements"
     [showClearSuccessful]="hasSuccessfulFiles"
-    (clearSuccessful)="clearSubmitted()"
     (deleteAll)="deleteAll()"
     (submitAll)="submitAll()"
-    >
+    (clearSuccessful)="clearSubmitted()">
   </app-drop-controls>
-  <mat-list *ngFor="let motive of elements">
-    <button mat-raised-button color="warn" (click)="delete(motive)">
-      <mat-icon>trash</mat-icon>
-    </button>
-    <button mat-raised-button color="primary" (click)="submit(motive)">
-      <mat-icon>publish</mat-icon>
-    </button>
+  <!-- item list -->
+  <mat-list *ngFor="let motive of elements" class="import-list">
+    <mat-divider></mat-divider>
+    <div class="import-list-item">
+      <!-- import state indicator -->
+      <mat-icon *ngIf="motive.state == FileState.SUCCESSFUL" color="primary">
+        done
+      </mat-icon>
+      <mat-icon *ngIf="motive.state == FileState.FAILED" color="warn">
+        cancel
+      </mat-icon>
+      <div class="import-list-item-content">
+        <span>{{motive.file.name}}</span>
+        <button mat-mini-fab color="primary" (click)="changeMapping(motive)">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+        <mat-chip-list>
+          <mat-chip *ngFor="let orderId of motive.additionalAttributes">
+            {{orderId}}
+          </mat-chip>
+        </mat-chip-list>
+      </div>
+      <div class="import-list-item-action">
+        <button *ngIf="motive.state == FileState.FAILED" [disabled]="motive.additionalAttributes == undefined || motive.additionalAttributes.length == 0"
+                mat-raised-button color="warn" (click)="submit(motive)">
+          <mat-icon>replay</mat-icon>
+        </button>
+        <button *ngIf="motive.state == FileState.AWAIT" [disabled]="motive.additionalAttributes == undefined || motive.additionalAttributes.length == 0"
+                mat-raised-button color="primary" (click)="submit(motive)">
+          <mat-icon>publish</mat-icon>
+        </button>
+        <button mat-raised-button color="warn"
+                (click)="delete(motive)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </div>
   </mat-list>
-
 </div>
+<ng-template #onLoad>
+  <app-error-load [errorMessage]="errorLoadMsg" (onRetry)="loadOrderIds()"></app-error-load>
+</ng-template>

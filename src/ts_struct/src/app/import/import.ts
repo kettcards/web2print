@@ -21,7 +21,7 @@ export abstract class ImportMenu<T> {
       const failedReason = this.filter(file);
       if (failedReason === null) {
         let el = this.findName(file);
-        console.log('selecting texture', el);
+        console.log('selecting elements', el);
         this.addMappedFiles(file, el);
       } else {
         invalidFiles.push(new FileError(file, failedReason))
@@ -53,7 +53,7 @@ export abstract class ImportMenu<T> {
   }
 
   //find data for given
-  public abstract findName(file: File): (T| undefined)[];
+  public abstract findName(file: File): (any| undefined)[];
 
   public abstract changeMapping(element: StatefulWrappedFileType<T>): void;
 

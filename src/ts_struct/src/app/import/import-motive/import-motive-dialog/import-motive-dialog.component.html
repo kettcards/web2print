@@ -1,10 +1,10 @@
-<h3 mat-dialog-title>Zuweisung für{{data.motive.file.name}}</h3>
+<h3 mat-dialog-title>Zuweisung für {{data.motive.file.name}}</h3>
 <div mat-dialog-content>
   <mat-form-field class="import-chip-map">
     <mat-chip-list #chipList>
       <mat-chip *ngFor="let card of assignedCards"
                 [removable]="true" (removed)="remove(card)">
-        {{card.orderId}}
+        {{card}}
         <mat-icon matChipRemove>cancel</mat-icon>
       </mat-chip>
       <input placeholder="Weitere Karten zuweisen..."

@@ -1,5 +1,5 @@
 import {Component, Inject} from '@angular/core';
-import {CardMotive, CardOverview} from "../../../lib/card";
+import {CardMotive} from "../../../lib/card";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {StatefulWrappedFileType, Utils} from "../../../lib/utils";
 import {MatChipInputEvent} from "@angular/material/chips";
@@ -14,10 +14,12 @@ export class ImportMotiveDialogComponent {
 
   spaceKeyCodes: number[] = [ENTER, SPACE];
 
-  assignedCards: CardOverview[] = [];
+  assignedCards: string[] = [];
 
   constructor(public dialogRef: MatDialogRef<ImportMotiveDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: MotiveDialogDataWrapper) {
-
+    if (data.motive.additionalAttributes != undefined) {
+      this.assignedCards = data.motive.additionalAttributes.concat([]);
+    }
   }
 
   onCancel(): void {
@@ -31,10 +33,7 @@ export class ImportMotiveDialogComponent {
 
     // TODO we might want to compare orderIds before for validation
     if ((value || '').trim()) {
-      this.assignedCards.push({
-        thumbSlug: '',
-        orderId: value
-      });
+      this.assignedCards.push(value);
     }
 
     if (input) {
@@ -42,13 +41,13 @@ export class ImportMotiveDialogComponent {
     }
   }
 
-  remove(card: CardOverview) {
-    Utils.remove(this.assignedCards, card);
+  remove(orderId: string) {
+    Utils.remove(this.assignedCards, orderId);
   }
 }
 
 export interface MotiveDialogDataWrapper {
   wasCancelled: boolean;
   motive: StatefulWrappedFileType<CardMotive>;
-  options: CardOverview[];
+  options: string[];
 }
