@@ -4,6 +4,9 @@ import {ErrorDialogComponent, FileError} from "../../lib/error-dialog/error-dial
 import {ContentTypeFilter} from "../../lib/utils";
 import {Api} from "../../lib/api";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {Overlay} from "@angular/cdk/overlay";
+import {ComponentPortal} from "@angular/cdk/portal";
+import {MatSpinner} from "@angular/material/progress-spinner";
 
 /**
  * TODO - styling
@@ -18,9 +21,18 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 export class ImportTableComponent {
 
   file: File | null = null;
-  isProcessing = false;
+  loadingSpinner;
 
-  constructor(private dialog: MatDialog, private api: Api, private snackBar: MatSnackBar) {}
+  constructor(private dialog: MatDialog, private api: Api, private snackBar: MatSnackBar, private overlay: Overlay) {
+    this.loadingSpinner = this.overlay.create({
+      hasBackdrop: true,
+      backdropClass: 'dark-backdrop',
+      positionStrategy: this.overlay.position()
+        .global()// TODO pos should be relative to current component
+        .centerHorizontally()
+        .centerVertically()
+    });
+  }
 
   fileAdded(files: File[]): void {
     const invalidFiles: FileError[] = [];
@@ -54,15 +66,15 @@ export class ImportTableComponent {
   importFile() {
     console.log('importing table data');
     //TODO callback feedback
-    this.isProcessing = true;
+    this.loadingSpinner.attach(new ComponentPortal(MatSpinner))
     let importCardTable = this.api.importCardTable(this.file);
     importCardTable?.subscribe(
       response => {}, // TODO process response
       error => {
-        this.isProcessing = false;
+        this.loadingSpinner.detach();
       },
       () => {
-        this.isProcessing = false;
+        this.loadingSpinner.detach();
         this.snackBar.open('Tabelle erfolgreich importiert', undefined, {
           duration: 3000
         });

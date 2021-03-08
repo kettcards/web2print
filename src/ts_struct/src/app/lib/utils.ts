@@ -22,7 +22,7 @@ export class Utils {
     }
   }
 
-  public static predChain(chain: Predicate<any>[], data: CardMaterial[] | null): any {
+  public static predChain(chain: Predicate<any>[], data: any[] | null): any {
     if (data == null) {
       return undefined;
     }
@@ -131,13 +131,4 @@ export interface WrappedFileType<T> {
 
 export interface StatefulWrappedFileType<T> extends WrappedFileType<T> {
   state: FileState;
-}
-
-//TODO impl
-export enum ImportStateChange {
-  CREATED,MODIFIED,DELETED
-}
-
-export interface CardTableReport {
-
 }

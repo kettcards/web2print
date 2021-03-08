@@ -19,6 +19,7 @@ export class ImportMotiveComponent implements OnInit {
   availableCards: string[] = [];
 
   allowedTypes: Filter<any>[] = [ContentTypeFilter.PDF, ContentTypeFilter.BITMAP];
+  hasSuccessfulUploadedInQueue = true;
 
   constructor(private api: Api, private dialog: MatDialog, private snackBar: MatSnackBar) {
   }
@@ -69,5 +70,15 @@ export class ImportMotiveComponent implements OnInit {
   }
 
 
+  submitAll(): void {
 
+  }
+
+  deleteAll(): void {
+
+  }
+
+  clearSubmitted() {
+
+  }
 }

@@ -1,18 +1,50 @@
-<app-drop-zone [dropPromptText]="'Druckvorlagen für Standardmotive hier hinzufügen'"
-               (fileAdded)="fileAdded($event)"></app-drop-zone>
-<app-drop-controls [list]="defaultMotives" (deleteAll)="defaultMotives = []"
-                   (submitAll)="submitAll()"></app-drop-controls>
-<mat-list>
-  <mat-list *ngFor="let motive of defaultMotives">
-    <button mat-raised-button color="primary" (click)="delete(motive)">
-      <mat-icon>delete</mat-icon>
-    </button>
-    <button mat-raised-button color="primary" (click)="submit(motive)">
-      <mat-icon>upload</mat-icon>
-    </button>
-    <span>{{motive.file.name}}</span>
+<div *ngIf="availableFormats != null; else onLoad" class="nav-content import-motive-default">
+  <app-drop-zone
+    [dropPromptText]="'Standardmotvievorlagen hier hinzufügen'"
+    (fileAdded)="onFileAdded($event)">
+  </app-drop-zone>
+  <app-drop-controls
+    [list]="queuedDefaultFormatResources"
+    [showClearSuccessful]="hasSuccessfulUploadedInQueue"
+    (deleteAll)="deleteAllTextureEntry()"
+    (submitAll)="importAllTextures()"
+    (clearSuccessful)="clearSubmittedTextures()">
+  </app-drop-controls>
+  <!-- item list -->
+  <mat-list *ngFor="let texture of queuedDefaultFormatResources" class="import-list">
+    <mat-divider></mat-divider>
+    <div class="import-list-item">
+      <!-- import state indicator -->
+      <mat-icon *ngIf="texture.state == FileState.SUCCESSFUL" color="primary">
+        done
+      </mat-icon>
+      <mat-icon *ngIf="texture.state == FileState.FAILED" color="warn">
+        cancel
+      </mat-icon>
+      <div class="import-list-item-content">
+        <span>{{texture.file.name}}</span>
+        <button mat-mini-fab color="primary" (click)="changeMapping(texture)">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+      <div class="import-list-item-action">
+        <span *ngIf="texture.type!=undefined">für Format ID: {{texture.type.id}}</span>
+        <button *ngIf="texture.state == FileState.FAILED" [disabled]="texture.type == undefined || texture.type.id == undefined"
+                mat-raised-button color="warn" (click)="importTexture(texture)">
+          <mat-icon>replay</mat-icon>
+        </button>
+        <button *ngIf="texture.state == FileState.AWAIT" [disabled]="texture.type == undefined || texture.type.id == undefined"
+                mat-raised-button color="primary" (click)="importTexture(texture)">
+          <mat-icon>publish</mat-icon>
+        </button>
+        <button mat-raised-button color="warn"
+                (click)="deleteTextureEntry(texture)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </div>
   </mat-list>
-
-  <app-auto-chips></app-auto-chips>
-
-</mat-list>
+</div>
+<ng-template #onLoad>
+  <app-error-load [errorMessage]="errorLoadMsg" (onRetry)="loadAvailableTextures()"></app-error-load>
+</ng-template>

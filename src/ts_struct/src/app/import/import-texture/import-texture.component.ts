@@ -28,8 +28,6 @@ export class ImportTextureComponent implements OnInit {
 
   errorLoadMsg: string | null = null;
 
-  formControl = new FormControl();
-
   constructor(private dialog: MatDialog, private api: Api, private snackbar: MatSnackBar) {
   }
 
@@ -111,10 +109,8 @@ export class ImportTextureComponent implements OnInit {
 
   importAllTextures(): void {
     console.log('starting bulk import');
-    this.queuedTextureResources.forEach((entry, index) => {
+    this.queuedTextureResources.forEach((entry) => {
       this.importTexture(entry);
-      // TODO error checking
-
     });
   }
 

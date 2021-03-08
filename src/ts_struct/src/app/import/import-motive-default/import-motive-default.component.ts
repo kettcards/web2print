@@ -1,9 +1,11 @@
 import {Component, OnInit} from '@angular/core';
-import {FileState, StatefulWrappedFileType, Utils} from "../../lib/utils";
-import {CardFormat, Side} from "../../lib/card";
+import {ContentTypeFilter, FileState, StatefulWrappedFileType, UniqueEntryFilter, Utils} from "../../lib/utils";
+import {CardFormat} from "../../lib/card";
 import {Api} from "../../lib/api";
 import {MatDialog} from "@angular/material/dialog";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {ErrorDialogComponent, FileError} from "../../lib/error-dialog/error-dialog.component";
+import {MappingDialogComponent} from "../import-texture/mapping-dialog/mapping-dialog.component";
 
 @Component({
   selector: 'app-import-motive-default',
@@ -13,70 +15,138 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 })
 export class ImportMotiveDefaultComponent implements OnInit {
 
-  defaultMotives: StatefulWrappedFileType<ImportDefaultMotiveRequest>[] = [];
+  FileState: typeof FileState = FileState;
 
-  availableFormats: CardFormat[] = [];
+  availableFormats: CardFormat[] | null = null;
 
-  onLoad = false;
+  hasSuccessfulUploadedInQueue = false;
 
-  constructor(private api: Api, private dialog: MatDialog, private snackbar: MatSnackBar) {}
+  queuedDefaultFormatResources: StatefulWrappedFileType<CardFormat>[] = [];
+
+  filters = [ContentTypeFilter.PDF, new UniqueEntryFilter(this.queuedDefaultFormatResources)];
+
+  errorLoadMsg: string | null = null;
+
+  constructor(private dialog: MatDialog, private api: Api, private snackbar: MatSnackBar) {
+  }
 
   ngOnInit(): void {
-    this.onLoad = true;
+    this.loadAvailableTextures();
+  }
+
+  loadAvailableTextures(): void {
+    this.availableFormats = null;
+    console.log('requesting formats');
     this.api.getCardFormats().subscribe(
       response => {
         this.availableFormats = response;
+        console.log('response card formats:', this.availableFormats);
       },
       error => {
-        this.onLoad = false;
-        this.snackbar.open('Kartenformate konnten nicht geladen werden', undefined, {
-          duration: 3 * 1000
-        })
-      },
-      () => {
-        this.onLoad = false;
+        this.errorLoadMsg = 'Kartenformate konnten nicht geladen werden.';
       }
     );
   }
 
-  fileAdded($event: File[]) {
-    Utils.filterFilesAndDialogInvalid($event, file => {
-      return null;
-    }, this.dialog).forEach(validFile => {
-      this.defaultMotives.push({
-        file: validFile,
-        state: FileState.AWAIT,
-        type: {
-          format: undefined,
-          sides: [],
-          file: validFile
+  onFileAdded(files: File[]): void {
+    const invalidFiles: FileError[] = [];
+    files.forEach(file => {
+      const failedReason = this.filter(file);
+      if (failedReason === null) {
+        let texture = this.findTextureName(file);
+        console.log('selecting texture', texture);
+        this.queuedDefaultFormatResources.push({
+          file: file,
+          state: FileState.AWAIT,
+          type: texture
+        });
+      } else {
+        invalidFiles.push(new FileError(file, failedReason))
+      }
+    });
+    if (invalidFiles.length > 0) { // show error dialog
+      this.dialog.open(ErrorDialogComponent, {
+        data: {
+          title: '<h1>Folgende Dateien konnten nicht hinzugefügt werden:</h1>',
+          entries: invalidFiles
         }
       });
-    });
-  }
-
-  submitAll(): void {
-    this.defaultMotives.forEach((e, i) => {
-      this.submit(e);
-      this.defaultMotives.splice(i, 1);
-    });
-  }
-
-  submit(defaultMotive: StatefulWrappedFileType<ImportDefaultMotiveRequest>): void {
-    this.api.importMotive(defaultMotive.file);
-  }
-
-  delete(defaultMotive: StatefulWrappedFileType<ImportDefaultMotiveRequest>): void {
-    const index = this.defaultMotives.indexOf(defaultMotive);
-    if (index >= 0) {
-      this.defaultMotives.splice(index, 1);
     }
   }
 
-}
+  findTextureName(file: File): CardFormat | undefined {
+    const fileName = Utils.fileNameFor(file.name);
+    return Utils.predChain([
+      e => { //look based on number
+        return e.id?.toString() === fileName;
+      },
+      e => {
+        return e.name === fileName
+      }
+    ], this.availableFormats);
+  }
 
-export interface ImportDefaultMotiveRequest {
-  format?: CardFormat
-  sides: Side[];
-  file: File;
+  filter(file: File): string | null {
+    for (let i = 0; i < this.filters.length; i++) {
+      let e = this.filters[i];
+      const filter = e.filter(file);
+      console.log('filter result:', file, filter);
+      if (filter != null) {
+        return filter;
+      }
+    }
+    return null;
+  }
+
+  deleteAllTextureEntry(): void {
+    this.queuedDefaultFormatResources.length = 0;
+  }
+
+  deleteTextureEntry(entry: StatefulWrappedFileType<CardFormat>): void {
+    Utils.remove(this.queuedDefaultFormatResources, entry);
+  }
+
+  importAllTextures(): void {
+    console.log('starting bulk import');
+    this.queuedDefaultFormatResources.forEach((entry) => {
+      this.importTexture(entry);
+    });
+  }
+
+  importTexture(texture: StatefulWrappedFileType<CardFormat>): void {
+    console.log('importing ', texture);
+    // @ts-ignore TODO non null pls
+    this.api.importDefaultMotive(texture).subscribe(
+      response => {
+        texture.state = FileState.SUCCESSFUL;
+        this.hasSuccessfulUploadedInQueue = true;
+      },
+      error => {
+        texture.state = FileState.FAILED;
+      }
+    );
+  }
+
+  changeMapping(texture: StatefulWrappedFileType<CardFormat>): void {
+    const ref = this.dialog.open(MappingDialogComponent, {
+      data: {
+        selected: texture,
+        options: this.availableFormats
+      }
+    });
+    ref.afterClosed().subscribe(result => { //TODO ignore cancel closes
+      console.log('setting result:', result);
+      texture.type = result;
+    });
+  }
+
+  clearSubmittedTextures() {
+    this.queuedDefaultFormatResources.forEach((texture, index) => {
+      if (texture.state == FileState.SUCCESSFUL) {
+        this.queuedDefaultFormatResources.splice(index, 1);
+      }
+    });
+    this.hasSuccessfulUploadedInQueue = false;
+  }
+
 }

@@ -94,12 +94,11 @@ public class MotiveImportService extends StorageContextAware implements WebConte
         }
     }
 
-    public void importDefaultMotive(Content content) throws IOException {
+    public void importDefaultMotive(Content content, int cardFormat) throws IOException {
         String originalFilename = content.getOriginalFilename();
         int lastDotIndex = originalFilename.lastIndexOf('.');
-        String id = originalFilename.substring(0, lastDotIndex);
         String extension = originalFilename.substring(lastDotIndex);
-        var format = cardFormatRepository.findById(Integer.parseInt(id)).orElseThrow();
+        var format = cardFormatRepository.findById(cardFormat).orElseThrow();
 
         if (MediaTypeFileExtension.PDF.isValidFileExtension(extension)) {
             try {
@@ -116,13 +115,8 @@ public class MotiveImportService extends StorageContextAware implements WebConte
                 throw new IOException("500: encountered IOException while importing " + originalFilename);
             }
         } else {
-            //TODO: implement JPG(probably convert to PNG and also image quality probably not good enough for
-            // pdf generator), PNG
-            throw new IllegalArgumentException("Importing PNG and JPG (" + originalFilename + ")isn't implemented yet.");
+            throw new IllegalArgumentException("unbekannte Dateiendung: " + extension);
         }
-        Motive motive = new Motive();
-        motive.setTextureSlug(originalFilename);
-
     }
 
     private void saveDefaultFormat(CardFormat cardFormat, ByteArrayOutputStream stream, String suffix) throws IOException {

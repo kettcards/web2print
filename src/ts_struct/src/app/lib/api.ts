@@ -3,7 +3,7 @@ import {Observable} from 'rxjs';
 import {Injectable} from '@angular/core';
 import {Pageable, PageRequest} from "./pageable";
 import {CardFormat, CardMaterial, CardOverview} from "./card";
-import {WrappedFileType} from "./utils";
+import {StatefulWrappedFileType, WrappedFileType} from "./utils";
 
 @Injectable()
 export class Api {
@@ -43,19 +43,25 @@ export class Api {
     if (file != null) {
       const data: FormData = new FormData();
       data.append('file', file);
-      return this.http.post<ApiResponse>(Api.apiUrl + '/import/table', data);
+      return this.http.post(Api.apiUrl + '/import/table', data);
     }
     return null;
   }
 
-  public importMotive(file: File): Observable<Object> {
+  public importMotive(format: StatefulWrappedFileType<CardFormat>): Observable<Object> | null {
+    /*
     const data: FormData = new FormData();
     data.append('file', file);
     return this.http.post<ApiResponse>(Api.apiUrl + '/import/defaultMotive', data);
+
+     */
+    return null;
   }
 
-}
+  public importDefaultMotive(format: StatefulWrappedFileType<CardFormat>): Observable<Object> | null {
+    const data: FormData = new FormData();
+    data.append('file', format.file);
+    return this.http.post(Api.apiUrl + '/import/defaultMotive', data);
+  }
 
-export interface ApiResponse {
-  uff: string;
 }
