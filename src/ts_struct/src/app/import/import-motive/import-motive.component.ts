@@ -14,12 +14,12 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 })
 export class ImportMotiveComponent implements OnInit {
 
-  motives: StatefulWrappedFileType<CardMotive>[] = [];
+  elements: StatefulWrappedFileType<CardMotive>[] = [];
 
   availableCards: string[] = [];
 
-  allowedTypes: Filter<any>[] = [ContentTypeFilter.PDF, ContentTypeFilter.BITMAP];
-  hasSuccessfulUploadedInQueue = true;
+  allowedTypes: Filter<any>[] = [ContentTypeFilter.PDF];
+  hasSuccessfulUploadedInQueue = false;
 
   constructor(private api: Api, private dialog: MatDialog, private snackBar: MatSnackBar) {
   }
@@ -48,7 +48,7 @@ export class ImportMotiveComponent implements OnInit {
       //const failedReason = Utils.filterFile(file, this.allowedTypes); //TODO kinda not working -_-
       let failedReason = null;
       if (failedReason === null) {
-        this.motives.push({
+        this.elements.push({
           file: file,
           state: FileState.AWAIT,
           type: {
@@ -71,14 +71,26 @@ export class ImportMotiveComponent implements OnInit {
 
 
   submitAll(): void {
+    this.elements.forEach(e=> this.submit(e))
+  }
 
+  submit(motive: StatefulWrappedFileType<CardMotive>):void {
+    //TODO impl submit
   }
 
   deleteAll(): void {
+    this.elements.length = 0;
+  }
 
+  delete(motive: StatefulWrappedFileType<CardMotive>): void {
+    Utils.remove(this.elements, motive);
   }
 
   clearSubmitted() {
-
+    this.elements.forEach((e, index) => {
+      if (e.state === FileState.SUCCESSFUL) {
+        this.elements.splice(index, 1);
+      }
+    });
   }
 }

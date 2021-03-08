@@ -4,12 +4,20 @@
     (fileAdded)="addMotives($event)">
   </app-drop-zone>
   <app-drop-controls
-    [list]="motives"
+    [list]="elements"
     [showClearSuccessful]="hasSuccessfulUploadedInQueue"
     (clearSuccessful)="clearSubmitted()"
     (deleteAll)="deleteAll()"
     (submitAll)="submitAll()"
     >
   </app-drop-controls>
+  <mat-list *ngFor="let motive of elements">
+    <button mat-raised-button color="warn" (click)="delete(motive)">
+      <mat-icon>trash</mat-icon>
+    </button>
+    <button mat-raised-button color="primary" (click)="submit(motive)">
+      <mat-icon>publish</mat-icon>
+    </button>
+  </mat-list>
 
 </div>

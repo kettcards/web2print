@@ -61,7 +61,7 @@ export class Api {
   public importDefaultMotive(format: StatefulWrappedFileType<CardFormat>): Observable<Object> | null {
     const data: FormData = new FormData();
     data.append('file', format.file);
-    return this.http.post(Api.apiUrl + '/import/defaultMotive', data);
+    return this.http.post(Api.apiUrl + '/import/defaultMotive/' + format.type?.id, data);
   }
 
 }

@@ -1,1 +1,20 @@
-<p>import-motive-dialog works!</p>
+<h3 mat-dialog-title>Zuweisung für{{data.motive.file.name}}</h3>
+<div mat-dialog-content>
+  <mat-form-field class="import-chip-map">
+    <mat-chip-list #chipList>
+      <mat-chip *ngFor="let card of assignedCards"
+                [removable]="true" (removed)="remove(card)">
+        {{card.orderId}}
+        <mat-icon matChipRemove>cancel</mat-icon>
+      </mat-chip>
+      <input placeholder="Weitere Karten zuweisen..."
+             [matChipInputFor]="chipList"
+             [matChipInputSeparatorKeyCodes]="spaceKeyCodes"
+             (matChipInputTokenEnd)="assign($event)">
+    </mat-chip-list>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-raised-button color="accent" (click)="onCancel()">Abbrechen</button>
+  <button mat-raised-button color="primary" [mat-dialog-close]="assignedCards">Übernehmen</button>
+</div>
