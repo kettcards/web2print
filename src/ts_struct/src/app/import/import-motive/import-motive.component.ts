@@ -1,10 +1,9 @@
 import {Component, OnInit} from '@angular/core';
-import {ContentTypeFilter, FileState, Filter, StatefulWrappedFileType, Utils} from "../../lib/utils";
-import {CardMotive} from "../../lib/card";
+import {ContentTypeFilter, StatefulWrappedFileType, UniqueEntryFilter, Utils} from "../../lib/utils";
+import {CardMotive, CardOverview} from "../../lib/card";
 import {Api} from "../../lib/api";
+import {ImportMenu} from "../import";
 import {MatDialog} from "@angular/material/dialog";
-import {ErrorDialogComponent, FileError} from "../../lib/error-dialog/error-dialog.component";
-import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
   selector: 'app-import-motive',
@@ -12,85 +11,48 @@ import {MatSnackBar} from "@angular/material/snack-bar";
   styleUrls: ['./import-motive.component.less'],
   providers: [Api]
 })
-export class ImportMotiveComponent implements OnInit {
+export class ImportMotiveComponent extends ImportMenu<CardMotive> implements OnInit {
 
-  elements: StatefulWrappedFileType<CardMotive>[] = [];
+  filters = [ContentTypeFilter.BITMAP, new UniqueEntryFilter(this.elements)];
 
-  availableCards: string[] = [];
+  orderIds: CardOverview[] = [];
 
-  allowedTypes: Filter<any>[] = [ContentTypeFilter.PDF];
-  hasSuccessfulUploadedInQueue = false;
-
-  constructor(private api: Api, private dialog: MatDialog, private snackBar: MatSnackBar) {
+  constructor(dialog: MatDialog, private api: Api) {
+    super(dialog);
   }
 
   ngOnInit(): void {
-    this.api.getCardOverview().subscribe(
-      response => {
-        this.availableCards = response.content.map(e => e.orderId);
-        this.snackBar.open('Bestellnummern aktualisiert', undefined, {
-          duration: 1 * 1000
-        });
-        console.log('order ids', this.availableCards);
+    this.api.getCardOverview(undefined).subscribe(
+      next => {
+        this.orderIds = next.content;
       },
       error => {
-        this.snackBar.open('Bestellnummbern von Karten konnten nicht geholt werden', undefined, {
-          duration: 10 * 1000
-        });
+        // TODO error handling
       }
     );
   }
 
-  addMotives(files: File[]): void {
-    const invalidFiles: FileError[] = [];
-    files.forEach(file => {
-      console.log('checking file', file);
-      //const failedReason = Utils.filterFile(file, this.allowedTypes); //TODO kinda not working -_-
-      let failedReason = null;
-      if (failedReason === null) {
-        this.elements.push({
-          file: file,
-          state: FileState.AWAIT,
-          type: {
-            textureSlug: file.name
-          }
-        });
-      } else {
-        invalidFiles.push(new FileError(file, failedReason))
+
+  public addMappedFiles(file: File,  elements: (CardMotive | undefined)[]): void {
+  }
+
+  public findName(file: File): (CardMotive | undefined)[] {
+    const name = Utils.fileNameFor(file.name);
+    const results:(CardMotive | undefined)[] = [];
+    this.orderIds.forEach(e => {
+      if (name.startsWith(e.orderId)) {
+        //results.push(e);
       }
     });
-    if (invalidFiles.length > 0) { // show error dialog
-      this.dialog.open(ErrorDialogComponent, {
-        data: {
-          title: '<h1>Folgende Dateien konnten nicht hinzugefügt werden:</h1>',
-          entries: invalidFiles
-        }
-      });
-    }
+    return results;
   }
 
-
-  submitAll(): void {
-    this.elements.forEach(e=> this.submit(e))
+  changeMapping(element: StatefulWrappedFileType<CardMotive>): void {
+    // TODO
   }
 
-  submit(motive: StatefulWrappedFileType<CardMotive>):void {
-    //TODO impl submit
+  submit(element: StatefulWrappedFileType<CardMotive>): void {
+    // TODO
   }
 
-  deleteAll(): void {
-    this.elements.length = 0;
-  }
-
-  delete(motive: StatefulWrappedFileType<CardMotive>): void {
-    Utils.remove(this.elements, motive);
-  }
-
-  clearSubmitted() {
-    this.elements.forEach((e, index) => {
-      if (e.state === FileState.SUCCESSFUL) {
-        this.elements.splice(index, 1);
-      }
-    });
-  }
 }

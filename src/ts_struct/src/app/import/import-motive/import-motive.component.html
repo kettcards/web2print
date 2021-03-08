@@ -1,11 +1,11 @@
 <div class="nav-content import-motive">
   <app-drop-zone
     [dropPromptText]="'Motive hier hinzufügen'"
-    (fileAdded)="addMotives($event)">
+    (fileAdded)="onFileAdded($event)">
   </app-drop-zone>
   <app-drop-controls
     [list]="elements"
-    [showClearSuccessful]="hasSuccessfulUploadedInQueue"
+    [showClearSuccessful]="hasSuccessfulFiles"
     (clearSuccessful)="clearSubmitted()"
     (deleteAll)="deleteAll()"
     (submitAll)="submitAll()"

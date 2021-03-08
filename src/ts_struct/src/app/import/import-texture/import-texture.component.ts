@@ -1,12 +1,11 @@
 import {Component, OnInit} from '@angular/core';
 import {ContentTypeFilter, FileState, StatefulWrappedFileType, UniqueEntryFilter, Utils} from "../../lib/utils";
 import {CardMaterial} from "../../lib/card";
-import {ErrorDialogComponent, FileError} from "../../lib/error-dialog/error-dialog.component";
 import {MatDialog} from "@angular/material/dialog";
 import {Api} from "../../lib/api";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {FormControl} from "@angular/forms";
 import {MappingDialogComponent} from "./mapping-dialog/mapping-dialog.component";
+import {ImportMenu} from "../import";
 
 @Component({
   selector: 'app-import-texture',
@@ -14,21 +13,16 @@ import {MappingDialogComponent} from "./mapping-dialog/mapping-dialog.component"
   styleUrls: ['./import-texture.component.less'],
   providers: [Api]
 })
-export class ImportTextureComponent implements OnInit {
-
-  FileState: typeof FileState = FileState;
+export class ImportTextureComponent extends ImportMenu<CardMaterial> implements OnInit {
 
   availableTextures: CardMaterial[] | null = null;
 
-  hasSuccessfulUploadedInQueue = false;
-
-  queuedTextureResources: StatefulWrappedFileType<CardMaterial>[] = [];
-
-  filters = [ContentTypeFilter.BITMAP, new UniqueEntryFilter(this.queuedTextureResources)];
+  filters = [ContentTypeFilter.BITMAP, new UniqueEntryFilter(this.elements)];
 
   errorLoadMsg: string | null = null;
 
-  constructor(private dialog: MatDialog, private api: Api, private snackbar: MatSnackBar) {
+  constructor(dialog: MatDialog, private api: Api, private snackbar: MatSnackBar) {
+    super(dialog);
   }
 
   ngOnInit(): void {
@@ -49,32 +43,6 @@ export class ImportTextureComponent implements OnInit {
     );
   }
 
-  onFileAdded(files: File[]): void {
-    const invalidFiles: FileError[] = [];
-    files.forEach(file => {
-      const failedReason = this.filter(file);
-      if (failedReason === null) {
-        let texture = this.findTextureName(file);
-        console.log('selecting texture', texture);
-        this.queuedTextureResources.push({
-          file: file,
-          state: FileState.AWAIT,
-          type: texture
-        });
-      } else {
-        invalidFiles.push(new FileError(file, failedReason))
-      }
-    });
-    if (invalidFiles.length > 0) { // show error dialog
-      this.dialog.open(ErrorDialogComponent, {
-        data: {
-          title: '<h1>Folgende Dateien konnten nicht hinzugefügt werden:</h1>',
-          entries: invalidFiles
-        }
-      });
-    }
-  }
-
   findTextureName(file: File): CardMaterial | undefined {
     const fileName = Utils.fileNameFor(file.name);
     return Utils.predChain([
@@ -87,46 +55,6 @@ export class ImportTextureComponent implements OnInit {
     ], this.availableTextures);
   }
 
-  filter(file: File): string | null {
-    for (let i = 0; i < this.filters.length; i++) {
-      let e = this.filters[i];
-      const filter = e.filter(file);
-      console.log('filter result:', file, filter);
-      if (filter != null) {
-        return filter;
-      }
-    }
-    return null;
-  }
-
-  deleteAllTextureEntry(): void {
-    this.queuedTextureResources.length = 0;
-  }
-
-  deleteTextureEntry(entry: StatefulWrappedFileType<CardMaterial>): void {
-    Utils.remove(this.queuedTextureResources, entry);
-  }
-
-  importAllTextures(): void {
-    console.log('starting bulk import');
-    this.queuedTextureResources.forEach((entry) => {
-      this.importTexture(entry);
-    });
-  }
-
-  importTexture(texture: StatefulWrappedFileType<CardMaterial>): void {
-    console.log('importing ', texture);
-    this.api.setTexture(texture).subscribe(
-      response => {
-        texture.state = FileState.SUCCESSFUL;
-        this.hasSuccessfulUploadedInQueue = true;
-      },
-      error => {
-        texture.state = FileState.FAILED;
-      }
-    );
-  }
-
   changeMapping(texture: StatefulWrappedFileType<CardMaterial>): void {
     const ref = this.dialog.open(MappingDialogComponent, {
       data: {
@@ -135,19 +63,44 @@ export class ImportTextureComponent implements OnInit {
       }
     });
     ref.afterClosed().subscribe(result => { //TODO ignore cancel closes
-      console.log('setting result:', result);
-      texture.type = result;
+      if (result != undefined || result != null) {
+        console.log('setting result:', result);
+        texture.type = result;
+      } else {
+        console.log('dialog canceled');
+      }
     });
   }
 
-  clearSubmittedTextures() {
-    this.queuedTextureResources.forEach((texture, index) => {
-      if (texture.state == FileState.SUCCESSFUL) {
-        this.queuedTextureResources.splice(index, 1);
-      }
+  addMappedFiles(file: File, elements: (CardMaterial | undefined)[]): void {
+    let type = undefined;
+    if (elements.length > 0) {
+      type = elements[0];
+    }
+    this.elements.push({
+      file: file,
+      state: FileState.AWAIT,
+      type: type
     });
-    this.hasSuccessfulUploadedInQueue = false;
   }
+
+  findName(file: File): (CardMaterial | undefined)[] {
+    return [this.findTextureName(file)];
+  }
+
+  submit(element: StatefulWrappedFileType<CardMaterial>): void {
+    console.log('importing ', element);
+    this.api.setTexture(element).subscribe(
+      response => {
+        element.state = FileState.SUCCESSFUL;
+        this.hasSuccessfulFiles = true;
+      },
+      error => {
+        element.state = FileState.FAILED;
+      }
+    );
+  }
+
 }
 
 

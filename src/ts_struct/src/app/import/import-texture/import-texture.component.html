@@ -4,14 +4,14 @@
     (fileAdded)="onFileAdded($event)">
   </app-drop-zone>
   <app-drop-controls
-    [list]="queuedTextureResources"
-    [showClearSuccessful]="hasSuccessfulUploadedInQueue"
-    (deleteAll)="deleteAllTextureEntry()"
-    (submitAll)="importAllTextures()"
-    (clearSuccessful)="clearSubmittedTextures()">
+    [list]="elements"
+    [showClearSuccessful]="hasSuccessfulFiles"
+    (deleteAll)="deleteAll()"
+    (submitAll)="submitAll()"
+    (clearSuccessful)="clearSubmitted()">
   </app-drop-controls>
   <!-- item list -->
-  <mat-list *ngFor="let texture of queuedTextureResources" class="import-list">
+  <mat-list *ngFor="let texture of elements" class="import-list">
     <mat-divider></mat-divider>
     <div class="import-list-item">
       <!-- import state indicator -->
@@ -30,15 +30,15 @@
       <div class="import-list-item-action">
         <span *ngIf="texture.type!=undefined">für Textur: {{texture.type.name}}</span>
         <button *ngIf="texture.state == FileState.FAILED" [disabled]="texture.type == undefined || texture.type.id == undefined"
-                mat-raised-button color="warn" (click)="importTexture(texture)">
+                mat-raised-button color="warn" (click)="submit(texture)">
           <mat-icon>replay</mat-icon>
         </button>
         <button *ngIf="texture.state == FileState.AWAIT" [disabled]="texture.type == undefined || texture.type.id == undefined"
-                mat-raised-button color="primary" (click)="importTexture(texture)">
+                mat-raised-button color="primary" (click)="submit(texture)">
           <mat-icon>publish</mat-icon>
         </button>
         <button mat-raised-button color="warn"
-                (click)="deleteTextureEntry(texture)">
+                (click)="delete(texture)">
           <mat-icon>delete</mat-icon>
         </button>
       </div>
