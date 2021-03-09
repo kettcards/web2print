@@ -33,6 +33,8 @@ import { MappingDialogComponent } from './import/import-texture/mapping-dialog/m
 import {MatOptionModule} from "@angular/material/core";
 import { ImportMotiveDialogComponent } from './import/import-motive/import-motive-dialog/import-motive-dialog.component';
 import { PdfListComponent } from './pdf-list/pdf-list.component';
+import { FontConfigComponent } from './config/font-config/font-config.component';
+import {DragDropModule} from "@angular/cdk/drag-drop";
 
 const routes: Routes = [
   {path: '', redirectTo: 'cards', pathMatch: 'full'},
@@ -41,6 +43,7 @@ const routes: Routes = [
   {path: 'import-motive-default', component: ImportMotiveDefaultComponent},
   {path: 'import-texture', component: ImportTextureComponent},
   {path: 'pdf-list', component: PdfListComponent}
+  {path: 'font-config', component: FontConfigComponent},
 ];
 
 @NgModule({
@@ -58,6 +61,8 @@ const routes: Routes = [
     MappingDialogComponent,
     ImportMotiveDialogComponent,
     PdfListComponent
+    ImportMotiveDialogComponent,
+    FontConfigComponent
   ],
   imports: [
     RouterModule.forRoot(routes, {useHash: true}),
