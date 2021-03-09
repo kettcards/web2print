@@ -75,7 +75,7 @@ const $fontSelect = $<HTMLDivElement>('#font-select')
 Fonts.$options
   .mousedown(stopPropagation)
   .click(function(e) {
-    if(e.target.nodeName !== 'P')
+    if(e.target.nodeName !== 'P' || Editor.state !== EditorStates.EL_FOCUSED)
       return;
 
     Fonts.currentSelection = e.target.textContent;
