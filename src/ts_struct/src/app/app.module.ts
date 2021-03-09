@@ -32,6 +32,7 @@ import {MatSelectModule} from "@angular/material/select";
 import { MappingDialogComponent } from './import/import-texture/mapping-dialog/mapping-dialog.component';
 import {MatOptionModule} from "@angular/material/core";
 import { ImportMotiveDialogComponent } from './import/import-motive/import-motive-dialog/import-motive-dialog.component';
+import { PdfListComponent } from './pdf-list/pdf-list.component';
 
 const routes: Routes = [
   {path: '', redirectTo: 'cards', pathMatch: 'full'},
@@ -39,6 +40,7 @@ const routes: Routes = [
   {path: 'import-motive', component: ImportMotiveComponent},
   {path: 'import-motive-default', component: ImportMotiveDefaultComponent},
   {path: 'import-texture', component: ImportTextureComponent},
+  {path: 'pdf-list', component: PdfListComponent}
 ];
 
 @NgModule({
@@ -54,7 +56,8 @@ const routes: Routes = [
     ErrorLoadComponent,
     AutoChipsComponent,
     MappingDialogComponent,
-    ImportMotiveDialogComponent
+    ImportMotiveDialogComponent,
+    PdfListComponent
   ],
   imports: [
     RouterModule.forRoot(routes, {useHash: true}),

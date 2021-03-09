@@ -79,7 +79,11 @@ export class ImportMotiveComponent extends ImportMenu<CardMotive> implements OnI
   }
 
   submit(element: StatefulWrappedFileType<CardMotive>): void {
-    // TODO
+    this.api.importMotive(element)?.subscribe(
+      next => {
+        console.log('ret', next);
+      }
+    );
   }
 
 }

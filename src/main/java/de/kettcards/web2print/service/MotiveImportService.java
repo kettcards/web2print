@@ -18,16 +18,17 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.util.InMemoryResource;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -53,6 +54,76 @@ public class MotiveImportService extends StorageContextAware implements WebConte
         this.cardFormatRepository = cardFormatRepository;
     }
 
+
+    public void NEWImportMotive(Content content, List<String> orderIds, String side) throws IOException {
+        //check that all order ids are valid
+        var cards = new ArrayList<Card>();
+        for (String orderId : orderIds) {
+            Optional<Card> cardByOrderId = cardRepository.findCardByOrderId(orderId);
+            if (cardByOrderId.isPresent()) {
+                cards.add(cardByOrderId.get());
+            } else {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "ungültige Bestellnummer: " + orderId);
+            }
+        }
+        if (side == null) { // null side should be a pdf
+            content.assertContentExtension(MediaTypeFileExtension.PDF);
+            List<ByteArrayOutputStream> byteArrayOutputStreams = printPdfToImage(content.getInputStream(), getScaleFactor());
+            if (byteArrayOutputStreams.size() > 2 || byteArrayOutputStreams.isEmpty())
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Druckdatei hat ungültige Seitenanzahl:" +
+                        byteArrayOutputStreams.size());
+            var frontContent = new Content(new InMemoryResource(byteArrayOutputStreams.get(0).toByteArray()));
+            saveImageForCard(frontContent, cards, "FRONT", ".png");
+            if (byteArrayOutputStreams.size() > 1) {
+                var backContent = new Content(new InMemoryResource(byteArrayOutputStreams.get(1).toByteArray()));
+                saveImageForCard(backContent, cards, "BACK", ".png");
+            }
+            //cleanup
+            try {
+                for (ByteArrayOutputStream stream : byteArrayOutputStreams) {
+                    stream.close();
+                }
+            } catch (IOException ex) { //should never happen
+                log.debug("failed to close image stream:" + ex.getMessage(), ex.getCause());
+            }
+        } else { // assume that it's a png
+            content.assertContentExtension(MediaTypeFileExtension.PNG); // jpgs don't support alpha, so we don't allow it
+            if (!(side.equals("FRONT") || side.equals("BACK")))
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "unmgültiges Seitenformat");
+            saveImageForCard(content, cards, side, content.assertFileExtension(".png"));
+        }
+
+    }
+
+    public void saveImageForCard(Content content, List<Card> cards, String side, String imageType) throws IOException {
+        var filename = UUID.randomUUID().toString() + imageType;
+        save(content, filename);
+        Motive motive = new Motive();
+        motive.setTextureSlug(filename);
+        motive = motiveRepository.save(motive);
+        for (Card card : cards) {
+            List<MotiveMap> motiveMaps = card.getMotiveMaps();
+            var existing = motiveMaps.stream().filter(e -> e.getSide().equals(side)).findFirst();
+            if (existing.isPresent()) { // update current motive assignment
+                var motiveMap = existing.get();
+                motiveMap.setMotive(motive);
+                motiveMapRepository.save(motiveMap);
+            } else { // card hasn't had an existing motive
+                MotiveMap motiveMap = new MotiveMap();
+                var motiveMapId = new MotiveMap.MotiveMapId();
+                motiveMapId.setCard(card.getId());
+                motiveMapId.setMotive(motive.getId());
+                motiveMap.setMotiveMapId(motiveMapId);
+                motiveMap.setCard(card);
+                motiveMap.setMotive(motive);
+                motiveMap.setSide(side);
+                motiveMapRepository.save(motiveMap);
+            }
+        }
+    }
+
+
+    @Deprecated
     public void importMotive(Content content) throws IOException {
         String name = content.getOriginalFilename();
         log.info("importing " + name);

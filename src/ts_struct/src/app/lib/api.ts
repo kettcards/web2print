@@ -2,7 +2,7 @@ import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {Injectable} from '@angular/core';
 import {Pageable, PageRequest} from "./pageable";
-import {CardFormat, CardMaterial, CardOverview} from "./card";
+import {CardFormat, CardMaterial, CardMotive, CardOverview} from "./card";
 import {StatefulWrappedFileType, WrappedFileType} from "./utils";
 
 @Injectable()
@@ -48,14 +48,12 @@ export class Api {
     return null;
   }
 
-  public importMotive(format: StatefulWrappedFileType<CardFormat>): Observable<Object> | null {
-    /*
+  public importMotive(format: StatefulWrappedFileType<CardMotive>): Observable<Object> | null {
     const data: FormData = new FormData();
-    data.append('file', file);
-    return this.http.post<ApiResponse>(Api.apiUrl + '/import/defaultMotive', data);
+    data.append('file', format.file);
 
-     */
-    return null;
+    data.append('cards', JSON.stringify(format.additionalAttributes));
+    return this.http.post<Object>(Api.apiUrl + '/import/motive', data);
   }
 
   public importDefaultMotive(format: StatefulWrappedFileType<CardFormat>): Observable<Object> | null {
