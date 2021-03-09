@@ -12,6 +12,7 @@
     "./ResizeBars.ts",
     "./El.ts",
     "./Editor.ts",
+    "./Overlay.ts",
     "./Elements.ts",
     "./textHandlers.ts",
     "./imgHandlers.ts",
@@ -21,8 +22,7 @@
     "./RenderStyles.ts",
     "./UI.ts",
     "./front.ts",
-    "./index.ts",
-    "./tutorial.ts"
+    "./index.ts"
   ],
   "compilerOptions": {
     "outFile": "../../main/resources/static/front/front.js",
