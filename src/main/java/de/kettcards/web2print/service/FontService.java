@@ -67,7 +67,7 @@ public final class FontService extends StorageContextAware implements WebContext
         if(!order.isEmpty() && !newOrder)
             return order;
 
-        ArrayList<String> orderedFonts =  new ArrayList<>();
+        ArrayList<String> orderedFonts;
         try {
             Content content = load("orderedFonts.json");
             orderedFonts = (ArrayList<String>) objectMapper.readValue(content.getInputStream(), new TypeReference<List<String>>() {
