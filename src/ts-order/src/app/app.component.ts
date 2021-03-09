@@ -14,6 +14,9 @@ export class AppComponent {
   fieldControl = new FormControl();
 
   // @ts-ignore
+  overview: FormGroup;
+
+  // @ts-ignore
   contactFormGroup: FormGroup;
 
   isEditable = true;
@@ -21,11 +24,15 @@ export class AppComponent {
   constructor(private formBuilder: FormBuilder) {}
 
   ngOnInit() {
+    this.overview = this.formBuilder.group({
+
+    });
     this.contactFormGroup = this.formBuilder.group({
+      gender: ['Herr', Validators.required],
       firstname: ['', Validators.required],
       lastname: ['', Validators.required],
-      company: new FormControl(),
-      street: ['', Validators.required],
+      company: ['', Validators.compose([])],
+      street: ['', Validators.compose([Validators.required, Validators.min(4), Validators.minLength(12)])],
       zip: ['', Validators.required],
       address: ['', Validators.required],
       region: ['', Validators.required],
