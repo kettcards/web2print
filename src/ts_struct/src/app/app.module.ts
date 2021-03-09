@@ -32,6 +32,8 @@ import {MatSelectModule} from "@angular/material/select";
 import { MappingDialogComponent } from './import/import-texture/mapping-dialog/mapping-dialog.component';
 import {MatOptionModule} from "@angular/material/core";
 import { ImportMotiveDialogComponent } from './import/import-motive/import-motive-dialog/import-motive-dialog.component';
+import { FontConfigComponent } from './config/font-config/font-config.component';
+import {DragDropModule} from "@angular/cdk/drag-drop";
 
 const routes: Routes = [
   {path: '', redirectTo: 'cards', pathMatch: 'full'},
@@ -39,6 +41,7 @@ const routes: Routes = [
   {path: 'import-motive', component: ImportMotiveComponent},
   {path: 'import-motive-default', component: ImportMotiveDefaultComponent},
   {path: 'import-texture', component: ImportTextureComponent},
+  {path: 'font-config', component: FontConfigComponent},
 ];
 
 @NgModule({
@@ -54,7 +57,8 @@ const routes: Routes = [
     ErrorLoadComponent,
     AutoChipsComponent,
     MappingDialogComponent,
-    ImportMotiveDialogComponent
+    ImportMotiveDialogComponent,
+    FontConfigComponent
   ],
   imports: [
     RouterModule.forRoot(routes, {useHash: true}),
@@ -77,7 +81,8 @@ const routes: Routes = [
     MatAutocompleteModule,
     MatSelectModule,
     MatOptionModule,
-    MatFormFieldModule
+    MatFormFieldModule,
+    DragDropModule
   ],
   exports: [
     RouterModule,

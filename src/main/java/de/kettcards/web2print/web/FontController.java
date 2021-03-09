@@ -5,11 +5,9 @@ import de.kettcards.web2print.service.FontService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -29,7 +27,7 @@ public final class FontController {
      * @return the names of available fonts
      */
     @GetMapping({"/font", "/fonts"})
-    public List<String> getFonts() {
+    public List<String> getFonts() throws IOException {
         return fontService.listAvailableFonts();
     }
 
@@ -42,6 +40,12 @@ public final class FontController {
     public Resource getFont(@PathVariable("fontId") String fontId) {
         //TODO impl, use it later for loading resource from different types
         return null;
+    }
+
+    @PostMapping("/defaultFonts")
+    public void setDefaultFonts(@RequestBody String[] fonts) throws IOException {
+        //TODO save fonts somewhere
+        fontService.saveOrder(fonts);
     }
 
 }
