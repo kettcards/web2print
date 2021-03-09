@@ -91,13 +91,6 @@ const RenderStyles : RenderStyle[] = [{
       .append(make('div.intrinsic.bottom'))
       .append(make('div.intrinsic.left')  );
 
-    //intrinsic colliders
-    $bundle.find('.colliders-layer' as JQuery.Selector)
-      .append(make('div.intrinsic.top')   )
-      .append(make('div.intrinsic.right') )
-      .append(make('div.intrinsic.bottom'))
-      .append(make('div.intrinsic.left')  );
-
     this.data.rot     = 0;
     this.data.$bundle = $bundle;
 
