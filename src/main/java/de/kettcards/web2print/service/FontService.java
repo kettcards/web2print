@@ -57,8 +57,8 @@ public final class FontService extends StorageContextAware implements WebContext
 
     /**
      * if there already is a order stored in-memory and it wasn't changed by the admin just return the in-memory order
-     * otherwise create a new order list which starts with the fonts explicitly mentioned in orderedFonts.json and put
-     * the rest on the tail-end of the list
+     * otherwise create a new order list from ordered.json. If the json file doesn't exist/can't be loaded it will just
+     * load the fontStore keySet like before
      * @param newOrder boolean which is set to true when a new order is set
      * @return Fontnames in correct order
      * @throws IOException
