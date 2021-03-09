@@ -36,6 +36,16 @@ saveSelect.value = 'Server';
 
 $('#tutorial').click(showTutorial);
 
+$('#dsgvo-btn').click(function(){
+    const $over = $('<div></div>');
+    $over.load('./datenschutzerklaerung.html', function(){
+        $over.find('button').click(function(){
+            $over.remove();
+        })
+    });
+    $body.append($over);
+});
+
 $('#del-btn')
   .mouseup(stopPropagation)
   .click(function () {
