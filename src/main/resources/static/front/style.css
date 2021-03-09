@@ -377,6 +377,7 @@ body {
 .colliders-layer>.intrinsic.right  { right : -50mm; width : 55mm; top : -50mm; height: calc(100% + 100mm); }
 .colliders-layer>.intrinsic.bottom { bottom: -50mm; height: 55mm; left: -50mm; width : calc(100% + 100mm); }
 .colliders-layer>.intrinsic.left   { left  : -50mm; width : 55mm; top : -50mm; height: calc(100% + 100mm); }
+.colliders-layer>.intrinsic.front  { top   : -50mm; left  :-50mm; width: calc(100% + 100mm); height: calc(100% + 50mm)}
 
 .page.front {
   position: absolute;
