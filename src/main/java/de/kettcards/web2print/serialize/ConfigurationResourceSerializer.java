@@ -21,7 +21,7 @@ public class ConfigurationResourceSerializer extends JsonSerializer<ApplicationC
         gen.writeStringField("basePath", links.getBasePath());
         gen.writeStringField("apiUrl", links.getBasePath() + links.getApiPath());
 
-        gen.writeStringField("materialUrl", links.getMaterialUrl());
+        gen.writeStringField("textureUrl", links.getTextureUrl());
         gen.writeStringField("thumbnailUrl", links.getThumbnailUrl());
         gen.writeStringField("fontUrl", links.getFontUrl());
         gen.writeStringField("motiveUrl", links.getMotiveUrl());

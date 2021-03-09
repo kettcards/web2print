@@ -13,7 +13,7 @@ declare interface Card {
     height : number;
     folds  : Fold[];
   };
-  material   : {
+  texture   : {
     textureSlug : string;
     tiling      : 'STRETCH';
   };
