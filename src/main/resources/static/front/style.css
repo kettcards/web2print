@@ -348,7 +348,8 @@ body {
   height: 100%;
 }
 .folds-layer,
-.colliders-layer {
+.colliders-layer,
+.snap-lines-layer {
   pointer-events: none;
 }
 .colliders-layer>* {
@@ -384,6 +385,23 @@ body {
 }
 .page.front>*:not(.folds-layer) {
   transform: rotateY(-180deg);
+}
+
+.snap-lines-layer>* {
+  position: absolute;
+  background-color: red;
+  visibility: hidden;
+}
+.snap-lines-layer>*.h {
+  height: 1px;
+  width: 100%;
+}
+.snap-lines-layer>*.v {
+  height: 100%;
+  width: 1px;
+}
+.snap-lines-layer>*.visible {
+  visibility: visible;
 }
 
 .text {
