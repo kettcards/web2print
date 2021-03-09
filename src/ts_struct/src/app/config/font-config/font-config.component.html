@@ -1,0 +1,15 @@
+<div class="pseudo-body">
+  <mat-chip-list
+    class="mat-chip-list-stacked"
+    cdkDropList
+    cdkDropListOrientation="vertical"
+    (cdkDropListDropped)="drop($event)">
+    <mat-chip
+      class="example-box"
+      cdkDrag
+      *ngFor="let font of fonts">
+      {{font}}
+    </mat-chip>
+  </mat-chip-list>
+  <button mat-raised-button color="primary" (click)="buttonClicked()" >Reihenfolge festlegen</button>
+</div>
