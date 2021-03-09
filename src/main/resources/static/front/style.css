@@ -522,7 +522,6 @@ body {
   background-image: url('data:image/svg+xml;utf8,<svg preserveAspectRatio="none" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg"><path d="M536.003 68.999L300.004 530.996 64.006 68.999h471.997z" fill="%23565656"/></svg>');
   background-size: 100% 100%;
   background-repeat: no-repeat;
-  transition: background-color 0.3s;
 }
 #font-tick:hover {
   background-color: rgba(33, 33, 33, 0.2);
