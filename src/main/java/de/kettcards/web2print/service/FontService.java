@@ -64,32 +64,21 @@ public final class FontService extends StorageContextAware implements WebContext
      * @throws IOException
      */
     public List<String> listAvailableFonts(boolean newOrder) {
-        if(!order.isEmpty() && !newOrder) {
+        if(!order.isEmpty() && !newOrder)
             return order;
-        }
+
         ArrayList<String> orderedFonts =  new ArrayList<>();
         try {
             Content content = load("orderedFonts.json");
             orderedFonts = (ArrayList<String>) objectMapper.readValue(content.getInputStream(), new TypeReference<List<String>>() {
             });
-        } catch (IOException ignored) { /*orderedFonts.json couldn't be read/doesn't exist so we just handle it like an
-        empty list*/ }
-        ArrayList<String> fonts = new ArrayList<>(fontStore.keySet());
-        ArrayList<String> clonedFonts = (ArrayList<String>) fonts.clone();
-        ArrayList<String> result = new ArrayList<>();
-        for (int i = 0; i < fonts.size(); i++) {
-            String font = null;
-            try {
-                font = orderedFonts.get(i);
-            } catch (IndexOutOfBoundsException ignored) {}
-            if(font != null) {
-                result.add(font);
-                clonedFonts.remove(font);
-            }
+        } catch (IOException e) {
+            //something went wrong reading the json so we just return the unordered set
+            return new ArrayList<>(fontStore.keySet());
         }
-        result.addAll(clonedFonts);
-        order.addAll(result);
-        return result;
+        order.clear();
+        order.addAll(orderedFonts);
+        return orderedFonts;
     }
 
     public boolean hasFont(String fontName) {
