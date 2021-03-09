@@ -19,6 +19,8 @@ public final class FontController {
 
     private final FontService fontService;
 
+    private boolean newOrder = false;
+
     public FontController(FontService fontService) {
         this.fontService = fontService;
     }
@@ -28,7 +30,9 @@ public final class FontController {
      */
     @GetMapping({"/font", "/fonts"})
     public List<String> getFonts() throws IOException {
-        return fontService.listAvailableFonts();
+        List<String> list = fontService.listAvailableFonts(newOrder);
+        newOrder = false;
+        return list;
     }
 
     @GetMapping("/font/{fontName}")
@@ -44,8 +48,8 @@ public final class FontController {
 
     @PostMapping("/defaultFonts")
     public void setDefaultFonts(@RequestBody String[] fonts) throws IOException {
-        //TODO save fonts somewhere
         fontService.saveOrder(fonts);
+        newOrder = true;
     }
 
 }

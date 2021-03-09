@@ -55,12 +55,27 @@ public final class FontService extends StorageContextAware implements WebContext
         }
     }
 
-    public List<String> listAvailableFonts() throws IOException {
-        if(!order.isEmpty()) {
-            return order; }
-        Content content = load("orderedFonts.json");
-        ArrayList<String> orderedFonts = (ArrayList<String>) objectMapper.readValue(content.getInputStream(), new TypeReference<List<String>>(){});
-        ArrayList<String> fonts = new ArrayList<String>(fontStore.keySet());
+    /**
+     * if there already is a order stored in-memory and it wasn't changed by the admin just return the in-memory order
+     * otherwise create a new order list which starts with the fonts explicitly mentioned in orderedFonts.json and put
+     * the rest on the tail-end of the list
+     * @param newOrder boolean which is set to true when a new order is set
+     * @return Fontnames in correct order
+     * @throws IOException
+     */
+    public List<String> listAvailableFonts(boolean newOrder) {
+        if(!order.isEmpty() && !newOrder) {
+            log.info("TEST");
+            return order;
+        }
+        ArrayList<String> orderedFonts =  new ArrayList<>();
+        try {
+            Content content = load("orderedFonts.json");
+            orderedFonts = (ArrayList<String>) objectMapper.readValue(content.getInputStream(), new TypeReference<List<String>>() {
+            });
+        } catch (IOException ignored) { /*orderedFonts.json couldn't be read/doesn't exist so we just handle it like an
+        empty list*/ }
+        ArrayList<String> fonts = new ArrayList<>(fontStore.keySet());
         ArrayList<String> clonedFonts = (ArrayList<String>) fonts.clone();
         ArrayList<String> result = new ArrayList<>();
         for (int i = 0; i < fonts.size(); i++) {
@@ -86,6 +101,11 @@ public final class FontService extends StorageContextAware implements WebContext
         return fontStore.get(fontName);
     }
 
+    /**
+     * saves fonts in set order into orderedFonts.json located in data/fonts
+     * @param fonts fonts in correct order
+     * @throws IOException throws exception if either JSON parsing of parameter or saving of the json file fails
+     */
     public void saveOrder(String[] fonts) throws IOException {
         String json = objectMapper.writeValueAsString(fonts);
         save(new Content(new InMemoryResource(json)), "orderedFonts.json");
