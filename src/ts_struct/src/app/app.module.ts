@@ -42,7 +42,7 @@ const routes: Routes = [
   {path: 'import-motive', component: ImportMotiveComponent},
   {path: 'import-motive-default', component: ImportMotiveDefaultComponent},
   {path: 'import-texture', component: ImportTextureComponent},
-  {path: 'pdf-list', component: PdfListComponent}
+  {path: 'pdf-list', component: PdfListComponent},
   {path: 'font-config', component: FontConfigComponent},
 ];
 
@@ -60,7 +60,7 @@ const routes: Routes = [
     AutoChipsComponent,
     MappingDialogComponent,
     ImportMotiveDialogComponent,
-    PdfListComponent
+    PdfListComponent,
     ImportMotiveDialogComponent,
     FontConfigComponent
   ],
@@ -85,7 +85,8 @@ const routes: Routes = [
     MatAutocompleteModule,
     MatSelectModule,
     MatOptionModule,
-    MatFormFieldModule
+    MatFormFieldModule,
+    DragDropModule
   ],
   exports: [
     RouterModule,

@@ -89,7 +89,7 @@ public class MotiveImportService extends StorageContextAware implements WebConte
         } else { // assume that it's a png
             content.assertContentExtension(MediaTypeFileExtension.PNG); // jpgs don't support alpha, so we don't allow it
             if (!(side.equals("FRONT") || side.equals("BACK")))
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "unmgültiges Seitenformat");
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "unngültige Seitenangabe: " + side);
             saveImageForCard(content, cards, side, content.assertFileExtension(".png"));
         }
 
