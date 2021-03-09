@@ -425,6 +425,7 @@ class Editor {
         storage.dx = 0;
         storage.dy = 0;
         Editor.state = EditorStates.SELF_DRAGGING;
+        Editor.transform.manuallyModified = true;
         Editor.setCursor('move');
     }
     static dragSelf(dx, dy) {
@@ -443,20 +444,27 @@ class Editor {
     static zoom(steps) {
         const scale = Editor.transform.scale;
         Editor.transform.scale = Math.min(Math.max(scale + scale * steps * -0.01, 0.1), 5);
+        Editor.transform.manuallyModified = true;
         Editor.applyTransform();
         Editor.displayZoom();
     }
     static fitToContainer() {
-        Editor.transform.scale = Math.min(Editor.$editorArea.width() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.width + 55), Editor.$editorArea.height() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.height + 55)) * 0.9;
-        Editor.transform.translateX = 0;
-        Editor.transform.translateY = 0;
-        Editor.transform.rotate = 0;
+        const transform = Editor.transform;
+        transform.scale = Math.min(Editor.$editorArea.width() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.width + 55), Editor.$editorArea.height() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.height + 55)) * 0.9;
+        transform.translateX = 0;
+        transform.translateY = 0;
+        transform.rotate = 0;
+        transform.manuallyModified = false;
         Editor.applyTransform();
         Editor.displayZoom();
     }
     static applyTransform() {
         const transform = Editor.transform;
         Editor.$transformAnchor.css('transform', `scale(${transform.scale}) translate(${transform.translateX}px,${transform.translateY}px) rotateY(${transform.rotate}deg)`);
+    }
+    static hWindowResized() {
+        if (!Editor.transform.manuallyModified)
+            Editor.fitToContainer();
     }
     static showHandlesOnTarget() {
         ResizeBars.show(Editor.storage.target.isA('IMG'));
@@ -513,7 +521,8 @@ Editor.transform = {
     scale: 1,
     translateX: 0,
     translateY: 1,
-    rotate: 0
+    rotate: 0,
+    manuallyModified: false,
 };
 Editor.state = EditorStates.NONE;
 Editor.storage = {
@@ -813,7 +822,7 @@ function hFileUploadChanged(e) {
         Editor.storage.addOnClick = undefined;
         $fileUpBtn.val(null);
         console.error('failed to fetch xhr', e);
-        alert("Die ausgewählte Datei konnte nicht hochgeladen werden.\nBitte stellen Sie sicher, dass das Dateiformat: .jpg,.jpeg,.png,.svg ist \nund die Dateigröße nicht 5MB überschreitet");
+        alert("Die ausgewählte Datei konnte nicht hochgeladen werden.\nBitte stellen Sie sicher, dass das Dateiformat: .jpg,.jpeg,.png,.svg ist \nund die Dateigröße nicht 10MB überschreitet.");
     });
 }
 const $fileUpBtn = $('#fileUpload').change(hFileUploadChanged);
@@ -1045,8 +1054,8 @@ const RenderStyles = [{
                 height: height + 'mm',
             });
             $bundle.children().css(Object.assign({
-                'background-image': 'url("' + web2print.links.materialUrl + card.material.textureSlug + '")',
-            }, this.BgStretchObjs[card.material.tiling]));
+                'background-image': 'url("' + web2print.links.textureUrl + card.texture.textureSlug + '")',
+            }, this.BgStretchObjs[card.texture.tiling]));
             for (let fold of card.cardFormat.folds) {
                 $bundle.find('.folds-layer').append(createFold(fold));
             }
@@ -1125,8 +1134,8 @@ const RenderStyles = [{
             });
             $page2[0].dataset.xOffset = String(w1);
             $page1.add($page2).children().css(Object.assign({
-                'background-image': 'url("' + web2print.links.materialUrl + card.material.textureSlug + '")'
-            }, this.BgStretchObjs[card.material.tiling]));
+                'background-image': 'url("' + web2print.links.textureUrl + card.texture.textureSlug + '")'
+            }, this.BgStretchObjs[card.texture.tiling]));
             let mFront, mBack;
             for (const motive of card.motive) {
                 switch (motive.side) {
@@ -1524,6 +1533,7 @@ $('.left>.nav-btn-inner').click(function () {
 $('#recenter-btn').click(function () {
     Editor.fitToContainer();
 });
+$(window).resize(Editor.hWindowResized);
 $.get(`${web2print.links.apiUrl}card/${Parameters.card}`)
     .then(loadCard)
     .catch(function () {
