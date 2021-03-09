@@ -71,6 +71,7 @@ dependencies {
 	implementation 'com.weblookandfeel:svg-salamander:1.1.2.2'
 
 
+	implementation group: 'org.simplejavamail', name: 'spring-module', version: '6.5.0'
 
 	//table import
 	implementation group: 'org.apache.poi', name: 'poi', version: '4.1.2'
