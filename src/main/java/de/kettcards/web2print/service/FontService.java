@@ -65,7 +65,6 @@ public final class FontService extends StorageContextAware implements WebContext
      */
     public List<String> listAvailableFonts(boolean newOrder) {
         if(!order.isEmpty() && !newOrder) {
-            log.info("TEST");
             return order;
         }
         ArrayList<String> orderedFonts =  new ArrayList<>();

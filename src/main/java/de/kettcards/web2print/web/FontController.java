@@ -29,7 +29,7 @@ public final class FontController {
      * @return the names of available fonts
      */
     @GetMapping({"/font", "/fonts"})
-    public List<String> getFonts() throws IOException {
+    public List<String> getFonts() {
         List<String> list = fontService.listAvailableFonts(newOrder);
         newOrder = false;
         return list;
