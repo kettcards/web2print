@@ -31,8 +31,15 @@ saveSelect.value = 'Server';
 $('#tutorial').click(showTutorial);
 
 $('#del-btn')
-    .mouseup(stopPropagation)
-    .click(Editor.deleteElement);
+  .mouseup(stopPropagation)
+  .click(function () {
+    switch (Editor.state) {
+      case EditorStates.EL_FOCUSED:
+      case EditorStates.TXT_EDITING:
+        Editor.deleteElement();
+        break;
+    }
+  });
 
 const $applyColor = $('#apply-color').mousedown(Editor.saveSelection).click(function(e){
   const sel = Editor.loadSelection();
