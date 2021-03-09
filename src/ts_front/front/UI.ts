@@ -28,17 +28,12 @@ $('#save-btn').click(function() {
 const saveSelect = new SelectEx($('#save-select-ex'));
 saveSelect.value = 'Server';
 
-$('#tutorial').click(showTutorial);
+$('#tutorial').click(Overlay.tutorial.show);
+if(Cookie.getValue('tutorial') !== 'no') {
+    Overlay.tutorial.show();
+}
 
-$('#dsgvo-btn').click(function(){
-    const $over = $('<div></div>');
-    $over.load('./datenschutzerklaerung.html', function(){
-        $over.find('button').click(function(){
-            $over.remove();
-        })
-    });
-    $body.append($over);
-});
+$('#dsgvo-btn').click(Overlay.dsgvo.show);
 
 $('#del-btn')
     .mouseup(stopPropagation)
