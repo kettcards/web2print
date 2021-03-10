@@ -90,6 +90,9 @@ const RenderStyles : RenderStyle[] = [{
       .append(make('div.intrinsic.right') )
       .append(make('div.intrinsic.bottom'))
       .append(make('div.intrinsic.left')  );
+    $bundle.find('.front>.colliders-layer' as JQuery.Selector)
+      .append(make('div.intrinsic.front'));
+
 
     this.data.rot     = 0;
     this.data.$bundle = $bundle;
@@ -204,6 +207,11 @@ const RenderStyles : RenderStyle[] = [{
     $page2.find('.front>.colliders-layer' as JQuery.Selector)
       .append(make('div.intrinsic.left')  )
       .append($rightInnerCollider         );
+
+    $page1.find('.front>.colliders-layer' as JQuery.Selector)
+      .append(make('div.intrinsic.front'));
+    $page2.find('.front>.colliders-layer' as JQuery.Selector)
+      .append(make('div.intrinsic.front'));
 
     Snaplines.LineMap = [];
     for(const $p of [$page1, $page2]) {
