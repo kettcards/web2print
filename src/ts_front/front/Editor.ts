@@ -84,6 +84,8 @@ class Editor {
   static endDragEl() : void {
     Editor.state = EditorStates.EL_FOCUSED;
     Editor.setCursor('auto');
+    Snaplines.hideAllLines();
+    Colliders.hideAllColliders();
 
     Editor.storage.$target.removeClass('no-select');
   }

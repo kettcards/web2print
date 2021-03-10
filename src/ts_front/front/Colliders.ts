@@ -47,7 +47,7 @@ class Colliders {
     oy: 0,
     w : 0,
     h : 0,
-    colliders: undefined
+    colliders: undefined,
   };
 
   static hCollidersLayerClick(e : MouseEvent) {
@@ -76,8 +76,9 @@ class Colliders {
     cStorage.w = pxToNum($target.css('width') );
     cStorage.h = pxToNum($target.css('height'));
 
-    const $page = $target.parents('.page');
-    cStorage.colliders = Colliders.getColliders($page[0]);
+    const page = $target.parents('.page')[0];
+    Snaplines.activateRelevantLines(page);
+    cStorage.colliders = Colliders.getColliders(page);
   }
 
   static drag(dx, dy) : [nx : number, ny : number] {
@@ -87,9 +88,11 @@ class Colliders {
     eStorage.x += dx / Editor.transform.scale;
     eStorage.y += dy / Editor.transform.scale;
 
+    const [snappedX, snappedY] = Snaplines.maybeSnap(eStorage.x, eStorage.y, cStorage.w, cStorage.h);
+
     [cStorage.ox, cStorage.oy] = Colliders.resolveCollisions(
       cStorage.ox, cStorage.oy, cStorage.w, cStorage.h,
-      eStorage.x - cStorage.ox, eStorage.y - cStorage.oy,
+      snappedX - cStorage.ox, snappedY - cStorage.oy,
       cStorage.colliders
     );
 
@@ -186,5 +189,11 @@ class Colliders {
   }
   private static collides(x1 : number, y1 : number, r1 : number, b1 : number, c : StripedBox) : boolean {
     return x1 < c.r && r1 > c.x && y1 < c.b && b1 > c.y;
+  }
+
+  static hideAllColliders() {
+    for(const c of Colliders.storage.colliders) {
+      c.$t.removeClass('visible');
+    }
   }
 }
