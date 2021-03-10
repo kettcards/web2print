@@ -154,7 +154,11 @@ let $body = $('body')
 $(document)
   .keydown(function(e) {
     if(e.keyCode === 46) {
-      Editor.deleteElement();
+      switch (Editor.state) {
+        case EditorStates.EL_FOCUSED:
+          Editor.deleteElement();
+          break;
+      }
     }
     if(e.ctrlKey) {
       if(e.key === '-') {
@@ -230,6 +234,9 @@ function changeRenderStyle(newIndex : number) {
   range.selectNodeContents($cardContainer[0]);
   range.deleteContents();
   $cardContainer.append(renderStyleState.style.pageGen(Editor.storage.loadedCard));
+
+  //(lucas 02.03.21) todo: could cache these per renderstyle or even let them cache it internally
+  Colliders.colliders = [];
 }
 
 const hPageSwitch = function(direction) {
