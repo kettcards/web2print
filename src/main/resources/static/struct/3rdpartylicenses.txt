@@ -35,7 +35,7 @@ MIT
 @angular/forms
 MIT
 
-@angular/texture
+@angular/material
 MIT
 The MIT License
 

@@ -2,7 +2,7 @@
 <div mat-dialog-content>
   <mat-form-field class="import-chip-map">
     <mat-chip-list #chipList>
-      <mat-chip *ngFor="let card of assignedCards"
+      <mat-chip *ngFor="let card of result.assignedCards"
                 [removable]="true" (removed)="remove(card)">
         {{card}}
         <mat-icon matChipRemove>cancel</mat-icon>
@@ -13,9 +13,9 @@
              (matChipInputTokenEnd)="assign($event)">
     </mat-chip-list>
   </mat-form-field>
-  <mat-form-field *ngIf="selectedSide !== undefined" appearance="fill">
+  <mat-form-field *ngIf="result.side !== undefined" appearance="fill">
     <mat-label>Kartenformat</mat-label>
-    <mat-select [(value)]="selectedSide">
+    <mat-select [(value)]="result.side">
       <mat-option [value]="Side.FRONT">Vorderseite</mat-option>
       <mat-option [value]="Side.BACK">Hinterseite</mat-option>
     </mat-select>
@@ -23,5 +23,5 @@
 </div>
 <div mat-dialog-actions>
   <button mat-raised-button color="accent" (click)="onCancel()">Abbrechen</button>
-  <button mat-raised-button color="primary" [mat-dialog-close]="assignedCards">Übernehmen</button>
+  <button mat-raised-button color="primary" [mat-dialog-close]="result">Übernehmen</button>
 </div>

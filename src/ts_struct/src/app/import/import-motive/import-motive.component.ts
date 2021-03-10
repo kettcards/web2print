@@ -11,7 +11,7 @@ import {CardMotive, CardOverview, Side} from "../../lib/card";
 import {Api} from "../../lib/api";
 import {ImportMenu} from "../import";
 import {MatDialog} from "@angular/material/dialog";
-import {ImportMotiveDialogComponent} from "./import-motive-dialog/import-motive-dialog.component";
+import {ImportMotiveDialogComponent, MaterialDialogResult} from "./import-motive-dialog/import-motive-dialog.component";
 
 @Component({
   selector: 'app-import-motive',
@@ -86,7 +86,9 @@ export class ImportMotiveComponent extends ImportMenu<CardMotive> implements OnI
     ref.afterClosed().subscribe(result => { //TODO ignore cancel closes
       if (result != undefined || result != null) {
         console.log('setting result:', result);
-        element.additionalAttributes = result;
+        element.additionalAttributes = result.assignedCards;
+        // @ts-ignore
+        element.type?.side = result.side;
       } else {
         console.log('dialog canceled');
       }

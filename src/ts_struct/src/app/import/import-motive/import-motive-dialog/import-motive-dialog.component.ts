@@ -16,17 +16,19 @@ export class ImportMotiveDialogComponent {
 
   spaceKeyCodes: number[] = [ENTER, SPACE];
 
-  assignedCards: string[] = [];
 
-  selectedSide: Side | undefined = undefined;
+  result: MaterialDialogResult = {
+    side: undefined,
+    assignedCards: []
+  }
 
   constructor(public dialogRef: MatDialogRef<ImportMotiveDialogComponent>,
               @Inject(MAT_DIALOG_DATA) public data: MotiveDialogDataWrapper) {
     if (data.motive.additionalAttributes != undefined) {
-      this.assignedCards = data.motive.additionalAttributes.concat([]);
+      this.result.assignedCards = data.motive.additionalAttributes.concat([]);
     }
     if (data.motive.type?.side != undefined) {
-      this.selectedSide = data.motive.type.side;
+      this.result.side = data.motive.type.side;
     }
   }
 
@@ -41,7 +43,7 @@ export class ImportMotiveDialogComponent {
 
     // TODO we might want to compare orderIds before for validation
     if ((value || '').trim()) {
-      this.assignedCards.push(value);
+      this.result.assignedCards.push(value);
     }
 
     if (input) {
@@ -50,8 +52,13 @@ export class ImportMotiveDialogComponent {
   }
 
   remove(orderId: string) {
-    Utils.remove(this.assignedCards, orderId);
+    Utils.remove(this.result.assignedCards, orderId);
   }
+}
+
+export interface MaterialDialogResult {
+  assignedCards: string[];
+  side?: Side;
 }
 
 export interface MotiveDialogDataWrapper {
