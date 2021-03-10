@@ -51,17 +51,18 @@ public final class ImportController {
     @PostMapping(value = "/motive/front", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void importFrontMotive(@RequestPart(value = "cards", required = false) String json,
                              @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
+        //TODO pre parsing
         var cards = objectMapper.readValue(json, new TypeReference<List<String>>() {});
-        Content.from(file).assertContentExtension(MediaTypeFileExtensionFilter.BITMAP);
-        var fileExtension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf('.'));
+        motiveImportService.NEWImportMotive(Content.from(file), cards, "FRONT");
+
     }
 
     @PostMapping(value = "/motive/back", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void importBackMotive(@RequestPart(value = "cards", required = false) String cards,
+    public void importBackMotive(@RequestPart(value = "cards", required = false) String json,
                                   @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
-        System.out.println("okey");
-        System.out.println(cards);
-        System.out.println(file.getOriginalFilename());
+        //TODO pre parsing
+        var cards = objectMapper.readValue(json, new TypeReference<List<String>>() {});
+        motiveImportService.NEWImportMotive(Content.from(file), cards, "BACK");
     }
 
 }
