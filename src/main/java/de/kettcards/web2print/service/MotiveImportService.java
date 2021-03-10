@@ -134,7 +134,7 @@ public class MotiveImportService extends StorageContextAware implements WebConte
                     saveDefaultFormat(format, streams.get(0), "-front.png");
                 }
 
-                if (streams.get(1) != null) {
+                if (streams.size() > 1 && streams.get(1) != null) {
                     saveDefaultFormat(format, streams.get(1), "-back.png");
                 }
                 save(content, defaultPrefix.concat(originalFilename));

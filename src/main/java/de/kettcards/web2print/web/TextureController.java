@@ -1,9 +1,11 @@
 package de.kettcards.web2print.web;
 
+import ch.qos.logback.core.spi.ContextAware;
 import de.kettcards.web2print.model.db.Texture;
 import de.kettcards.web2print.repository.TextureRepository;
 import de.kettcards.web2print.storage.Content;
 import de.kettcards.web2print.storage.StorageContextAware;
+import de.kettcards.web2print.storage.WebContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +18,7 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("${web2print.links.api-path}/texture")
-public class TextureController extends StorageContextAware {
+public class TextureController extends StorageContextAware implements WebContextAware {
 
     private final TextureRepository textureRepository;
 
