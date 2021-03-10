@@ -11,9 +11,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.validation.annotation.Validated;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import java.util.Properties;
 
 @Data
@@ -21,19 +18,15 @@ import java.util.Properties;
 @Configuration
 public class MailConfiguration {
 
-    @NotEmpty
     @JsonView(Include.Internal.class)
     private String host;
 
-    @NotEmpty
     @JsonView(Include.Internal.class)
     private Integer port;
 
-    @Email
     @JsonView(Include.Internal.class)
     private String username;
 
-    @NotBlank
     @JsonView(Include.Internal.class)
     private String password;
 
