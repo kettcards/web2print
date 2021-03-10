@@ -1,1 +1,8 @@
-<p>pdf-list works!</p>
+<div class="nav-content">
+  <mat-list *ngFor="let element of elements" class="import-list">
+    <mat-divider></mat-divider>
+    <div>
+      <a href="http://localhost:8080/web2print/api/pdfs/{{element}}" target="_blank">{{element}}</a>
+    </div>
+  </mat-list>
+</div>
