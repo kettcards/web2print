@@ -86,11 +86,11 @@ public class MotiveImportService extends StorageContextAware implements WebConte
             } catch (IOException ex) { //should never happen
                 log.debug("failed to close image stream:" + ex.getMessage(), ex.getCause());
             }
-        } else { // assume that it's a png
-            content.assertContentExtension(MediaTypeFileExtension.PNG); // jpgs don't support alpha, so we don't allow it
+        } else { // assume that it's a png, jpg
             if (!(side.equals("FRONT") || side.equals("BACK")))
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "unngültige Seitenangabe: " + side);
-            saveImageForCard(content, cards, side, content.assertFileExtension(".png"));
+            var extension = content.assertContentExtension(MediaTypeFileExtension.PNG, MediaTypeFileExtension.JPG);
+            saveImageForCard(content, cards, side, extension.getFileExtensions()[0]); //TODO save access extension
         }
 
     }
