@@ -18,12 +18,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static de.kettcards.web2print.security.Roles.ADMIN;
@@ -60,7 +55,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 // however we still embedding content that's pointing to external resources
                 .csrf().disable()
                 .cors(Customizer.withDefaults())
-                //.cors().disable() //TODO enable cors
                 .authorizeRequests()
                 //specify resources that dont need authentication
                 .antMatchers(HttpMethod.GET, "/define.js", "/tileview/**", "/front/**", "/fonts/**", "/textures/**").permitAll();
@@ -80,7 +74,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST, "/" + apiPath + "save/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/" + apiPath + "backend/**").permitAll()
                 //explicitly define protected resources, allows refined access control
-                .antMatchers("/api/**").permitAll()
+                .antMatchers("/api/**").hasRole(ADMIN.name())
                 //everything else also needs authentication
                 .anyRequest().authenticated()
                 .and()
@@ -125,17 +119,5 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected org.springframework.security.authentication.AuthenticationManager getAuthenticationManager() throws Exception {
         return authenticationManager();
     }
-
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Collections.singletonList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET","POST"));
-        configuration.setAllowedHeaders(Collections.singletonList("*"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
-
 
 }
