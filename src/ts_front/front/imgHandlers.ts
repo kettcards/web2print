@@ -15,7 +15,11 @@ class ImageEl {
 }
 
 function hFileUploadChanged(e) {
-  let  $progressBar;
+  let  $progressBar = $('<div class="translucentBG">' +
+    '<div class="center" style="white-space: normal; overflow: auto; max-width:70%; max-height:70%; background-color:lightgray; padding:5px 5px 15px 5px;">' +
+    '<label for="prog">Hochladen:</label><progress id="prog" value="0" max="100">0%</progress></div></div>');
+  $progressBar.css('visibility', 'hidden');
+  $body.append($progressBar);
   //file Upload code
   const file = e.target.files[0];
 
@@ -28,14 +32,12 @@ function hFileUploadChanged(e) {
     processData: false,
     contentType: false,
     beforeSend: function(){
-      $progressBar = $('<div style="position:absolute; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.66)">' +
-          '<div class="center" style="white-space: normal; overflow: auto; max-width:70%; max-height:70%; background-color:lightgray; padding:5px 5px 15px 5px;">' +
-          '<label for="prog">Hochladen:</label><progress id="prog" value="0" max="100">0%</progress></div></div>');
-      $body.append($progressBar);
+      $('#prog').val(0);
+      $progressBar.css('visibility', 'visible');
     },
     xhr: xhrProvider,
   }).then(function(response : { contentId : string }) {
-    $progressBar.remove();
+    $progressBar.css('visibility', 'hidden');
     ImageEl.contentId = response.contentId;
     const img = new Image();
     img.onload = function() {
@@ -43,7 +45,7 @@ function hFileUploadChanged(e) {
     };
     img.src = `${web2print.links.apiUrl}content/${ImageEl.contentId}`;
   }).catch(function(e) {
-    $progressBar.remove();
+    $progressBar.css('visibility', 'hidden');
     Editor.storage.addOnClick = undefined;
     $fileUpBtn.val(null); //emptys the Filelist, is needed if the same file is choosen again
     console.error('failed to fetch xhr', e);
