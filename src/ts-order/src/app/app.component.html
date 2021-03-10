@@ -35,14 +35,12 @@
         </div>
         <div class="form-content-row">
           <mat-form-field>
-            <mat-label>Firma</mat-label>
-            <input matInput formControlName="company" required>
-          </mat-form-field>
-        </div>
-        <div class="form-content-row">
-          <mat-form-field>
             <mat-label>Straße/Hausnummer</mat-label>
             <input matInput formControlName="street" required>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Adresse</mat-label>
+            <input matInput formControlName="address" required>
           </mat-form-field>
         </div>
         <div class="form-content-row">
@@ -53,12 +51,6 @@
           <mat-form-field>
             <mat-label>Ort</mat-label>
             <input matInput formControlName="region" required>
-          </mat-form-field>
-        </div>
-        <div class="form-content-row">
-          <mat-form-field>
-            <mat-label>Adresse</mat-label>
-            <input matInput formControlName="address" required>
           </mat-form-field>
         </div>
       </div>
@@ -87,7 +79,7 @@
     <p>You are now done.</p>
     <div>
       <button mat-button matStepperPrevious>Back</button>
-      <button mat-button (click)="submit()">Weiter</button>
+      <button mat-button (click)="submit()">Bestellung abschicken</button>
     </div>
   </mat-step>
 </mat-vertical-stepper>
