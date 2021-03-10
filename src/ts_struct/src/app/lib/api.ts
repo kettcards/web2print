@@ -75,6 +75,10 @@ export class Api {
     return this.http.post(Api.apiUrl + '/import/defaultMotive/' + format.type?.id, data);
   }
 
+  public listPdfs(): Observable<string[]> {
+    return this.http.get<string[]>(Api.apiUrl + '/pdfs');
+  }
+
   public getFonts(): Observable<string[]> {
     return this.http.get<string[]>(Api.apiUrl + '/fonts');
   }
