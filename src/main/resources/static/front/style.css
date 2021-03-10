@@ -517,9 +517,9 @@ body {
 }
 #font-tick {
   height: 25px;
-  width: 25px;
+  width: 10px;
   background-color: rgba(0, 0, 0, 0);
-  background-image: url('data:image/svg+xml;utf8,<svg preserveAspectRatio="none" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg"><path d="M536.003 68.999L300.004 530.996 64.006 68.999h471.997z" fill="%23565656"/></svg>');
+  background-image: url('data:image/svg+xml;utf8,<svg preserveAspectRatio="none" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg"><path fill="%23565656" d="M310 177.998L200 421.995 90.003 177.998H310z"/></svg>');
   background-size: 100% 100%;
   background-repeat: no-repeat;
 }
