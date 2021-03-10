@@ -1,6 +1,13 @@
 import {Component, OnInit} from '@angular/core';
-import {ContentTypeFilter, FileState, StatefulWrappedFileType, UniqueEntryFilter, Utils} from "../../lib/utils";
-import {CardMotive, CardOverview} from "../../lib/card";
+import {
+  ContentType,
+  ContentTypeFilter,
+  FileState,
+  StatefulWrappedFileType,
+  UniqueEntryFilter,
+  Utils
+} from "../../lib/utils";
+import {CardMotive, CardOverview, Side} from "../../lib/card";
 import {Api} from "../../lib/api";
 import {ImportMenu} from "../import";
 import {MatDialog} from "@angular/material/dialog";
@@ -14,7 +21,7 @@ import {ImportMotiveDialogComponent} from "./import-motive-dialog/import-motive-
 })
 export class ImportMotiveComponent extends ImportMenu<CardMotive> implements OnInit {
 
-  filters = [ContentTypeFilter.PDF, new UniqueEntryFilter(this.elements)];
+  filters = [new ContentTypeFilter([ContentType.PNG, ContentType.JPG, ContentType.PDF]), new UniqueEntryFilter(this.elements)];
 
   orderIds: CardOverview[] | null = null;
 
@@ -42,9 +49,17 @@ export class ImportMotiveComponent extends ImportMenu<CardMotive> implements OnI
 
 
   public addMappedFiles(file: File,  elements: (any | undefined)[]): void {
+    let side: Side | undefined = undefined;
+    const name = Utils.fileNameFor(file.name); //TODO change based on name
+    if (file.type === ContentType.JPG || file.type === ContentType.PNG) {
+      side = Side.FRONT
+    }
     this.elements.push({
       file: file,
       state: FileState.AWAIT,
+      type: {
+        side : side
+      },
       additionalAttributes: elements
     });
   }
@@ -79,11 +94,28 @@ export class ImportMotiveComponent extends ImportMenu<CardMotive> implements OnI
   }
 
   submit(element: StatefulWrappedFileType<CardMotive>): void {
+    if (element.type?.side == undefined) {
     this.api.importMotive(element)?.subscribe(
       next => {
         console.log('ret', next);
       }
     );
+    } else {
+      if (element.type?.side == Side.FRONT) { //TODO really bad fix it
+        this.api.importFrontMotive(element)?.subscribe(
+          next => {
+            console.log('ret', next);
+          }
+        );
+      }
+      if (element.type?.side == Side.BACK) {
+        this.api.importBackMotive(element)?.subscribe(
+          next => {
+            console.log('ret', next);
+          }
+        );
+      }
+    }
   }
 
 }

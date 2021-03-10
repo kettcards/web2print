@@ -1,5 +1,5 @@
 import {Component, Inject} from '@angular/core';
-import {CardMotive} from "../../../lib/card";
+import {CardMotive, Side} from "../../../lib/card";
 import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog";
 import {StatefulWrappedFileType, Utils} from "../../../lib/utils";
 import {MatChipInputEvent} from "@angular/material/chips";
@@ -12,13 +12,21 @@ import {ENTER, SPACE} from "@angular/cdk/keycodes";
 })
 export class ImportMotiveDialogComponent {
 
+  Side: typeof Side = Side;
+
   spaceKeyCodes: number[] = [ENTER, SPACE];
 
   assignedCards: string[] = [];
 
-  constructor(public dialogRef: MatDialogRef<ImportMotiveDialogComponent>, @Inject(MAT_DIALOG_DATA) public data: MotiveDialogDataWrapper) {
+  selectedSide: Side | undefined = undefined;
+
+  constructor(public dialogRef: MatDialogRef<ImportMotiveDialogComponent>,
+              @Inject(MAT_DIALOG_DATA) public data: MotiveDialogDataWrapper) {
     if (data.motive.additionalAttributes != undefined) {
       this.assignedCards = data.motive.additionalAttributes.concat([]);
+    }
+    if (data.motive.type?.side != undefined) {
+      this.selectedSide = data.motive.type.side;
     }
   }
 

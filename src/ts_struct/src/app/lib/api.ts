@@ -51,9 +51,22 @@ export class Api {
   public importMotive(format: StatefulWrappedFileType<CardMotive>): Observable<Object> | null {
     const data: FormData = new FormData();
     data.append('file', format.file);
-
     data.append('cards', JSON.stringify(format.additionalAttributes));
     return this.http.post<Object>(Api.apiUrl + '/import/motive', data);
+  }
+
+  public importFrontMotive(format: StatefulWrappedFileType<CardMotive>): Observable<Object> | null {
+    const data: FormData = new FormData();
+    data.append('file', format.file);
+    data.append('cards', JSON.stringify(format.additionalAttributes));
+    return this.http.post<Object>(Api.apiUrl + '/import/motive/front', data);
+  }
+
+  public importBackMotive(format: StatefulWrappedFileType<CardMotive>): Observable<Object> | null {
+    const data: FormData = new FormData();
+    data.append('file', format.file);
+    data.append('cards', JSON.stringify(format.additionalAttributes));
+    return this.http.post<Object>(Api.apiUrl + '/import/motive/back', data);
   }
 
   public importDefaultMotive(format: StatefulWrappedFileType<CardFormat>): Observable<Object> | null {

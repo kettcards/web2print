@@ -13,6 +13,13 @@
              (matChipInputTokenEnd)="assign($event)">
     </mat-chip-list>
   </mat-form-field>
+  <mat-form-field *ngIf="selectedSide !== undefined" appearance="fill">
+    <mat-label>Kartenformat</mat-label>
+    <mat-select [(value)]="selectedSide">
+      <mat-option [value]="Side.FRONT">Vorderseite</mat-option>
+      <mat-option [value]="Side.BACK">Hinterseite</mat-option>
+    </mat-select>
+  </mat-form-field>
 </div>
 <div mat-dialog-actions>
   <button mat-raised-button color="accent" (click)="onCancel()">Abbrechen</button>

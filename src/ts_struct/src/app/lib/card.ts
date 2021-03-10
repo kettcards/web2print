@@ -28,7 +28,8 @@ export interface CardFold {
 
 export interface CardMotive {
   id?: number;
-  textureSlug: string;
+  side?: Side;
+  textureSlug?: string;
 }
 
 export interface CardMaterial {
