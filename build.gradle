@@ -45,6 +45,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
@@ -70,10 +72,6 @@ dependencies {
 	implementation group: 'de.rototor.pdfbox', name: 'graphics2d', version: '0.31'
 	implementation 'com.weblookandfeel:svg-salamander:1.1.2.2'
 
-	//simple java mail
-	implementation 'org.simplejavamail:spring-module:6.5.0'
-	implementation group: 'org.simplejavamail', name: 'spring-module', version: '6.5.0'
-	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-mail', version: '2.4.3'
 
 	//table import
 	implementation group: 'org.apache.poi', name: 'poi', version: '4.1.2'
