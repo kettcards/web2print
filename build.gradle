@@ -64,6 +64,12 @@ dependencies {
 
 	//pdf generator
 	implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.22'
+	implementation 'com.twelvemonkeys.imageio:imageio:3.6.2'
+	implementation 'com.twelvemonkeys.imageio:imageio-batik:3.6.2'
+	implementation 'org.apache.xmlgraphics:batik-transcoder:1.14'
+	implementation group: 'de.rototor.pdfbox', name: 'graphics2d', version: '0.31'
+	implementation 'com.weblookandfeel:svg-salamander:1.1.2.2'
+
 
 
 	//table import
@@ -112,6 +118,21 @@ dependencyManagement {
 	}
 }
 
+task buildTs(type:Exec) {
+	task cleanJs(type: Delete) {
+		delete "./src/main/resources/static/front/front.js";
+	}
+	dependsOn tasks.cleanJs
+
+	commandLine 'tools/node/14.15.4/win64/node.exe', "./tools/ts/4.0.b/tsc.js",
+			'-p', './src/ts_front/front/tsconfig.json'
+
+	standardOutput = System.out;
+}
+
+build {
+	dependsOn buildTs;
+}
 
 tasks.register("bootRunDebug") {
 	group = "application"

@@ -12,7 +12,7 @@ import java.io.Serializable;
 @Data
 @Entity
 @Table(name = "motive_map")
-public class MotiveMap implements Serializable {
+public final class MotiveMap implements Serializable {
 
     @JsonIgnore
     @EmbeddedId
@@ -39,7 +39,7 @@ public class MotiveMap implements Serializable {
 
     @Data
     @Embeddable
-    public static class MotiveMapId implements Serializable {
+    public final static class MotiveMapId implements Serializable {
 
         private Integer card;
 

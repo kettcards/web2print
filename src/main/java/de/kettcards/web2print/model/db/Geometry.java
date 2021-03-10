@@ -9,7 +9,7 @@ import java.io.Serializable;
 @Data
 @Entity
 @Table(name = "geometry")
-public class Geometry implements Serializable {
+public final class Geometry implements Serializable {
 
     @JsonIgnore
     @Id

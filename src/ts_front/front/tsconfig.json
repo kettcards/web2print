@@ -1,0 +1,44 @@
+{
+  "files": [
+    "../types/web2print.d.ts",
+    "../types/card.d.ts",
+    "../types/cookie.d.ts",
+
+    "../macros.ts",
+    "../parameters.ts",
+    "../nodesFromSelection.ts",
+    "../MMPerPx.ts",
+    "../SelectEx.ts",
+    "./ResizeBars.ts",
+    "./El.ts",
+    "./Editor.ts",
+    "./Elements.ts",
+    "./textHandlers.ts",
+    "./imgHandlers.ts",
+    "./Fonts.ts",
+    "./serialization.ts",
+    "./createFold.ts",
+    "./RenderStyles.ts",
+    "./UI.ts",
+    "./front.ts",
+    "./index.ts",
+    "./tutorial.ts"
+  ],
+  "compilerOptions": {
+    "outFile": "../../main/resources/static/front/front.js",
+    "module": "None",
+    "target": "ES2017",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "removeComments": true,
+    "typeRoots": [
+      "../types"
+    ],
+    "lib": [
+      "dom",
+      "ES2017",
+      "scripthost",
+      "es2020.promise"
+    ]
+  }
+}

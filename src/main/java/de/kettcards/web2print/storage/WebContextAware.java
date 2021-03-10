@@ -1,7 +1,7 @@
 package de.kettcards.web2print.storage;
 
 /**
- * allows
+ * allows class to be accessible through the web context
  */
 public interface WebContextAware extends StorageContext {
 

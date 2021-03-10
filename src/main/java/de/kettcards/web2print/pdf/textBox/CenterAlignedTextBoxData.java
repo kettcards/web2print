@@ -10,27 +10,33 @@ import java.util.List;
  */
 public class CenterAlignedTextBoxData extends TextBoxData {
 
+    public CenterAlignedTextBoxData(float x, float y, float width, float height, List<TextParagraph> textParagraphs, float lineHeight) {
+        super(x, y, width, height, textParagraphs, lineHeight);
+    }
+
     /**
      * {@inheritDoc}
      */
-    public CenterAlignedTextBoxData(float x, float y, float width, float height, List<TextParagraph> textParagraphs) {
-        super(x, y, width, height, textParagraphs);
-    }
-
     @Override
     public void setInitialBoxPosition(Document doc, TextParagraph firstParagraph) throws IOException {
         doc.stream().newLineAtOffset(x, y + height);
 
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setParagraphBeginPosition(Document doc, float paragraphWidth) throws IOException {
-        doc.stream().newLineAtOffset((width -paragraphWidth) / 2, 0);
+        doc.stream().newLineAtOffset((width - paragraphWidth) / 2, 0);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setParagraphEndPosition(Document doc, float paragraphWidth) throws IOException {
-        doc.stream().newLineAtOffset(-((width -paragraphWidth) / 2), 0);
+        doc.stream().newLineAtOffset(-((width - paragraphWidth) / 2), 0);
     }
 
 }

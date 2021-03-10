@@ -11,6 +11,8 @@ import de.kettcards.web2print.pdf.CardData;
 import de.kettcards.web2print.pdf.ImageBoxData;
 import de.kettcards.web2print.pdf.textBox.*;
 import de.kettcards.web2print.service.CardService;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 import org.springframework.boot.jackson.JsonComponent;
 
 import java.io.IOException;
@@ -51,16 +53,16 @@ public class CardDataDeserializer extends JsonDeserializer<CardData> {
 
         for (var textBoxNode : textBoxArrayNode) {
             //box positioning
-            var x = mm2pt(textBoxNode.get("x").floatValue());
-            var y = mm2pt(textBoxNode.get("y").intValue());
-            var width = mm2pt(textBoxNode.get("w").intValue());
-            var height = mm2pt(textBoxNode.get("h").intValue());
-
+            var          x = mm2pt(textBoxNode.get("x") .floatValue());
+            var          y = mm2pt(textBoxNode.get("y") .intValue()  );
+            var      width = mm2pt(textBoxNode.get("w") .intValue()  );
+            var     height = mm2pt(textBoxNode.get("h") .intValue()  );
 
             //type
             var textTypeNode = textBoxNode.get("t");
             switch (textTypeNode.textValue()) {
                 case "t": //text
+                    var lineHeight = textBoxNode.get("lh").floatValue();
                     var paragraphs = new LinkedList<TextParagraph>();
 
                     var runNode = textBoxNode.get("r");
@@ -93,13 +95,13 @@ public class CardDataDeserializer extends JsonDeserializer<CardData> {
                     var alignment = textBoxNode.get("a").textValue().charAt(0);
                     switch (alignment) {
                         case 'l':
-                            ret.add(new LeftAlignedTextBoxData(x, y, width, height, paragraphs));
+                            ret.add(new LeftAlignedTextBoxData(x, y, width, height, paragraphs,lineHeight));
                             break;
                         case 'c':
-                            ret.add(new CenterAlignedTextBoxData(x, y, width, height, paragraphs));
+                            ret.add(new CenterAlignedTextBoxData(x, y, width, height, paragraphs, lineHeight));
                             break;
                         case 'r':
-                            ret.add(new RightAlignedTextBoxData(x, y, width, height, paragraphs));
+                            ret.add(new RightAlignedTextBoxData(x, y, width, height, paragraphs, lineHeight));
                             break;
                         default:
                             throw new IOException();
@@ -117,18 +119,25 @@ public class CardDataDeserializer extends JsonDeserializer<CardData> {
         return ret;
     }
 
-    public TextSpan parseTextSpan(JsonNode textSpanNode) throws IOException {
+    public TextSpan parseTextSpan(JsonNode textSpanNode) {
         var fontNode = textSpanNode.get("f");
         var fontSizeNode = textSpanNode.get("s");
         var fontStyleNode = textSpanNode.get("a");
         var textNode = textSpanNode.get("t");
+        var colorNode = textSpanNode.get("c");
 
         var font = fontNode.textValue();
         var fontSize = fontSizeNode.floatValue();
         var fontStyle = FontStyle.getFontStyle(fontStyleNode.intValue());
         var text = textNode.textValue();
+        var color = colorNode.textValue().substring(1);
+        float[] values = new float[3];
+        for(int i = 0; i < values.length; i++){
+            String hex = ""+color.charAt(i*2)+color.charAt(i*2+1);
+            values[i] = Integer.parseInt(hex, 16)/255f;
+        }
 
-        return new TextSpan(font, fontSize, fontStyle, text);
+        return new TextSpan(font, fontSize, fontStyle, text, new PDColor(values, PDDeviceRGB.INSTANCE));
     }
 
 

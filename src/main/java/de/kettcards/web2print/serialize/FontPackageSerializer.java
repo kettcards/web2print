@@ -21,7 +21,11 @@ public class FontPackageSerializer extends JsonSerializer<FontPackage> {
         for (var face : value.getFontFaces()) {
             gen.writeStartObject();
             gen.writeNumberField("v", FontStyle.getValues(face.getFontStyle()));
-            gen.writeStringField("fs", "normal"); //TODO do we even need this since "v" already describes the style?
+            var fs = "normal";
+            if (face.getFontStyle().contains(FontStyle.ITALIC)) {
+                fs = "italic";
+            }
+            gen.writeStringField("fs", fs);
             gen.writeNumberField("fw", face.getFontWeight());
             gen.writeStringField("s", value.getName().toLowerCase() + "/" + face.getSource()); //TODO same problem as in font service .load()
             gen.writeEndObject();

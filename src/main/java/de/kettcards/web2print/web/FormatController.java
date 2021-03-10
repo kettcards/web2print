@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("${web2print.links.api-path}")
-public class FormatController {
+public final class FormatController {
 
     @Autowired
     private CardFormatRepository cardFormatRepository;

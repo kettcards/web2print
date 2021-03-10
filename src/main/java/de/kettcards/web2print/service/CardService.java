@@ -12,7 +12,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CardService {
+public final class CardService {
 
     private final CardRepository cardRepository;
 

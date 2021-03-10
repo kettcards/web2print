@@ -1,8 +1,14 @@
 package de.kettcards.web2print.model.tableimport;
 
-import de.kettcards.web2print.model.db.*;
+import de.kettcards.web2print.model.db.Card;
+import de.kettcards.web2print.model.db.CardFormat;
+import de.kettcards.web2print.model.db.Material;
+import de.kettcards.web2print.model.db.VirtualId;
 import lombok.AllArgsConstructor;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 
 import java.util.ArrayList;
@@ -10,35 +16,45 @@ import java.util.List;
 
 @Value
 @AllArgsConstructor
-public class CardOverviewSheetRow implements VirtualId {
+@Slf4j
+public final class CardOverviewSheetRow implements VirtualId {
 
-    String orderId;
+    private String orderId;
 
-    Integer cardFormat;
+    private Integer cardFormat;
 
-    Integer texture;
+    private Integer texture;
 
-    Integer printType;
+    private Integer printType;
 
-    String title;
+    private String title;
 
-    String thumbnailUrl;
+    private String thumbnailUrl;
 
     public static List<CardOverviewSheetRow> parseRows(XSSFSheet cardOverviewSheet) {
         var data = new ArrayList<CardOverviewSheetRow>();
-        for (int i = 1; i <= cardOverviewSheet.getLastRowNum(); i++) {
-            String artikelNr = cardOverviewSheet.getRow(i).getCell(0).getStringCellValue();
-            int kartenformat = (int) cardOverviewSheet.getRow(i).getCell(1).getNumericCellValue();
-            int textur = (int) cardOverviewSheet.getRow(i).getCell(2).getNumericCellValue();
-            int druckart = (int) cardOverviewSheet.getRow(i).getCell(3).getNumericCellValue();
-            String anmerkungen = cardOverviewSheet.getRow(i).getCell(4).getStringCellValue();
-            String titel = cardOverviewSheet.getRow(i).getCell(5).getStringCellValue();
-            String urlBeiKettcards = cardOverviewSheet.getRow(i).getCell(6).getStringCellValue();
-            String titelVariante = cardOverviewSheet.getRow(i).getCell(7).getStringCellValue();
-            String bildLink = cardOverviewSheet.getRow(i).getCell(8).getStringCellValue();
-            String shopMetaDescription = cardOverviewSheet.getRow(i).getCell(9).getStringCellValue();
-            String shopMetaTitle = cardOverviewSheet.getRow(i).getCell(10).getStringCellValue();
-            data.add(new CardOverviewSheetRow(artikelNr, kartenformat, textur, null, titel, bildLink));
+        for (Row row : cardOverviewSheet) {
+            try {
+                String artikelNr = row.getCell(0).getStringCellValue();
+                int kartenformat = (int) row.getCell(1).getNumericCellValue();
+                int textur = (int) row.getCell(2).getNumericCellValue();
+                int druckart = (int) row.getCell(3).getNumericCellValue();
+                String anmerkungen = row.getCell(4).getStringCellValue();
+                String titel = row.getCell(5).getStringCellValue();
+                String urlBeiKettcards = row.getCell(6).getStringCellValue();
+                String titelVariante = row.getCell(7).getStringCellValue();
+                String bildLink = row.getCell(8).getStringCellValue();
+                String shopMetaDescription = row.getCell(9).getStringCellValue();
+                String shopMetaTitle = row.getCell(10).getStringCellValue();
+                data.add(new CardOverviewSheetRow(artikelNr, kartenformat, textur, null, titel, bildLink));
+            } catch (IllegalStateException | NullPointerException e) {
+                log.error("Row of sheet " + cardOverviewSheet.getSheetName() + " with following cells wasn't imported:");
+                StringBuilder tmp = new StringBuilder();
+                for (Cell cell : row) {
+                    tmp.append(cell).append("|");
+                }
+                log.error(tmp.toString());
+            }
         }
         return data;
     }
