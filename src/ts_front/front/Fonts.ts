@@ -46,6 +46,10 @@ const Fonts = {
       Fonts.beginLoadFont(fName);
     }
 
+    console.log();
+    const fontOptions = document.getElementById("font-options");
+    fontOptions.style.minWidth = "0";
+    fontOptions.style.width = document.getElementById("font-select").offsetWidth + "px";
     //(lucas 18.01.21) todo: be more elegant about this, mbe explicitly spec it ?
     Fonts.defaultFont = fontNames[0];
   },

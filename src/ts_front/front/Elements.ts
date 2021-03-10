@@ -13,7 +13,9 @@ const Elements : ElementsObj = {
   TEXT: {
     displayName: 'Text',
     spawn(css) : JQuery<HTMLDivElement> {
-      return $<HTMLDivElement> ('<div class="text" contenteditable="true" style="line-height: 1.2;"><p><span>Ihr Text Hier!</span></p></div>')
+      if(Editor.storage.spawnBtn) Editor.storage.spawnBtn.toggleClass('active');
+      Editor.storage.spawnBtn = undefined;
+      return $<HTMLDivElement> ('<div class="text" contenteditable="true" style="line-height: 1.2;"><p><span>Ihr Text hier!</span></p></div>')
         .mousedown(TextEl.hMDown)
         .mouseup(TextEl.hMUp)
         .click(stopPropagation)
@@ -111,6 +113,8 @@ const Elements : ElementsObj = {
   IMAGE: {
     displayName: 'Bild / Logo',
     spawn(p: JQuery.Coordinates | JQuery.PlainObject) : JQuery<HTMLImageElement> {
+      if(Editor.storage.spawnBtn) Editor.storage.spawnBtn.toggleClass('active');
+      Editor.storage.spawnBtn = undefined;
 
       const img = new Image();
       img.className = 'logo';

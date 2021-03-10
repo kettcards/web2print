@@ -4,7 +4,13 @@
 {
   const $addBtnContainer = $('#add-el-btns');
   for(const [k, v] of Object.entries(Elements)) {
-    $addBtnContainer.append($(`<button class="addElBtn" onclick="spawnNewEl('${k}')">${v.displayName}</button>`));
+    $addBtnContainer.append($(`<button class="addElBtn" onclick="{
+      const $toggledBtn = $(this);
+      if(Editor.storage.spawnBtn) Editor.storage.spawnBtn.toggleClass('active');
+      Editor.storage.spawnBtn = $toggledBtn;
+      spawnNewEl('${k}');
+      $toggledBtn.toggleClass('active');
+    }">${v.displayName}</button>`));
   }
 }
 
@@ -52,7 +58,7 @@ const $colorpicker = $('#color-picker').change(function(e){
     const color = $colorpicker.val();
     if (typeof color === "string") {
         Editor.storage.currentColor = color;
-        $applyColor.css("background-color", color);
+        $applyColor.css("color", color);
         $applyColor.trigger("click");
     }
 });
@@ -69,7 +75,7 @@ const $fontSelect = $<HTMLDivElement>('#font-select')
 Fonts.$options
   .mousedown(stopPropagation)
   .click(function(e) {
-    if(e.target.nodeName !== 'P')
+    if(e.target.nodeName !== 'P' || Editor.state !== EditorStates.EL_FOCUSED)
       return;
 
     Fonts.currentSelection = e.target.textContent;
