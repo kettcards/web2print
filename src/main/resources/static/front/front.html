@@ -26,10 +26,10 @@
           </div>
           <div class="toolbar-row">
             <span class="toolbar-label">Text</span>
-            <div>
+            <div id = "tools-div">
               <div class="text-tools-block">
                 <div id="font-select" class="select-ex no-select">
-                  <p><span id="font-label" class="select-ex-label">Schriftart wählen</span><span class="select-ex-tick">V</span></p>
+                  <p><span id="font-label" class="select-ex-label">Schriftart wählen</span><span id="font-tick" class="select-ex-tick"></span></p>
                   <div id="font-options" class="select-ex-options" style="visibility: collapse;"></div>
                 </div>
                 <div class="text-tools-block" id="text-btns">
@@ -40,9 +40,11 @@
                  --><button class="alignmentBtn" value="center"></button><!--
                  --><button class="alignmentBtn" value="right"></button><!--
                  --><input type="color" id="color-picker"><!--
-                 --><label for="color-picker">Schriftfarbe:</label><!--
-                 --><button id="apply-color"></button><!--
-                 --><button id="color-tick">V</button>
+                 --><!--label for="color-picker">Schriftfarbe:</label--><!--
+                 --><div id="color-div"><!--
+                   --><button id="apply-color">A</button><!--
+                   --><button id="color-tick"></button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -121,9 +123,9 @@
         </div>
         <div id="render-styles-container"></div>
         <div class="floater bottom no-select">
-          <label for="upl-des">Design Hochladen</label>
-          <input id="upl-des" class="lower-btn" type="file" accept=".des" onchange="hUpload(event);">
           <div class="lower-btn">
+            <button id="upl-des-btn" onclick="$('#upl-des').trigger('click')">Design hochladen</button>
+            <input id="upl-des" class="lower-btn" type="file" accept=".des" onchange="hUpload(event);">
             <button id="save-btn">Speichern</button>
             <div id="save-select-ex" class="select-ex">
               <p><span class="select-ex-label">Server</span><span class="select-ex-tick">V</span></p>
@@ -133,7 +135,7 @@
               </div>
             </div>
           </div>
-          <button id="submit-btn" class="lower-btn" onclick="submit(true);">PDF erzeugen</button>
+          <button id="submit-btn" class="lower-btn" onclick="submit(true);">Design abschicken</button>
         </div>
       </div>
     </div>
