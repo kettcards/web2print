@@ -530,6 +530,11 @@ body {
   max-width: 250px;
   height: 25px;
 }
+/*TODO: quickfix so that font-options goes over editor-area*/
+/*width still works because it is set in Fonts.ts line 50-52*/
+#font-select {
+  position: static;
+}
 /*todo: select ex*/
 #font-tick {
   height: 25px;
