@@ -53,6 +53,16 @@
             <input matInput formControlName="region" required>
           </mat-form-field>
         </div>
+        <div class="form-content-row">
+          <mat-form-field>
+            <mat-label>E-Mail</mat-label>
+            <input matInput formControlName="mail" required>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Ort</mat-label>
+            <input matInput formControlName="region" required>
+          </mat-form-field>
+        </div>
       </div>
       <div class="form-actions">
         <button mat-raised-button color="primary" matStepperNext>Weiter</button>
@@ -75,11 +85,9 @@
     </form>
   </mat-step> -->
   <mat-step>
-    <ng-template matStepLabel>Done</ng-template>
-    <p>You are now done.</p>
+    <ng-template matStepLabel>Bestätigen</ng-template>
     <div>
-      <button mat-button matStepperPrevious>Back</button>
-      <button mat-button (click)="submit()">Bestellung abschicken</button>
+      <button mat-raised-button color="primary" (click)="submit()">Angebot anfordern</button>
     </div>
   </mat-step>
 </mat-vertical-stepper>

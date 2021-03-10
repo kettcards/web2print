@@ -31,6 +31,7 @@ export class AppComponent {
       zip: ['', Validators.compose([Validators.required, Validators.minLength(1)])],
       address: ['', Validators.compose([Validators.required])],
       region: ['', Validators.compose([Validators.required])],
+      mail: ['', Validators.compose([Validators.required, Validators.email])],
     });
   }
 
@@ -46,7 +47,8 @@ export class AppComponent {
 
     console.log(this.contactFormGroup.controls);
     this.http.post('localhost:8080/web2print/api/', values).subscribe(next => {
-        console.log('response');
+        console.log('response', next);
+
       },
       error => {
       console.log('error', error);
