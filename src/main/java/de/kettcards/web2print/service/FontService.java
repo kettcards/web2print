@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public final class FontService extends StorageContextAware implements WebContextAware {
+public class FontService extends StorageContextAware implements WebContextAware {
 
     private final ObjectMapper objectMapper;
 
