@@ -100,6 +100,11 @@ export class ImportMotiveComponent extends ImportMenu<CardMotive> implements OnI
     this.api.importMotive(element)?.subscribe(
       next => {
         console.log('ret', next);
+        element.state = FileState.SUCCESSFUL;
+        this.hasSuccessfulFiles = true;
+      },
+        error => {
+        element.state = FileState.FAILED;
       }
     );
     } else {
@@ -107,6 +112,11 @@ export class ImportMotiveComponent extends ImportMenu<CardMotive> implements OnI
         this.api.importFrontMotive(element)?.subscribe(
           next => {
             console.log('ret', next);
+            element.state = FileState.SUCCESSFUL;
+            this.hasSuccessfulFiles = true;
+          },
+          error => {
+            element.state = FileState.FAILED;
           }
         );
       }
@@ -114,6 +124,11 @@ export class ImportMotiveComponent extends ImportMenu<CardMotive> implements OnI
         this.api.importBackMotive(element)?.subscribe(
           next => {
             console.log('ret', next);
+            element.state = FileState.SUCCESSFUL;
+            this.hasSuccessfulFiles = true;
+          },
+          error => {
+            element.state = FileState.FAILED;
           }
         );
       }
