@@ -153,7 +153,6 @@ body {
 
 #text-btns {
   margin-top: 5px;
-  margin-left: 5px;
   transform: translateY(-1px);
 }
 #text-btns button {
@@ -163,13 +162,7 @@ body {
 }
 
 #font-line-select {
-  display: flex;
-  flex-direction: column;
-  margin-top: 5px;
-}
-
-#font-line-select>div {
-  margin-left: 25px;
+  margin: 5px 0 0 20px;
 }
 
 #editor-area {
@@ -376,7 +369,13 @@ body {
 .colliders-layer>.intrinsic.right  { right : -50mm; width : 55mm; top : -50mm; height: calc(100% + 100mm); }
 .colliders-layer>.intrinsic.bottom { bottom: -50mm; height: 55mm; left: -50mm; width : calc(100% + 100mm); }
 .colliders-layer>.intrinsic.left   { left  : -50mm; width : 55mm; top : -50mm; height: calc(100% + 100mm); }
-.colliders-layer>.intrinsic.front  { top   : -50mm; left  :-50mm; width: calc(100% + 100mm); height: calc(100% + 100mm)}
+/*only for blocking the front*/
+.colliders-layer>.intrinsic.front  {
+  top: -50mm;
+  left: -50mm;
+  width: calc(100% + 100mm);
+  height: calc(100% + 100mm)
+}
 
 .page.front {
   position: absolute;
@@ -476,9 +475,6 @@ body {
   background-color: #8c8585;
 }
 
-#font-select {
-  position: static;
-}
 .select-ex {
   position: relative;
 }
@@ -534,6 +530,7 @@ body {
   max-width: 250px;
   height: 25px;
 }
+/*todo: select ex*/
 #font-tick {
   height: 25px;
   width: 10px;
@@ -553,6 +550,7 @@ body {
   outline: none;
   max-width: 50px;
 }
+/*odot*/
 
 .fontTypeButton[value=b] {
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23003F73" d="M0 0h26v26H0z"/><path fill="%23FFF" d="M7.823 4.753h10.713v3.251h-6.734v4.004h6.292v3.224h-6.292v7.046H7.823V4.753z"/></svg>');
@@ -600,6 +598,7 @@ body {
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23B8B8B8" d="M0 0h26v26H0z"/><path fill="none" stroke="%23FFF" stroke-width="2" d="M3.319 5.661h19.362M11.887 10.554h10.794M3.319 15.445h19.362M9.237 20.338h13.444"/></svg>');
 }
 
+/*todo: dont use a button and all be good*/
 #color-div {
   display: flex;
   margin: 2px
@@ -617,6 +616,7 @@ body {
 #toolbar #apply-color:active {
   background-color: darkgray;
 }
+/*odot*/
 #color-picker {
   visibility: collapse;
   width: 0;
@@ -625,6 +625,7 @@ body {
   border: none;
   outline: none;
 }
+/*todo: dont use a button and all be good*/
 #toolbar #color-tick {
   width: 12px;
   background-color: rgba(0, 0, 0, 0);
@@ -639,7 +640,7 @@ body {
 #toolbar #color-tick:active {
   background-color: rgba(33, 33, 33, 0.4);
 }
-
+/*odot*/
 
 .hFold{
   position: absolute;
@@ -677,10 +678,7 @@ button:hover {
   background-color: white;
   color: #003f73;
 }
-button:active {
-  background-color: #007ae1;
-  color: white;
-}
+button:active,
 button.active {
   background-color: #007ae1;
   color: white;
@@ -772,7 +770,16 @@ button.active {
   width: 0.75em;
   cursor: ne-resize;
 }
+.translucentBG{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.66);
+}
 
+/*todo: look at this*/
 #upl-des-btn {
   width: 100%;
   font-size: 22px;
