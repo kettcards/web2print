@@ -18,8 +18,19 @@ const stopPropagation = function (e) { e.stopPropagation(); };
 const falsify = function () { return false; };
 const mod = function (a, n) { return ((a % n) + n) % n; };
 Node.prototype.isA = function (n) { return this.nodeName === n; };
+function pxToNum(pxs) { return +pxs.slice(0, -2); }
+function stringifyParameters() {
+    let s = '?';
+    for (const [k, v] of Object.entries(Parameters)) {
+        if (s.length > 2)
+            s += '&';
+        s += k + '=' + v;
+    }
+    return s;
+}
 const Parameters = (function () {
-    const ret = {}, url = window.location.search;
+    const url = window.location.search;
+    const ret = {};
     if (url) {
         let split = url.substr(1).split('&'), subSplit;
         for (let s of split) {
@@ -168,16 +179,120 @@ const MMPerPx = (function () {
     $resTester.remove();
     return ret;
 })();
+class SelectEx {
+    constructor($target, onChange) {
+        const This = this;
+        This.$target = $target;
+        This.$options = $target.children('.select-ex-options');
+        const $p = $target.children('p')
+            .click(function (e) {
+            e.stopPropagation();
+            This.$options.css('visibility', 'visible');
+        });
+        This.$label = $p.children('.select-ex-label');
+        This.$options
+            .mousedown(stopPropagation)
+            .click(function (e) {
+            if (e.target.nodeName !== 'P')
+                return;
+            if (onChange)
+                onChange(This.value);
+            This.value = e.target.textContent;
+            This.$label.text(This.value);
+        });
+    }
+    close() {
+        this.$options.css('visibility', 'collapse');
+    }
+}
+class Snaplines {
+    static makeLines($page, defs) {
+        const lines = [];
+        const $container = $page.children('.snap-lines-layer');
+        for (const def of defs) {
+            lines.push(Snaplines.makeLine($container, def));
+        }
+        return [$page[0], lines];
+    }
+    static makeLine($container, def) {
+        const $el = $(make('div.' + def.dir)).css(def.dir === 'h' ? 'top' : 'left', def.offset);
+        $container.append($el);
+        return Object.assign({ $t: $el }, def);
+    }
+    static activateRelevantLines(page) {
+        for (const tuple of Snaplines.LineMap) {
+            if (tuple[0] === page) {
+                Snaplines.activeSet = tuple[1];
+                return;
+            }
+        }
+        Snaplines.activeSet = undefined;
+    }
+    static maybeSnap(x, y, w, h) {
+        const hw = w / 2;
+        const hh = h / 2;
+        const cx = x + hw;
+        const cy = y + hh;
+        const r = x + w;
+        const b = y + h;
+        for (const line of Snaplines.activeSet) {
+            const lower = line.offset - Snaplines.SNAP_DIST;
+            const upper = line.offset + Snaplines.SNAP_DIST;
+            if (line.dir === 'h') {
+                if (y > lower && y < upper) {
+                    y = line.offset;
+                    line.$t.addClass('visible');
+                }
+                else if (cy > lower && cy < upper) {
+                    y = line.offset - hh;
+                    line.$t.addClass('visible');
+                }
+                else if (b > lower && b < upper) {
+                    y = line.offset - h;
+                    line.$t.addClass('visible');
+                }
+                else {
+                    line.$t.removeClass('visible');
+                }
+            }
+            else {
+                if (x > lower && x < upper) {
+                    x = line.offset;
+                    line.$t.addClass('visible');
+                }
+                else if (cx > lower && cx < upper) {
+                    x = line.offset - hw;
+                    line.$t.addClass('visible');
+                }
+                else if (r > lower && r < upper) {
+                    x = line.offset - w;
+                    line.$t.addClass('visible');
+                }
+                else {
+                    line.$t.removeClass('visible');
+                }
+            }
+        }
+        return [x, y];
+    }
+    static hideAllLines() {
+        for (const line of Snaplines.activeSet) {
+            line.$t.removeClass('visible');
+        }
+    }
+}
+Snaplines.SNAP_DIST = 25;
 class ResizeBars {
     static setBoundsToTarget() {
         const eStorage = Editor.storage;
         const $target = eStorage.$target;
-        eStorage.x = +$target.css('left').slice(0, -2);
-        eStorage.y = +$target.css('top').slice(0, -2);
+        eStorage.x = pxToNum($target.css('left'));
+        eStorage.y = pxToNum($target.css('top'));
         eStorage.dx = 0;
         eStorage.dy = 0;
         ResizeBars.storage.bounds = {
-            left: eStorage.x + +$target.parents('.page-bundle').attr('data-x-offset') / MMPerPx.x,
+            transform: `translateX(${renderStyleState.style.getOffsetForTarget()}px)`,
+            left: eStorage.x,
             width: $target.width(),
             top: eStorage.y,
             height: $target.height()
@@ -188,11 +303,11 @@ class ResizeBars {
         rStorage.preserveRatio = preserveRatio;
         ResizeBars.setBoundsToTarget();
         ResizeBars.$handles.css(Object.assign({
-            visibility: 'visible',
-            transform: ''
+            visibility: 'visible'
         }, rStorage.bounds))[rStorage.preserveRatio ? 'addClass' : 'removeClass']('preserve-ratio');
         ResizeBars.visible = true;
         rStorage.$target = ResizeBars.$handles.add(Editor.storage.$target);
+        rStorage.aspectRatio = +Editor.storage.target.dataset.aspectRatio;
     }
     static hBarMDown(e) {
         Editor.state = EditorStates.EL_RESIZING;
@@ -241,6 +356,20 @@ class ResizeBars {
         const rStorage = ResizeBars.storage;
         const bounds = rStorage.bounds;
         const css = {};
+        if (rStorage.preserveRatio) {
+            if (Math.abs(dx) > Math.abs(dy)) {
+                dy = dx / rStorage.aspectRatio;
+                if (rStorage.lockDir === 0b0011 || rStorage.lockDir === 0b1100) {
+                    dy *= -1;
+                }
+            }
+            else {
+                dx = dy * rStorage.aspectRatio;
+                if (rStorage.lockDir === 0b0011 || rStorage.lockDir === 0b1100) {
+                    dx *= -1;
+                }
+            }
+        }
         if (rStorage.lockDir & 0b0001) {
             eStorage.dy += dy;
             Object.assign(css, {
@@ -278,16 +407,152 @@ ResizeBars.$handles = $('#resize-handles');
 ResizeBars.visible = false;
 ResizeBars.storage = {
     bounds: {
+        transform: '',
         left: 0,
         width: 0,
         top: 0,
         height: 0
     },
+    aspectRatio: 1,
     preserveRatio: false,
     lockDir: 0,
     $target: undefined,
 };
 ResizeBars.$handles.children().mousedown(ResizeBars.hBarMDown);
+class Colliders {
+    static getColliders(page) {
+        for (const d of Colliders.colliders) {
+            if (d[0] === page)
+                return d[1];
+        }
+        const $colliders = $(page).find('.colliders-layer').children();
+        const newColliders = new Array($colliders.length);
+        for (let i = 0; i < $colliders.length; i++) {
+            const $collider = $colliders.eq(i);
+            const { left: x, width: w, top: y, height: h } = $collider.css(['left', 'width', 'top', 'height']);
+            newColliders[i] = {
+                x: pxToNum(x),
+                r: pxToNum(x) + pxToNum(w),
+                y: pxToNum(y),
+                b: pxToNum(y) + pxToNum(h),
+                $t: $collider,
+            };
+        }
+        Colliders.colliders.push([page, newColliders]);
+        return newColliders;
+    }
+    static hCollidersLayerClick(e) {
+        if (!Editor.storage.addOnClick)
+            return;
+        if (!e.target.parentElement.classList.contains('colliders-layer'))
+            return;
+        const $t = $(e.target).removeClass('ping');
+        setTimeout(function () { $t.addClass('ping'); }, 100);
+    }
+    static beginDrag() {
+        const cStorage = Colliders.storage;
+        const eStorage = Editor.storage;
+        const $target = eStorage.$target;
+        const ox = pxToNum(eStorage.target.style.left);
+        const oy = pxToNum(eStorage.target.style.top);
+        eStorage.x = ox;
+        eStorage.y = oy;
+        cStorage.ox = ox;
+        cStorage.oy = oy;
+        cStorage.w = pxToNum($target.css('width'));
+        cStorage.h = pxToNum($target.css('height'));
+        const page = $target.parents('.page')[0];
+        Snaplines.activateRelevantLines(page);
+        cStorage.colliders = Colliders.getColliders(page);
+    }
+    static drag(dx, dy) {
+        const cStorage = Colliders.storage;
+        const eStorage = Editor.storage;
+        eStorage.x += dx / Editor.transform.scale;
+        eStorage.y += dy / Editor.transform.scale;
+        const [snappedX, snappedY] = Snaplines.maybeSnap(eStorage.x, eStorage.y, cStorage.w, cStorage.h);
+        [cStorage.ox, cStorage.oy] = Colliders.resolveCollisions(cStorage.ox, cStorage.oy, cStorage.w, cStorage.h, snappedX - cStorage.ox, snappedY - cStorage.oy, cStorage.colliders);
+        return [cStorage.ox, cStorage.oy];
+    }
+    static resolveCollisions(ox, oy, w, h, vx, vy, colliders) {
+        const hdx = vx / 2;
+        const hdy = vy / 2;
+        let ix = ox + hdx;
+        let iy = oy + hdy;
+        for (const c of colliders) {
+            if (Colliders.collides(ix, iy, ix + w, iy + h, c)) {
+                c.$t.addClass('visible');
+                [ix, iy] = Colliders.resolveCollisionsUnstable(ox, oy, ox + w, oy + h, hdx, hdy, c);
+            }
+            else
+                c.$t.removeClass('visible');
+        }
+        for (const c of colliders) {
+            if (Colliders.collides(ix, iy, ix + w, iy + h, c)) {
+                c.$t.addClass('visible');
+                [ix, iy] = Colliders.resolveCollisionsUnstable(ix, iy, ix + w, iy + h, hdx, hdy, c);
+            }
+        }
+        return [ix, iy];
+    }
+    static resolveCollisionsUnstable(x1, y1, r1, b1, vx1, vy1, c) {
+        const [xttCollide, yttCollide] = Colliders.getCollisionTime(x1, y1, r1, b1, vx1, vy1, c);
+        let vx = 0;
+        let vy = 0;
+        if (vx1 !== 0 && vy1 === 0) {
+            vx = xttCollide * vx1;
+        }
+        else if (vx1 === 0 && vy1 !== 0) {
+            vy = yttCollide * vy1;
+        }
+        else {
+            console.assert(vx1 !== 0 && vy1 !== 0, "v shouldn't be 0, 0");
+            const dt = Math.min(Math.abs(xttCollide), Math.abs(yttCollide));
+            vx = dt * vx1;
+            vy = dt * vy1;
+        }
+        return [x1 + vx, y1 + vy];
+    }
+    static getCollisionTime(x1, y1, r1, b1, vx1, vy1, c) {
+        const [dx, dy] = Colliders.getCollidingDistance(x1, y1, r1, b1, c);
+        const xttCollide = vx1 !== 0 ? Math.abs(dx / vx1) : Infinity;
+        const yttCollide = vy1 !== 0 ? Math.abs(dy / vy1) : Infinity;
+        return [xttCollide, yttCollide];
+    }
+    static getCollidingDistance(x1, y1, r1, b1, c) {
+        let dx = 0;
+        let dy = 0;
+        if (x1 < c.x) {
+            dx = c.x - r1;
+        }
+        else if (x1 > c.x) {
+            dx = x1 - c.r;
+        }
+        if (y1 < c.y) {
+            dy = c.y - b1;
+        }
+        else if (y1 > c.y) {
+            dy = y1 - c.b;
+        }
+        return [dx, dy];
+    }
+    static collides(x1, y1, r1, b1, c) {
+        return x1 < c.r && r1 > c.x && y1 < c.b && b1 > c.y;
+    }
+    static hideAllColliders() {
+        for (const c of Colliders.storage.colliders) {
+            c.$t.removeClass('visible');
+        }
+    }
+}
+Colliders.colliders = [];
+Colliders.storage = {
+    ox: 0,
+    oy: 0,
+    w: 0,
+    h: 0,
+    colliders: undefined,
+};
 class El {
     static hMDown(e) {
         switch (Editor.state) {
@@ -340,30 +605,23 @@ class Editor {
         console.log('clear target');
     }
     static beginDragEl() {
-        Editor.storage.dx = 0;
-        Editor.storage.dy = 0;
         Editor.state = EditorStates.EL_DRAGGING;
         Editor.setCursor('move');
         Editor.storage.$target.addClass('no-select');
+        Colliders.beginDrag();
     }
     static dragEl(dx, dy) {
-        Editor.storage.dx += dx;
-        Editor.storage.dy += dy;
-        ResizeBars.storage.$target.css('transform', `translate(${Editor.storage.dx / Editor.transform.scale}px, ${Editor.storage.dy / Editor.transform.scale}px)`);
+        const [x, y] = Colliders.drag(dx, dy);
+        ResizeBars.storage.$target.css({
+            left: x,
+            top: y,
+        });
     }
     static endDragEl() {
         Editor.state = EditorStates.EL_FOCUSED;
         Editor.setCursor('auto');
-        const storage = Editor.storage;
-        if (storage.dx === 0 && storage.dy === 0)
-            return;
-        ResizeBars.storage.$target.css({
-            top: `+=${storage.dy / Editor.transform.scale}`,
-            left: `+=${storage.dx / Editor.transform.scale}`,
-            transform: 'rotate(' + getRotation() + 'deg)',
-        });
-        storage.dx = 0;
-        storage.dy = 0;
+        Snaplines.hideAllLines();
+        Colliders.hideAllColliders();
         Editor.storage.$target.removeClass('no-select');
     }
     static beginDragSelf() {
@@ -373,6 +631,7 @@ class Editor {
         storage.dx = 0;
         storage.dy = 0;
         Editor.state = EditorStates.SELF_DRAGGING;
+        Editor.transform.manuallyModified = true;
         Editor.setCursor('move');
     }
     static dragSelf(dx, dy) {
@@ -391,20 +650,27 @@ class Editor {
     static zoom(steps) {
         const scale = Editor.transform.scale;
         Editor.transform.scale = Math.min(Math.max(scale + scale * steps * -0.01, 0.1), 5);
+        Editor.transform.manuallyModified = true;
         Editor.applyTransform();
         Editor.displayZoom();
     }
     static fitToContainer() {
-        Editor.transform.scale = Math.min(Editor.$editorArea.width() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.width + 55), Editor.$editorArea.height() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.height + 55)) * 0.9;
-        Editor.transform.translateX = 0;
-        Editor.transform.translateY = 0;
-        Editor.transform.rotate = 0;
+        const transform = Editor.transform;
+        transform.scale = Math.min(Editor.$editorArea.width() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.width + 55), Editor.$editorArea.height() * MMPerPx.x / (Editor.storage.loadedCard.cardFormat.height + 55)) * 0.9;
+        transform.translateX = 0;
+        transform.translateY = 0;
+        transform.rotate = 0;
+        transform.manuallyModified = false;
         Editor.applyTransform();
         Editor.displayZoom();
     }
     static applyTransform() {
         const transform = Editor.transform;
         Editor.$transformAnchor.css('transform', `scale(${transform.scale}) translate(${transform.translateX}px,${transform.translateY}px) rotateY(${transform.rotate}deg)`);
+    }
+    static hWindowResized() {
+        if (!Editor.transform.manuallyModified)
+            Editor.fitToContainer();
     }
     static showHandlesOnTarget() {
         ResizeBars.show(Editor.storage.target.isA('IMG'));
@@ -456,7 +722,8 @@ Editor.transform = {
     scale: 1,
     translateX: 0,
     translateY: 1,
-    rotate: 0
+    rotate: 0,
+    manuallyModified: false,
 };
 Editor.state = EditorStates.NONE;
 Editor.storage = {
@@ -469,33 +736,241 @@ Editor.storage = {
     $target: undefined,
     addOnClick: undefined,
     range: undefined,
+    currentColor: "#000000",
+    spawnBtn: undefined
 };
-const ElementSpawners = {
-    TEXT: function (p) {
-        return $('<div class="text" contenteditable="true" style="line-height: 1.2;"><p><span>Ihr Text Hier!</span></p></div>')
-            .mousedown(TextEl.hMDown)
-            .mouseup(TextEl.hMUp)
-            .click(stopPropagation)
-            .on('paste', hTxtPaste)
-            .on('keydown', hTxtKeyDown)
-            .on('keyup', hTxtKeyUp)
-            .on("dragstart", falsify)
-            .on("drop", falsify)
-            .css(Object.assign({
-            'font-family': Fonts.defaultFont,
-            'font-size': '16pt'
-        }, p));
+class Overlay {
+}
+Overlay.tutorial = {
+    $container: $('<div style="visibility: hidden"></div>'),
+    isLoaded: false,
+    show() {
+        const This = Overlay.tutorial;
+        if (!This.isLoaded) {
+            This.$container.load('./tutorial.html', function () {
+                const center = $('#tutCenter');
+                $('#closeTut').css({
+                    top: center.offset().top,
+                    left: center.offset().left + center.outerWidth(),
+                });
+                const dontShowAgain = This.$container.find('#dont-show-again')[0];
+                dontShowAgain.checked = Cookie.getValue('tutorial') === 'no';
+                This.$container.find('button').click(function () {
+                    if (dontShowAgain.checked) {
+                        Cookie.set('tutorial', 'no');
+                    }
+                    else {
+                        Cookie.set('tutorial', 'yes');
+                    }
+                    This.$container.css('visibility', 'hidden');
+                });
+            });
+            $body.append(This.$container);
+            This.isLoaded = true;
+        }
+        This.$container.css('visibility', 'visible');
     },
-    IMAGE: function (p) {
-        return $("<img class='logo' src='" + web2print.links.apiUrl + "content/" + logoContentId + "' alt='" + logoContentId + "' draggable='false'>")
-            .mousedown(ImageEl.hMDown)
-            .mouseup(El.hMUp)
-            .on("dragstart", falsify)
-            .on("drop", falsify)
-            .click(stopPropagation)
-            .css(p);
+};
+Overlay.dsgvo = {
+    $container: $('<div style="visibility: hidden"></div>'),
+    isLoaded: false,
+    show() {
+        const This = Overlay.dsgvo;
+        if (!This.isLoaded) {
+            This.$container.load('./datenschutzerklaerung.html', function () {
+                const center = $('#dsgvoCenter');
+                $('#closeDsgvo').css({
+                    top: center.offset().top,
+                    left: center.offset().left + center.outerWidth(),
+                });
+                This.$container.find('button').click(function () {
+                    This.$container.css('visibility', 'hidden');
+                });
+            });
+            $body.append(This.$container);
+            This.isLoaded = true;
+        }
+        This.$container.css('visibility', 'visible');
     }
 };
+const Elements = {
+    TEXT: {
+        displayName: 'Text',
+        spawn(css) {
+            if (Editor.storage.spawnBtn)
+                Editor.storage.spawnBtn.toggleClass('active');
+            Editor.storage.spawnBtn = undefined;
+            return $('<div class="text" contenteditable="true" style="line-height: 1.2;"><p><span>Ihr Text hier!</span></p></div>')
+                .mousedown(TextEl.hMDown)
+                .mouseup(TextEl.hMUp)
+                .click(stopPropagation)
+                .on('paste', hTxtPaste)
+                .on('keydown', hTxtKeyDown)
+                .on('keyup', hTxtKeyUp)
+                .on("dragstart", falsify)
+                .on("drop", falsify)
+                .css(Object.assign({
+                'font-family': Fonts.defaultFont,
+                'font-size': '16pt',
+                'color': Editor.storage.currentColor,
+            }, css));
+        },
+        serialize($instance) {
+            let align = $instance.css('text-align');
+            switch (align) {
+                case 'justify':
+                    align = 'j';
+                    break;
+                case 'right':
+                    align = 'r';
+                    break;
+                case 'center':
+                    align = 'c';
+                    break;
+                default: align = 'l';
+            }
+            let data = {
+                t: "t",
+                a: align,
+                lh: +$instance[0].style.lineHeight,
+                r: [],
+            };
+            let $innerChildren = $instance.children();
+            for (let j = 0; j < $innerChildren.length; j++) {
+                let $iel = $innerChildren.eq(j);
+                if ($iel[0].isA('P')) {
+                    const $spans = $iel.children();
+                    for (let k = 0; k < $spans.length; k++) {
+                        const $span = $spans.eq(k);
+                        if ($span[0].isA('SPAN')) {
+                            let attributes = 0;
+                            for (const [c, v] of Object.entries(Fonts.FontStyleValues))
+                                if ($span.hasClass(c))
+                                    attributes |= v;
+                            data.r.push({
+                                f: $span.css('font-family'),
+                                s: Math.round((+$span.css('font-size').slice(0, -2)) / 96 * 72),
+                                a: attributes,
+                                t: $span.text(),
+                                c: colorStringToRGB($span.css('color')),
+                            });
+                        }
+                        else {
+                            console.warn('cannot serialize element', $span[0]);
+                        }
+                    }
+                    data.r.push('br');
+                }
+                else {
+                    console.warn('cannot serialize element', $iel[0]);
+                }
+            }
+            return data;
+        },
+        restore($ownInstance, data) {
+            $ownInstance.html('');
+            let align;
+            switch (data.a) {
+                case 'j':
+                    align = 'justify';
+                    break;
+                case 'r':
+                    align = 'right';
+                    break;
+                case 'c':
+                    align = 'center';
+                    break;
+            }
+            if (align)
+                $ownInstance.css('text-align', align);
+            let $currentP = $(make('p'));
+            for (const run of data.r) {
+                if (run === 'br') {
+                    if ($currentP.children().length < 1)
+                        $currentP.append(make('span'));
+                    $ownInstance.append($currentP);
+                    $currentP = $(make('p'));
+                }
+                else {
+                    let classString = '';
+                    for (const [c, v] of Object.entries(Fonts.FontStyleValues))
+                        if (run.a & v)
+                            classString += '.' + c;
+                    $currentP.append($(make('span' + classString, makeT(run.t))).css({
+                        'font-family': run.f,
+                        'font-size': run.s + 'pt',
+                        'color': run.c,
+                    }));
+                }
+            }
+        }
+    },
+    IMAGE: {
+        displayName: 'Bild / Logo',
+        spawn(p) {
+            if (Editor.storage.spawnBtn)
+                Editor.storage.spawnBtn.toggleClass('active');
+            Editor.storage.spawnBtn = undefined;
+            const img = new Image();
+            img.className = 'logo';
+            img.draggable = false;
+            img.alt = ImageEl.contentId;
+            img.onload = function () {
+                const ar = img.width / img.height;
+                img.dataset.aspectRatio = String(ar);
+                const maxRight = Editor.storage.loadedCard.cardFormat.width * 0.9 / MMPerPx.x;
+                const maxBottom = Editor.storage.loadedCard.cardFormat.height * 0.9 / MMPerPx.y;
+                const dims = {
+                    width: img.width,
+                    height: img.height,
+                };
+                if (p.left + img.width > maxRight) {
+                    dims.width = maxRight - p.left;
+                    dims.height = dims.width / ar;
+                }
+                if (p.top + dims.height > maxBottom) {
+                    dims.height = maxBottom - p.top;
+                    dims.width = dims.height * ar;
+                }
+                $(img).css(dims);
+                img.onload = undefined;
+            };
+            img.src = `${web2print.links.apiUrl}content/${ImageEl.contentId}`;
+            return $(img)
+                .mousedown(ImageEl.hMDown)
+                .mouseup(El.hMUp)
+                .on("dragstart", falsify)
+                .on("drop", falsify)
+                .click(stopPropagation)
+                .css(p);
+        },
+        serialize($instance) {
+            return {
+                t: "i",
+                s: $instance[0].alt,
+                r: +$instance[0].dataset.aspectRatio,
+            };
+        },
+        restore($ownInstance, data) {
+            const img = $ownInstance[0];
+            img.src = `${web2print.links.apiUrl}content/${data.s}`;
+            img.alt = data.s;
+            img.dataset.aspectRatio = String(data.r);
+        }
+    }
+};
+function colorStringToRGB(string) {
+    let rgb = string.slice(string.lastIndexOf("(") + 1, string.lastIndexOf(")")).split(",");
+    let hex = "#";
+    for (let channel of rgb) {
+        channel = parseInt(channel).toString(16);
+        if (channel.length < 2) {
+            channel = "0" + channel;
+        }
+        hex = hex + channel;
+    }
+    return hex;
+}
 class TextEl {
     static hMDown(e) {
         switch (Editor.state) {
@@ -614,24 +1089,55 @@ class ImageEl {
         }
     }
 }
-let logoContentId;
-const hFileUploadChanged = function (e) {
-    let file = e.target.files[0];
-    console.log(file.type);
-    let fd = new FormData();
+ImageEl.contentId = undefined;
+ImageEl.imgAR = 1;
+function hFileUploadChanged(e) {
+    let $progressBar = $('<div class="translucentBG">' +
+        '<div class="center" style="white-space: normal; overflow: auto; max-width:70%; max-height:70%; background-color:lightgray; padding:5px 5px 15px 5px;">' +
+        '<label for="prog">Hochladen:</label><progress id="prog" value="0" max="100">0%</progress></div></div>');
+    $progressBar.css('visibility', 'hidden');
+    $body.append($progressBar);
+    const file = e.target.files[0];
+    const fd = new FormData();
     fd.append("file", file);
-    let req = jQuery.ajax({
+    $.post({
         url: web2print.links.apiUrl + "content",
-        method: "POST",
         data: fd,
         processData: false,
-        contentType: false
+        contentType: false,
+        beforeSend: function () {
+            $('#prog').val(0);
+            $progressBar.css('visibility', 'visible');
+        },
+        xhr: xhrProvider,
+    }).then(function (response) {
+        $progressBar.css('visibility', 'hidden');
+        ImageEl.contentId = response.contentId;
+        const img = new Image();
+        img.onload = function () {
+            ImageEl.imgAR = img.width / img.height;
+        };
+        img.src = `${web2print.links.apiUrl}content/${ImageEl.contentId}`;
+    }).catch(function (e) {
+        $progressBar.css('visibility', 'hidden');
+        Editor.storage.addOnClick = undefined;
+        $fileUpBtn.val(null);
+        console.error('failed to fetch xhr', e);
+        alert("Die ausgewählte Datei konnte nicht hochgeladen werden.\nBitte stellen Sie sicher, dass das Dateiformat: .jpg,.jpeg,.png,.svg ist \nund die Dateigröße nicht 10MB überschreitet.");
     });
-    req.then(function (response) {
-        logoContentId = JSON.parse(response).contentId;
-    }, function (xhr) {
-        console.error('failed to fetch xhr', xhr);
-    });
+}
+const xhrProvider = function () {
+    let xhr = jQuery.ajaxSettings.xhr();
+    let bar = $('#prog');
+    xhr.upload.addEventListener("progress", function (e) {
+        if (e.lengthComputable) {
+            let percent = e.loaded / e.total;
+            percent = percent * 100;
+            console.log(percent);
+            bar.val(percent);
+        }
+    }, false);
+    return xhr;
 };
 const $fileUpBtn = $('#fileUpload').change(hFileUploadChanged);
 const getRotation = function () {
@@ -668,6 +1174,10 @@ const Fonts = {
             Fonts.$options.append($(`<p style="font-family: ${fName};">${fName}</p>`));
             Fonts.beginLoadFont(fName);
         }
+        console.log();
+        const fontOptions = document.getElementById("font-options");
+        fontOptions.style.minWidth = "0";
+        fontOptions.style.width = document.getElementById("font-select").offsetWidth + "px";
         Fonts.defaultFont = fontNames[0];
     },
     beginLoadFont: function (name) {
@@ -704,7 +1214,42 @@ const Fonts = {
         Fonts.$label.text(fName).css('font-family', fName);
     }
 };
-const serialize = function () {
+function submit(_export) {
+    const data = serialize();
+    console.log("sending", data);
+    $.post(`${web2print.links.apiUrl}save/${Parameters.sId || ''}?export=${_export}`, 'data=' + btoa(JSON.stringify(data)))
+        .then(function (response) {
+        Parameters.sId = response;
+        window.history.replaceState({}, Editor.storage.loadedCard.name + " - Web2Print", stringifyParameters());
+        let txt = 'Daten erfolgreich gesendet!';
+        if (!_export)
+            txt += ` Sie befinden sich nun auf \n${window.location}\n Besuchen Sie diese Addresse später erneut wird das gespeicherte Design automatisch geladen.`;
+        alert(txt);
+    }).catch(function (e) {
+        alert('Fehler beim Senden der Daten!\n' + JSON.stringify(e));
+    });
+}
+function download() {
+    const data = serialize();
+    const fileName = `${data.card}.des`;
+    const file = new Blob([btoa(JSON.stringify(data))], { type: 'text/plain' });
+    if (window.navigator.msSaveOrOpenBlob) {
+        window.navigator.msSaveOrOpenBlob(file, fileName);
+    }
+    else {
+        const a = make("a");
+        const url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 0);
+    }
+}
+function serialize() {
     const data = {
         v: '0.2',
         card: Parameters.card,
@@ -718,16 +1263,9 @@ const serialize = function () {
         serializeSide($b.find('.front>.elements-layer').children(), offs, data.outerEls);
         serializeSide($b.find('.back>.elements-layer').children(), offs, data.innerEls);
     }
-    console.log("sending", data);
-    const _export = true;
-    $.post(web2print.links.apiUrl + 'save/' + (Parameters.sId || '') + '?export=' + _export, 'data=' + btoa(JSON.stringify(data)))
-        .then(function () {
-        alert('Sent data!');
-    }).catch(function (e) {
-        alert('Send failed: \n' + JSON.stringify(e));
-    });
-};
-const serializeSide = function ($els, xOffs, target) {
+    return data;
+}
+function serializeSide($els, xOffs, target) {
     for (let j = 0; j < $els.length; j++) {
         const $el = $els.eq(j);
         const bounds = {
@@ -738,71 +1276,68 @@ const serializeSide = function ($els, xOffs, target) {
         };
         switch ($el[0].nodeName) {
             case 'DIV':
-                {
-                    let align = $el.css('text-align');
-                    switch (align) {
-                        case 'justify':
-                            align = 'j';
-                            break;
-                        case 'right':
-                            align = 'r';
-                            break;
-                        case 'center':
-                            align = 'c';
-                            break;
-                        default: align = 'l';
-                    }
-                    let box = Object.assign({
-                        t: "t",
-                        a: align,
-                        lh: +$el[0].style.lineHeight,
-                        r: []
-                    }, bounds);
-                    let $innerChildren = $el.children();
-                    for (let j = 0; j < $innerChildren.length; j++) {
-                        let $iel = $innerChildren.eq(j);
-                        if ($iel[0].isA('P')) {
-                            const $spans = $iel.children();
-                            for (let k = 0; k < $spans.length; k++) {
-                                const $span = $spans.eq(k);
-                                if ($span[0].isA('SPAN')) {
-                                    let attributes = 0;
-                                    for (const [c, v] of Object.entries(Fonts.FontStyleValues))
-                                        if ($span.hasClass(c))
-                                            attributes |= v;
-                                    box.r.push({
-                                        f: $span.css('font-family'),
-                                        s: Math.round((+$span.css('font-size').slice(0, -2)) / 96 * 72),
-                                        a: attributes,
-                                        t: $span.text()
-                                    });
-                                }
-                                else {
-                                    console.warn('cannot serialize element', $span[0]);
-                                }
-                            }
-                            box.r.push('br');
-                        }
-                        else {
-                            console.warn('cannot serialize element', $iel[0]);
-                        }
-                    }
-                    target.push(box);
-                }
+                target.push(Object.assign(Elements.TEXT.serialize($el), bounds));
                 break;
             case 'IMG':
-                {
-                    let box = Object.assign({
-                        t: "i",
-                        s: $el[0].alt,
-                    }, bounds);
-                    target.push(box);
-                }
+                target.push(Object.assign(Elements.IMAGE.serialize($el), bounds));
                 break;
             default: console.warn('cannot serialize element', $el[0]);
         }
     }
-};
+}
+function hUpload(e) {
+    const file = e.target.files[0];
+    if (!file)
+        return;
+    file.text().then(loadElementsCompressed.bind(null, true));
+}
+function loadElementsCompressed(fileSource, b64data) {
+    const data = JSON.parse(atob(b64data));
+    if (Parameters.card !== data.card) {
+        alert(`Das Design kann nicht geladen werden, da es zu einer anderen Karte gehört (${data.card}).`);
+        throw new Error('invalid card format');
+    }
+    if (fileSource) {
+        renderStyleState.style.clear();
+        delete Parameters.sId;
+    }
+    window.history.replaceState({}, Editor.storage.loadedCard.name + " - Web2Print", stringifyParameters());
+    loadElements(data);
+}
+function loadElements(data) {
+    console.log('loading data', data);
+    loadSide('front', data.outerEls);
+    loadSide('back', data.innerEls);
+}
+function loadSide(side, boxes) {
+    const cardHeight = Editor.storage.loadedCard.cardFormat.height / MMPerPx.y;
+    for (const box of boxes) {
+        const bounds = {
+            left: box.x / MMPerPx.x,
+            width: box.w / MMPerPx.x,
+            top: cardHeight - (box.y + box.h) / MMPerPx.y,
+            height: box.h / MMPerPx.y
+        };
+        const page = renderStyleState.style.assocPage(side, bounds);
+        let el;
+        switch (box.t) {
+            case "i":
+                {
+                    el = Elements.IMAGE.spawn(bounds);
+                    Elements.IMAGE.restore(el, box);
+                }
+                break;
+            case "t":
+                {
+                    el = Elements.TEXT.spawn(bounds);
+                    Elements.TEXT.restore(el, box);
+                }
+                break;
+            default: throw new Error(`Can't deserialize box of type '${box['t']}'.`);
+        }
+        page.children('.elements-layer').append(el);
+    }
+}
 const createFold = function (fold) {
     if (fold.x1 === fold.x2) {
         let vFold = $('<div class="vFold"></div>');
@@ -820,7 +1355,7 @@ const createFold = function (fold) {
 };
 const RenderStyles = [{
         name: 'Druckbogen',
-        condition: function (card) { return true; },
+        condition(card) { return true; },
         BgStretchObjs: {
             stretch: {
                 'background-size': 'cover',
@@ -828,7 +1363,7 @@ const RenderStyles = [{
                 'background-position': 'center center',
             },
         },
-        pageGen: function (card) {
+        pageGen(card) {
             const width = card.cardFormat.width;
             const height = card.cardFormat.height;
             const $bundle = $(get('page-template').content.firstElementChild.cloneNode(true));
@@ -842,32 +1377,79 @@ const RenderStyles = [{
             for (let fold of card.cardFormat.folds) {
                 $bundle.find('.folds-layer').append(createFold(fold));
             }
-            let mFront, mBack;
+            const $back = $bundle.children('.back');
+            const $front = $bundle.children('.front');
             for (const motive of card.motive) {
                 switch (motive.side) {
                     case 'FRONT':
-                        mFront = motive.textureSlug;
+                        $front.children('.motive-layer')[0].src = web2print.links.motiveUrl + motive.textureSlug;
                         break;
                     case 'BACK':
-                        mBack = motive.textureSlug;
+                        $back.children('.motive-layer')[0].src = web2print.links.motiveUrl + motive.textureSlug;
                         break;
                     default: throw new Error("unknown motive side '" + motive.side + "'");
                 }
             }
-            if (mBack)
-                $bundle.find('.back>.motive-layer')[0].src = web2print.links.motiveUrl + mBack;
-            if (mFront)
-                $bundle.find('.front>.motive-layer')[0].src = web2print.links.motiveUrl + mFront;
+            const lineDefs = [];
+            let lx = 0;
+            let ly = 0;
+            for (const fold of card.cardFormat.folds) {
+                if (fold.x1 === fold.x2) {
+                    lineDefs.push({
+                        dir: 'v',
+                        offset: (lx + (fold.x1 - lx) / 2) / MMPerPx.x,
+                    });
+                    lx = fold.x1;
+                }
+                else if (fold.y1 === fold.y2) {
+                    lineDefs.push({
+                        dir: 'h',
+                        offset: (ly + (fold.y1 - ly) / 2) / MMPerPx.y,
+                    });
+                    ly = fold.y1;
+                }
+                else {
+                    console.log("can't create snapline from none axis aligned fold");
+                }
+            }
+            lineDefs.push({
+                dir: 'v',
+                offset: (lx + (width - lx) / 2) / MMPerPx.x,
+            });
+            lineDefs.push({
+                dir: 'h',
+                offset: (ly + (height - ly) / 2) / MMPerPx.y,
+            });
+            Snaplines.LineMap = [
+                Snaplines.makeLines($front, lineDefs),
+                Snaplines.makeLines($back, lineDefs),
+            ];
+            $bundle.find('.colliders-layer')
+                .append(make('div.intrinsic.top'))
+                .append(make('div.intrinsic.right'))
+                .append(make('div.intrinsic.bottom'))
+                .append(make('div.intrinsic.left'));
+            $bundle.find('.front>.colliders-layer')
+                .append(make('div.intrinsic.front'));
             this.data.rot = 0;
             this.data.$bundle = $bundle;
             return $bundle;
+        },
+        clear() {
+            this.data.$bundle.find('.elements-layer').html('');
+        },
+        assocPage(side, _) {
+            return this.data.$bundle.children('.' + side);
+        },
+        getOffsetForTarget() {
+            return 0;
         },
         pageLabels: [
             'Innenseite',
             'Außenseite'
         ],
         initialDotIndex: 0,
-        hPageChanged: function (direction) {
+        hPageChanged(direction) {
             this.data.rot += direction * 180;
             this.data.$bundle.css('transform', 'rotateY(' + this.data.rot + 'deg)');
         },
@@ -877,7 +1459,7 @@ const RenderStyles = [{
         }
     }, {
         name: 'einzelne Seiten',
-        condition: function (card) {
+        condition(card) {
             const folds = card.cardFormat.folds;
             return folds.length === 1 && folds[0].x1 === folds[0].x2;
         },
@@ -890,7 +1472,7 @@ const RenderStyles = [{
                 };
             },
         },
-        pageGen: function (card) {
+        pageGen(card) {
             const cardWidth = card.cardFormat.width;
             const cardHeight = card.cardFormat.height;
             const w1 = card.cardFormat.folds[0].x1;
@@ -930,10 +1512,93 @@ const RenderStyles = [{
                 $page1.find('.back>.motive-layer').css({ left: 0, width: cardWidth + 'mm' })[0].src = web2print.links.motiveUrl + mBack;
                 $page2.find('.back>.motive-layer').css({ left: '-' + w1 + 'mm', width: cardWidth + 'mm' })[0].src = web2print.links.motiveUrl + mBack;
             }
+            $page1.add($page2).find('.colliders-layer')
+                .append(make('div.intrinsic.top'))
+                .append(make('div.intrinsic.bottom'));
+            const $rightInnerCollider = $(make('div')).css({
+                right: `-${cardWidth / 2 + 50}mm`,
+                width: `${cardWidth / 2 + 55}mm`,
+                top: `-50mm`,
+                height: `calc(100% + 100mm)`,
+            });
+            const $leftInnerCollider = $(make('div')).css({
+                left: `-${cardWidth / 2 + 50}mm`,
+                width: `${cardWidth / 2 + 55}mm`,
+                top: `-50mm`,
+                height: `calc(100% + 100mm)`,
+            });
+            $page1.find('.back>.colliders-layer')
+                .append(make('div.intrinsic.left'))
+                .append($rightInnerCollider.clone());
+            $page1.find('.front>.colliders-layer')
+                .append(make('div.intrinsic.right'))
+                .append($leftInnerCollider.clone());
+            $page2.find('.back>.colliders-layer')
+                .append(make('div.intrinsic.right'))
+                .append($leftInnerCollider);
+            $page2.find('.front>.colliders-layer')
+                .append(make('div.intrinsic.left'))
+                .append($rightInnerCollider);
+            $page1.find('.front>.colliders-layer')
+                .append(make('div.intrinsic.front'));
+            $page2.find('.front>.colliders-layer')
+                .append(make('div.intrinsic.front'));
+            Snaplines.LineMap = [];
+            for (const $p of [$page1, $page2]) {
+                for (const side of [".front", ".back"]) {
+                    Snaplines.LineMap.push(Snaplines.makeLines($p.children(side), [{
+                            dir: 'h',
+                            offset: cardHeight / MMPerPx.y / 2,
+                        }, {
+                            dir: 'v',
+                            offset: cardWidth / MMPerPx.x * 0.25,
+                        }]));
+                }
+            }
+            $page1.add($page2).find('.colliders-layer')
+                .append(make('div.intrinsic.top'))
+                .append(make('div.intrinsic.bottom'));
+            $page1.find('.back>.colliders-layer')
+                .append(make('div.intrinsic.left'));
+            $page1.find('.front>.colliders-layer')
+                .append(make('div.intrinsic.right'));
+            $page2.find('.back>.colliders-layer')
+                .append(make('div.intrinsic.right'));
+            $page2.find('.front>.colliders-layer')
+                .append(make('div.intrinsic.left'));
             this.data.p1r = 0;
             this.data.p2r = 0;
             this.data.state = 1;
             return $(document.createDocumentFragment()).append($page1, $page2);
+        },
+        clear() {
+            this.data.$page1.add(this.data.$page2).find('.elements-layer').html('');
+        },
+        assocPage(side, bounds) {
+            let leftPage, rightPage;
+            if (side === 'back') {
+                leftPage = this.data.$page1;
+                rightPage = this.data.$page2;
+            }
+            else {
+                rightPage = this.data.$page1;
+                leftPage = this.data.$page2;
+            }
+            const fold = Editor.storage.loadedCard.cardFormat.folds[0].x1 / MMPerPx.x;
+            if (bounds.left > fold) {
+                bounds.left -= fold;
+                return rightPage.children('.' + side);
+            }
+            else {
+                return leftPage.children('.' + side);
+            }
+        },
+        getOffsetForTarget() {
+            switch (this.data.state) {
+                case 0: return 0;
+                case 1: return +Editor.storage.$target.parents('.page-bundle').attr('data-x-offset') / MMPerPx.x;
+                case 2: return Editor.storage.loadedCard.cardFormat.width / 2 / MMPerPx.x;
+            }
         },
         pageLabels: [
             'Rückseite',
@@ -941,7 +1606,7 @@ const RenderStyles = [{
             'Vorderseite'
         ],
         initialDotIndex: 1,
-        hPageChanged: function (direction) {
+        hPageChanged(direction) {
             this.data.state = mod(this.data.state + direction, 3);
             let p1z = 0, p2z = 0;
             if (direction === 1) {
@@ -999,8 +1664,9 @@ const $navDotsUl = $('.floater.bottom>ul');
 const $pageLabel = $('.floater.bottom>span');
 const loadCard = function (card) {
     if (!card)
-        return false;
+        throw new Error("Keine Karte ausgewählt.");
     console.log('loading', card);
+    window.history.replaceState({}, card.name + " - Web2Print", stringifyParameters());
     document.querySelector('#preview-container>img').src
         = web2print.links.thumbnailUrl + card.thumbSlug;
     for (let i = 0; i < RenderStyles.length; i++) {
@@ -1008,14 +1674,20 @@ const loadCard = function (card) {
         if (!renderStyle.condition(card))
             continue;
         const frag = make('button.render-select');
-        $(frag).text(renderStyle.name).attr('onclick', 'hRenderStyleChanged(' + i + ');');
+        $(frag).text(renderStyle.name).attr('onclick', 'hRenderStyleBtnClick(' + i + ');');
         rsContainer.appendChild(frag);
     }
     Editor.storage.loadedCard = card;
     Editor.fitToContainer();
     Editor.createRuler();
     Editor.enableTransition(true);
-    hRenderStyleChanged(0);
+    changeRenderStyle(0);
+    if (Parameters.sId)
+        $.get(`${web2print.links.apiUrl}load/${Parameters.sId}`)
+            .then(loadElementsCompressed.bind(null, false))
+            .catch(function (e) {
+            alert('Es gab einen Fehler beim laden der Elemente!\n' + JSON.stringify(e));
+        });
 };
 const hElementsLayerClick = function (e, target) {
     if (!Editor.storage.addOnClick)
@@ -1025,11 +1697,8 @@ const hElementsLayerClick = function (e, target) {
     $(target).append(el);
     Editor.storage.addOnClick = undefined;
 };
-const hAddElClick = function (e) {
-    spawnNewEl($(e.target).attr('data-enum'));
-};
 const spawnNewEl = function (objectType) {
-    Editor.storage.addOnClick = ElementSpawners[objectType];
+    Editor.storage.addOnClick = Elements[objectType].spawn;
     if (objectType === 'IMAGE') {
         $fileUpBtn.click();
     }
@@ -1059,6 +1728,7 @@ const hChangeFontType = function () {
 let $body = $('body')
     .click(function () {
     Fonts.$options.css('visibility', 'collapse');
+    saveSelect.close();
 })
     .mousedown(function (e) {
     if (e.which === 2) {
@@ -1156,8 +1826,13 @@ const renderStyleState = {
         return this.style.pageLabels[this.currentDotIndex];
     }
 };
-const hRenderStyleChanged = function (index) {
-    renderStyleState.style = RenderStyles[index];
+function hRenderStyleBtnClick(index) {
+    const data = serialize();
+    changeRenderStyle(index);
+    loadElements(data);
+}
+function changeRenderStyle(newIndex) {
+    renderStyleState.style = RenderStyles[newIndex];
     renderStyleState.currentDotIndex = renderStyleState.style.initialDotIndex;
     renderStyleState.dots = new Array(renderStyleState.style.pageLabels.length);
     const range = makeR();
@@ -1175,7 +1850,8 @@ const hRenderStyleChanged = function (index) {
     range.selectNodeContents($cardContainer[0]);
     range.deleteContents();
     $cardContainer.append(renderStyleState.style.pageGen(Editor.storage.loadedCard));
-};
+    Colliders.colliders = [];
+}
 const hPageSwitch = function (direction) {
     renderStyleState.style.hPageChanged(direction);
     renderStyleState.getActiveDot().removeClass('active');
@@ -1183,7 +1859,18 @@ const hPageSwitch = function (direction) {
     renderStyleState.getActiveDot().addClass('active');
     $pageLabel.text(renderStyleState.getActiveLabel());
 };
-$('.addElBtn').click(hAddElClick);
+{
+    const $addBtnContainer = $('#add-el-btns');
+    for (const [k, v] of Object.entries(Elements)) {
+        $addBtnContainer.append($(`<button class="addElBtn" onclick="{
+      const $toggledBtn = $(this);
+      if(Editor.storage.spawnBtn) Editor.storage.spawnBtn.toggleClass('active');
+      Editor.storage.spawnBtn = $toggledBtn;
+      spawnNewEl('${k}');
+      $toggledBtn.toggleClass('active');
+    }">${v.displayName}</button>`));
+    }
+}
 $("#logoRotation").change(function (e) {
     Editor.storage.$target.css('transform', 'rotate(' + $(this).val() + 'deg)');
 }).mouseup(stopPropagation);
@@ -1191,8 +1878,21 @@ $(".alignmentBtn").click(function () {
     Editor.storage.$target.css('text-align', $(this).val());
 }).mouseup(stopPropagation);
 $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
-$('#submitBtn').click(serialize);
-$('#tutorial').click(showTutorial);
+$('#save-btn').click(function () {
+    if (saveSelect.value === 'Server') {
+        submit(false);
+    }
+    else {
+        download();
+    }
+});
+const saveSelect = new SelectEx($('#save-select-ex'));
+saveSelect.value = 'Server';
+$('#tutorial').click(Overlay.tutorial.show);
+if (Cookie.getValue('tutorial') !== 'no') {
+    Overlay.tutorial.show();
+}
+$('#dsgvo-btn').click(Overlay.dsgvo.show);
 $('#del-btn')
     .mouseup(stopPropagation)
     .click(function () {
@@ -1203,13 +1903,31 @@ $('#del-btn')
             break;
     }
 });
+const $applyColor = $('#apply-color').mousedown(Editor.saveSelection).click(function (e) {
+    const sel = Editor.loadSelection();
+    makeNodesFromSelection(sel.getRangeAt(0), function (curr) {
+        $(curr).css('color', Editor.storage.currentColor);
+    });
+});
+const $colorpicker = $('#color-picker').change(function (e) {
+    const color = $colorpicker.val();
+    if (typeof color === "string") {
+        Editor.storage.currentColor = color;
+        $applyColor.css("color", color);
+        $applyColor.trigger("click");
+    }
+});
+$("#color-tick").mousedown(Editor.saveSelection)
+    .click(function () {
+    $colorpicker.trigger("click");
+});
 const $fontSelect = $('#font-select')
     .mousedown(Editor.saveSelection)
     .mouseup(stopPropagation);
 Fonts.$options
     .mousedown(stopPropagation)
     .click(function (e) {
-    if (e.target.nodeName !== 'P')
+    if (e.target.nodeName !== 'P' || Editor.state !== EditorStates.EL_FOCUSED)
         return;
     Fonts.currentSelection = e.target.textContent;
     Fonts.displaySelected();
@@ -1247,7 +1965,8 @@ $('.left>.nav-btn-inner').click(function () {
 $('#recenter-btn').click(function () {
     Editor.fitToContainer();
 });
-$.get(web2print.links.apiUrl + 'card/' + Parameters.card)
+$(window).resize(Editor.hWindowResized);
+$.get(`${web2print.links.apiUrl}card/${Parameters.card}`)
     .then(loadCard)
     .catch(function () {
     alert(Parameters.card
@@ -1260,74 +1979,3 @@ $.get(web2print.links.apiUrl + 'fonts')
     .catch(function (e) {
     alert('[fatal] something went wrong loading fonts: ' + JSON.stringify(e));
 });
-if (Cookie.getValue('tutorial') !== 'no') {
-    showTutorial();
-}
-function showTutorial() {
-    const $tutOver = $('<div style="position:absolute; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.66)">' +
-        '<div class="center" style="white-space: normal; overflow: auto; max-width:70%; max-height:70%; background-color:lightgray; padding:5px 5px 15px 5px;">' +
-        '<div>' +
-        '<h3>Hinzufügen von Text:</h3>' +
-        '<img src="./TextTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">' +
-        '<p>Um Text hinzuzufügen klicken Sie zuerst auf "Text".<br>' +
-        'Danach können Sie den Text mit einem klick auf der Karte platzieren.</p>' +
-        '</div>' +
-        '<br style="clear: left">' +
-        '<div>' +
-        '<h3>Bearbeiten von Text:</h3>' +
-        '<img src="./TextEditTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">' +
-        '<p>Um Text zu bewegen klicken Sie auf das Textfeld und lassen die linke Maustate gerückt. Nun können Sie den Text mit der Maus bewegen.<br>' +
-        'Wenn Sie in das Textfeld rein klicken wird ein Rahmen um das Feld angezeigt. Nun können Sie die Textbearbeitungswerkzeuge aus der Werkzeugleiste nutzen.</p>' +
-        '</div>' +
-        '<br style="clear: left">' +
-        '<div>' +
-        '<h3>Hinzufügen von Bildern:</h3>' +
-        '<img src="./ImageTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">' +
-        '<p>Um ein Bild zu laden klicken Sie zuerst auf "Bild/Logo".<br>' +
-        'Es öffnet sich eine Dateiauswahl, wählen Sie hier die gewünschte Datei aus.<br>' +
-        'Um schließlich das Bild zu platzieren klicken Sie auf die Karte.</p>' +
-        '</div>' +
-        '<br style="clear: left">' +
-        '<div>' +
-        '<h3>Bearbeiten von Bildern:</h3>' +
-        '<img src="./ImageResizeTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">' +
-        '<p>Um ein Bild zu verschieben klicken Sie auf das Bild und halten Sie die linke Maustaste gedrückt.<br>' +
-        'Nun können Sie das Bild verschieben.<br>' +
-        'Um ein Bild zu vergrößern/verkleinern klicken Sie auf das Bild. Es erscheint ein Rahmen mit Kästchen an den Ecken.<br>' +
-        'Klicken Sie auf eines der Kästchen und halten Sie die linke Maustaste gedrückt, bewegen Sie nun die Maus wird das Bild größer/kleiner.</p>' +
-        '</div><br style="clear: left">' +
-        '<div>' +
-        '<h3>Bewegen und Zoomen der Karte:</h3>' +
-        '<img src="./CardMoveTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">' +
-        '<p>Durch gedrückt halten vom Mausrad (Maustaste 3) kann die Karte im Editor bewegt werden.<br>' +
-        'Um auf den Anfangszustand zu kommen können Sie auf "Zentrieren" drücken.</p>' +
-        '<br style="clear: left">' +
-        '<img src="./ScrollTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">' +
-        '<p>Halten Sie die Steuerungstaste (STRG/CTRL) und scrollen Sie gleichzeitig, so können Sie in der Karte zoomen.<br>' +
-        'Um auf den Anfangszustand zu kommen können Sie auf "Zentrieren" drücken.</p>' +
-        '</div>' +
-        '<br style="clear: left">' +
-        '<div>' +
-        '<h3>Ändern der Ansicht:</h3>' +
-        '<img src="./ViewsTut.gif" alt="tut" width="45%" height="45%" style="float: left; padding-right: 5px">' +
-        '<p>Mit den dem entsprechenden Knöpfen können Sie die Ansicht ändern.<br>' +
-        '"Druckbogen" - Die Seite wird als Druckbogen angezeigt (Innen- und Außenseite)<br>' +
-        '"einzelne Seiten" - Die Karte kann im Editor auf geklappt werden.</p>' +
-        '</div><br style="clear: left">' +
-        '<div>' +
-        '<h3>Abschließen des Editierens</h3>' +
-        '<p>Wenn Sie mit dem Editieren der Karte fertig sind können Sie mit dem "PDF erzeugen" Knopf ihr Nutzer-Design' +
-        'zu Kettcards abschicken.</p>' +
-        '</div>' +
-        '<input type="checkbox" id="dont-show-again" style="margin:10px 2px 0 0;">' +
-        '<label for="dont-show-again">nicht erneut anzeigen</label>' +
-        '<button style="padding: 16px 16px; margin:5px 0 0 0;float: right;">Ok</button></div></div>');
-    const dontShowAgain = $tutOver.find('input')[0];
-    $tutOver.find('button').click(function () {
-        if (dontShowAgain.checked) {
-            Cookie.set('tutorial', 'no');
-        }
-        $tutOver.remove();
-    });
-    $body.append($tutOver);
-}
