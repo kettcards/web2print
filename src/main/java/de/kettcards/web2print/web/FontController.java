@@ -14,9 +14,6 @@ import java.util.List;
 @RequestMapping("${web2print.links.api-path}")
 public final class FontController {
 
-    @Autowired
-    private ResourceLoader resourceLoader;
-
     private final FontService fontService;
 
     private boolean newOrder = false;

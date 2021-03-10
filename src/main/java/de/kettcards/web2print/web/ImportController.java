@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.kettcards.web2print.service.MotiveImportService;
 import de.kettcards.web2print.service.XlsxImportService;
 import de.kettcards.web2print.storage.Content;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,14 +16,19 @@ import java.util.List;
 @RequestMapping("${web2print.links.api-path}/import")
 public final class ImportController {
 
-    @Autowired
-    private XlsxImportService xlsxImportService;
+    private final XlsxImportService xlsxImportService;
 
-    @Autowired
-    private MotiveImportService motiveImportService;
+    private final MotiveImportService motiveImportService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
+
+    public ImportController(XlsxImportService xlsxImportService,
+                            MotiveImportService motiveImportService,
+                            ObjectMapper objectMapper) {
+        this.xlsxImportService = xlsxImportService;
+        this.motiveImportService = motiveImportService;
+        this.objectMapper = objectMapper;
+    }
 
     @PostMapping("/table")
     public void importTable(@RequestParam("file") MultipartFile file) throws IOException {
