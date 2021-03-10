@@ -1,6 +1,5 @@
 package de.kettcards.web2print.service;
 
-import de.kettcards.web2print.exceptions.importer.DatabaseEntryNotFoundException;
 import de.kettcards.web2print.model.db.Card;
 import de.kettcards.web2print.model.db.CardFormat;
 import de.kettcards.web2print.model.db.Motive;
@@ -55,7 +54,7 @@ public class MotiveImportService extends StorageContextAware implements WebConte
     }
 
 
-    public void NEWImportMotive(Content content, List<String> orderIds, String side) throws IOException {
+    public void importMotive(Content content, List<String> orderIds, String side) throws IOException {
         //check that all order ids are valid
         var cards = new ArrayList<Card>();
         for (String orderId : orderIds) {
@@ -122,49 +121,6 @@ public class MotiveImportService extends StorageContextAware implements WebConte
         }
     }
 
-
-    @Deprecated
-    public void importMotive(Content content) throws IOException {
-        String name = content.getOriginalFilename();
-        log.info("importing " + name);
-        int lastDotIndex = name.lastIndexOf(".");
-        String extension = name.substring(lastDotIndex);
-        name = name.substring(0, lastDotIndex);
-        Card card = cardRepository.findCardByOrderId(name).orElseGet(null);
-
-        if (MediaTypeFileExtension.PDF.isValidFileExtension(extension)) {
-            float scaleFactor = getScaleFactor();
-            List<ByteArrayOutputStream> outputStreams = printPdfToImage(content.getInputStream(), scaleFactor);
-            for (int i = 0; i < outputStreams.size(); i++) {
-                String out;
-                ByteArrayOutputStream stream = outputStreams.get(i);
-                if (stream.size() == 0)
-                    continue;
-                switch (i) {
-                    case 0:
-                        out = name + "-front.png";
-                        updateDatabase(out, card, "FRONT");
-                        break;
-                    case 1:
-                        out = name + "-back.png";
-                        updateDatabase(out, card, "BACK");
-                        break;
-                    default:
-                        throw new IOException("unexpected page for document \"" + name + "\"");
-                }
-                try {
-                    save(new Content(new InMemoryResource(stream.toByteArray())), out);
-                } catch (IOException exception) {
-                    throw new IOException("failed to save " + name);
-                }
-            }
-        } else {
-            //TODO: implement JPG(probably convert to PNG and also image quality probably not good enough for
-            // pdf generator), PNG
-            throw new IllegalArgumentException("Importing PNG and JPG (" + name + ")isn't implemented yet.");
-        }
-    }
-
     public void importDefaultMotive(Content content, int cardFormat) throws IOException {
         String originalFilename = content.getOriginalFilename();
         int lastDotIndex = originalFilename.lastIndexOf('.');
@@ -198,33 +154,6 @@ public class MotiveImportService extends StorageContextAware implements WebConte
             motive.setTextureSlug(name);
             cardFormat.setDefaultFrontMotive(motive);
             cardFormatRepository.save(cardFormat);
-        }
-    }
-
-
-    private void updateDatabase(String motiveName, Card card, String side) throws DatabaseEntryNotFoundException {
-        Motive frontMotive = new Motive();
-        frontMotive.setTextureSlug(motiveName);
-
-        Motive motive;
-        if (motiveRepository.existsMotiveByTextureSlug(motiveName)) {
-            motive = motiveRepository.findByTextureSlug(motiveName);
-        } else {
-            motive = motiveRepository.save(frontMotive);
-        }
-
-        if (card != null) {
-            MotiveMap map = new MotiveMap();
-            map.setMotive(motive);
-            map.setSide(side);
-            map.setCard(card);
-            MotiveMap.MotiveMapId mapId = new MotiveMap.MotiveMapId();
-            mapId.setMotive(motive.getId());
-            mapId.setCard(card.getId());
-            map.setMotiveMapId(mapId);
-            motiveMapRepository.save(map);
-        } else {
-            throw new DatabaseEntryNotFoundException("couldn't map " + motiveName + " to a card because there is no database entry for it");
         }
     }
 

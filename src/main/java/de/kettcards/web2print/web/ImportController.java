@@ -5,13 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.kettcards.web2print.service.MotiveImportService;
 import de.kettcards.web2print.service.XlsxImportService;
 import de.kettcards.web2print.storage.Content;
-import de.kettcards.web2print.storage.contraint.MediaTypeFileExtensionFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -45,7 +43,7 @@ public final class ImportController {
                              @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
         //TODO pre parsing
         var cards = objectMapper.readValue(json, new TypeReference<List<String>>() {});
-        motiveImportService.NEWImportMotive(Content.from(file), cards, null);
+        motiveImportService.importMotive(Content.from(file), cards, null);
     }
 
     @PostMapping(value = "/motive/front", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -53,7 +51,7 @@ public final class ImportController {
                              @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
         //TODO pre parsing
         var cards = objectMapper.readValue(json, new TypeReference<List<String>>() {});
-        motiveImportService.NEWImportMotive(Content.from(file), cards, "FRONT");
+        motiveImportService.importMotive(Content.from(file), cards, "FRONT");
 
     }
 
@@ -62,7 +60,7 @@ public final class ImportController {
                                   @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
         //TODO pre parsing
         var cards = objectMapper.readValue(json, new TypeReference<List<String>>() {});
-        motiveImportService.NEWImportMotive(Content.from(file), cards, "BACK");
+        motiveImportService.importMotive(Content.from(file), cards, "BACK");
     }
 
 }
