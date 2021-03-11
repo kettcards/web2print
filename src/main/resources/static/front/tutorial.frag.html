@@ -1,0 +1,165 @@
+<html>
+<template id="title">So Funktioniert es!</template>
+<template id="body">
+  <h3>Hinzufügen von Text</h3>
+  <div class="spacer"></div>
+  <div class="row">
+    <ol>
+      <li>auf „Text“ klicken</li>
+      <li>Textfeld mit einem Klick auf der Karte platzieren</li>
+    </ol>
+    <img src="./tutorial/TextTut.gif" alt="tut">
+  </div>
+
+  <h3>Bearbeiten von Text</h3>
+  <div class="spacer"></div>
+  <div class="row">
+    <ul>
+      <li>bewegen: auf das Textfeld klicken, linke Maustaste gedrückt halten und die Mause bewegen</li>
+      <li>schreiben: in das Textfeld klicken, Text ändern</li>
+      <li>gestalten: Schriftart und Schriftgröße mithilfe der Werkzeugleiste ändern</li>
+    </ul>
+    <img src="./tutorial/TextEditTut.gif" alt="tut">
+  </div>
+
+  <h3>Hinzufügen von Bildern</h3>
+  <div class="spacer"></div>
+  <div class="row">
+    <ol>
+      <li>auf „Bild/Logo“ klicken</li>
+      <li>Bilddatei auswählen</li>
+      <li>Bild mit einem Klick auf der Karte platzieren</li>
+    </ol>
+    <img src="./tutorial/ImageTut.gif" alt="tut">
+  </div>
+
+  <h3>Bearbeiten von Bildern</h3>
+  <div class="spacer"></div>
+  <div class="row">
+    <ul>
+      <li>bewegen: auf das Bild klicken, linke Maustaste gedrückt halten und die Maus bewegen</li>
+      <li>Größe ändern: auf das Bild klicken, dann auf eine Ecke klicken, die linke Maustaste gedrückt halten und die Maus bewegen</li>
+    </ul>
+    <img src="./tutorial/ImageResizeTut.gif">
+  </div>
+
+  <h3>Bewegen und Zoomen der Karte</h3>
+  <div class="spacer"></div>
+  <div class="row">
+    <div>
+      <h4>Karte bewegen:</h4>
+      <ul>
+        <li>Mausrad gedrückt halten (Maustaste 3) um Karte im Editor zu bewegen</li>
+        <li>zurück zum Anfangszustand: auf „Zentrieren“ drücken.</li>
+      </ul>
+    </div>
+    <img src="./tutorial/CardMoveTut.gif" alt="tut">
+  </div>
+  <div class="row">
+    <div>
+      <h4>Karte zoomen:</h4>
+      <ul>
+        <li>Steuerungstaste (STRG/CTRL) drücken und gleichzeitig scrollen</li>
+        <li>zurück zum Anfangszustand: auf „Zentrieren“ drücken.</li>
+      </ul>
+    </div>
+    <img src="./tutorial/ScrollTut.gif" alt="tut">
+  </div>
+
+  <h3>Ändern der Ansicht</h3>
+  <div class="spacer"></div>
+  <div class="row">
+    <div>
+      <h4>wechseln Sie mit den Buttons rechts oben die Ansicht:</h4>
+      <ul>
+        <li>„Druckbogen“: Vorder- und Rückseite der aufgeklappten Karte</li>
+        <li>„einzelne Seiten“: die Karte kann im Editor geklappt werden</li>
+      </ul>
+    </div>
+    <img src="./tutorial/ViewsTut.gif" alt="tut">
+  </div>
+
+  <h3>Nutzer-Design speichern</h3>
+  <div class="spacer"></div>
+  <div class="row">
+    <ol>
+      <li>wählen Sie „Server“ oder „lokal“</li>
+      <ul>
+        <li>„Server“ : Sie erhalten eine URL mit der Sie ihr Nutzer-Design aufrufen können</li>
+        <li>„lokal“ : laden Sie eine Datei mit ihrem Nutzer-Design auf ihren Rechner herunter</li>
+      </ul>
+      <li>klicken Sie auf „Speichern“</li>
+    </ol>
+    <img src="./tutorial/saveTut.gif" alt="tut">
+  </div>
+
+  <h3>Laden einer Nutzer-Design Datei</h3>
+  <div class="spacer"></div>
+  <div class="row">
+    <ol>
+      <li>auf „Design hochladen“ klicken</li>
+      <li>eine zuvor gespeicherte „.des“ Datei auswählen</li>
+    </ol>
+    <img src="./tutorial/loadTut.gif" alt="tut">
+  </div>
+
+  <h3>erstellen der Druckdatei</h3>
+  <div class="spacer"></div>
+  <div class="row">
+    <ol>
+      <li>auf „PDF erzeugen“ klicken</li>
+      <li>die Druckdatei wird an Kettcards gesendet</li>
+    </ol>
+  </div>
+
+  <style>
+    #tutorial-dialog .row {
+        display: inline-block;
+    }
+    #tutorial-dialog .row>*:first-child {
+        display: inline-block;
+        vertical-align: top;
+        max-width: 50%;
+        box-sizing: border-box;
+    }
+
+    #tutorial-dialog h3 {
+        text-align: center;
+        margin-bottom: calc(.8em - 10px);
+    }
+
+    #tutorial-dialog ol,
+    #tutorial-dialog ul {
+        padding-left: 2ex;
+    }
+
+    #tutorial-dialog img {
+        width: 50%;
+        float: right;
+    }
+    @media only screen and (max-width: 900px) {
+        #tutorial-dialog .row>*:first-child {
+            display: block;
+            max-width: unset;
+        }
+        #tutorial-dialog img {
+            width: 100%;
+            float: unset;
+        }
+    }
+  </style>
+</template>
+<template id="ctrls">
+  <div>
+    <input type="checkbox" id="dont-show-again">
+    <label for="dont-show-again">nicht erneut anzeigen</label>
+  </div>
+  <script>
+    const dontShowAgain = get('dont-show-again');
+    dontShowAgain.checked  = Cookie.getValue('tutorial') === "no";
+    dontShowAgain.onchange = function() {
+      Cookie.set('tutorial', dontShowAgain.checked?"no":"y");
+    };
+  </script>
+</template>
+</html>
