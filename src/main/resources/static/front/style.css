@@ -86,6 +86,7 @@ body {
   padding: 5px 0;
   overflow-x: auto;
   overflow-y: hidden;
+  flex-shrink: 0;
 }
 .toolbar-row {
   background-color: inherit;
