@@ -86,6 +86,7 @@ body {
   padding: 5px 0;
   overflow-x: auto;
   overflow-y: hidden;
+  flex-shrink: 0;
 }
 .toolbar-row {
   background-color: inherit;
@@ -408,6 +409,9 @@ body {
   margin: 0;
   transition: background-color 1s;
   outline: none;
+  /*either split the text into each character before sending to backend or wait for PDFBox to have an implementation
+  that equals what the browsers are doing for font-kerning*/
+  font-kerning: none;
 }
 .text:focus,
 .text:hover {
@@ -549,11 +553,6 @@ body {
 }
 #font-tick:active {
   background-color: rgba(33, 33, 33, 0.4);
-}
-
-#fontSizeSelect {
-  outline: none;
-  max-width: 50px;
 }
 /*odot*/
 
