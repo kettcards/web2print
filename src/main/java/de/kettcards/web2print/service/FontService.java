@@ -61,7 +61,6 @@ public final class FontService extends StorageContextAware implements WebContext
      * load the fontStore keySet like before
      * @param newOrder boolean which is set to true when a new order is set
      * @return Fontnames in correct order
-     * @throws IOException
      */
     public List<String> listAvailableFonts(boolean newOrder) {
         if(!order.isEmpty() && !newOrder)
