@@ -14,7 +14,7 @@
     "./Colliders.ts",
     "./El.ts",
     "./Editor.ts",
-    "./Overlay.ts",
+    "./Dialog.ts",
     "./Elements.ts",
     "./textHandlers.ts",
     "./imgHandlers.ts",
