@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
 @Data
-@ConfigurationProperties(prefix = "web2print", ignoreUnknownFields = false)
+@ConfigurationProperties("web2print")
 public class ApplicationConfiguration {
 
     @JsonView(Include.Public.class)
@@ -20,6 +20,9 @@ public class ApplicationConfiguration {
 
     @JsonView(Include.Internal.class)
     private String baseDir;
+
+    @JsonView(Include.Internal.class)
+    private StructConfiguration structEditor;
 
     @Data
     public static class Link {
@@ -44,6 +47,17 @@ public class ApplicationConfiguration {
 
         @JsonView(Include.Public.class)
         private String motiveUrl;
+
+    }
+
+    @Data
+    public static class StructConfiguration {
+
+        @JsonView(Include.Internal.class)
+        private String username;
+
+        @JsonView(Include.Internal.class)
+        private String password;
 
     }
 
