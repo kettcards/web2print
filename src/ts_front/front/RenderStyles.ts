@@ -89,7 +89,8 @@ const RenderStyles : RenderStyle[] = [{
       .append(make('div.intrinsic.top')   )
       .append(make('div.intrinsic.right') )
       .append(make('div.intrinsic.bottom'))
-      .append(make('div.intrinsic.left')  );
+      .append(make('div.intrinsic.left')  )
+      .append(make('div.intrinsic.middle'));
     $bundle.find('.front>.colliders-layer' as JQuery.Selector)
       .append(make('div.intrinsic.front'));
 

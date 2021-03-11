@@ -369,6 +369,12 @@ body {
 .colliders-layer>.intrinsic.right  { right : -50mm; width : 55mm; top : -50mm; height: calc(100% + 100mm); }
 .colliders-layer>.intrinsic.bottom { bottom: -50mm; height: 55mm; left: -50mm; width : calc(100% + 100mm); }
 .colliders-layer>.intrinsic.left   { left  : -50mm; width : 55mm; top : -50mm; height: calc(100% + 100mm); }
+.colliders-layer>.intrinsic.middle {
+  top: -50mm;
+  left: calc(50% - 5mm);
+  width: 10mm;
+  height: calc(100% + 100mm);
+}
 /*only for blocking the front*/
 .colliders-layer>.intrinsic.front  {
   top: -50mm;
