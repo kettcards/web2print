@@ -409,6 +409,9 @@ body {
   margin: 0;
   transition: background-color 1s;
   outline: none;
+  /*either split the text into each character before sending to backend or wait for PDFBox to have an implementation
+  that equals what the browsers are doing for font-kerning*/
+  font-kerning: none;
 }
 .text:focus,
 .text:hover {
