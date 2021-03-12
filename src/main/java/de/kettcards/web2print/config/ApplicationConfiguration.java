@@ -5,9 +5,10 @@ import de.kettcards.web2print.model.Include;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.util.unit.DataSize;
 
 @Data
-@ConfigurationProperties(prefix = "web2print", ignoreUnknownFields = false)
+@ConfigurationProperties("web2print")
 public class ApplicationConfiguration {
 
     @JsonView(Include.Public.class)
@@ -17,6 +18,10 @@ public class ApplicationConfiguration {
     @JsonView(Include.Api.class)
     @NestedConfigurationProperty
     private Page page;
+
+    @JsonView(Include.Api.class)
+    @NestedConfigurationProperty
+    private EditorConfiguration editor;
 
     @JsonView(Include.Internal.class)
     private String baseDir;
@@ -44,6 +49,17 @@ public class ApplicationConfiguration {
 
         @JsonView(Include.Public.class)
         private String motiveUrl;
+
+    }
+
+    @Data
+    public static class EditorConfiguration {
+
+        @JsonView(Include.Internal.class)
+        private DataSize maxFileSize;
+
+        @JsonView(Include.Internal.class)
+        private DataSize maxRequestSize;
 
     }
 
