@@ -51,6 +51,7 @@
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true,
+              "outputPath": "../../build/resources/main/static/struct",
               "budgets": [
                 {
                   "type": "initial",
