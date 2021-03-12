@@ -4,7 +4,7 @@ import {Api} from "../lib/api";
 @Component({
   selector: 'app-pdf-list',
   templateUrl: './pdf-list.component.html',
-  styleUrls: ['./pdf-list.component.less'],
+  styleUrls: ['./pdf-list.component.scss'],
   providers: [Api]
 })
 export class PdfListComponent implements OnInit {

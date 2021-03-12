@@ -10,7 +10,7 @@ import {MappingDialogComponent} from "../import-texture/mapping-dialog/mapping-d
 @Component({
   selector: 'app-import-motive-default',
   templateUrl: './import-motive-default.component.html',
-  styleUrls: ['./import-motive-default.component.less'],
+  styleUrls: ['./import-motive-default.component.scss'],
   providers: [Api]
 })
 export class ImportMotiveDefaultComponent implements OnInit {

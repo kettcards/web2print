@@ -5,7 +5,7 @@ import {Api} from "../../lib/api";
 @Component({
   selector: 'app-font-config',
   templateUrl: './font-config.component.html',
-  styleUrls: ['./font-config.component.less'],
+  styleUrls: ['./font-config.component.scss'],
   providers: [Api],
 })
 

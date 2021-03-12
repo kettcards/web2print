@@ -16,7 +16,7 @@ import {ImportMotiveDialogComponent, MaterialDialogResult} from "./import-motive
 @Component({
   selector: 'app-import-motive',
   templateUrl: './import-motive.component.html',
-  styleUrls: ['./import-motive.component.less'],
+  styleUrls: ['./import-motive.component.scss'],
   providers: [Api]
 })
 export class ImportMotiveComponent extends ImportMenu<CardMotive> implements OnInit {

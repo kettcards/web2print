@@ -739,60 +739,81 @@ Editor.storage = {
     currentColor: "#000000",
     spawnBtn: undefined
 };
-class Overlay {
-}
-Overlay.tutorial = {
-    $container: $('<div style="visibility: hidden"></div>'),
-    isLoaded: false,
-    show() {
-        const This = Overlay.tutorial;
-        if (!This.isLoaded) {
-            This.$container.load('./tutorial.html', function () {
-                const center = $('#tutCenter');
-                $('#closeTut').css({
-                    top: center.offset().top,
-                    left: center.offset().left + center.outerWidth(),
-                });
-                const dontShowAgain = This.$container.find('#dont-show-again')[0];
-                dontShowAgain.checked = Cookie.getValue('tutorial') === 'no';
-                This.$container.find('button').click(function () {
-                    if (dontShowAgain.checked) {
-                        Cookie.set('tutorial', 'no');
-                    }
-                    else {
-                        Cookie.set('tutorial', 'yes');
-                    }
-                    This.$container.css('visibility', 'hidden');
-                });
-            });
-            $body.append(This.$container);
-            This.isLoaded = true;
-        }
-        This.$container.css('visibility', 'visible');
-    },
-};
-Overlay.dsgvo = {
-    $container: $('<div style="visibility: hidden"></div>'),
-    isLoaded: false,
-    show() {
-        const This = Overlay.dsgvo;
-        if (!This.isLoaded) {
-            This.$container.load('./datenschutzerklaerung.html', function () {
-                const center = $('#dsgvoCenter');
-                $('#closeDsgvo').css({
-                    top: center.offset().top,
-                    left: center.offset().left + center.outerWidth(),
-                });
-                This.$container.find('button').click(function () {
-                    This.$container.css('visibility', 'hidden');
-                });
-            });
-            $body.append(This.$container);
-            This.isLoaded = true;
-        }
-        This.$container.css('visibility', 'visible');
+class Dialog {
+    constructor(source) {
+        this.loaded = false;
+        this.source = source;
+        this.show = this._show.bind(this);
+        this.hide = this._hide.bind(this);
+        this.setVisible = this._setVisible.bind(this);
     }
-};
+    _show() {
+        const ads = Dialog.activeDialogs;
+        if (ads.length > 0) {
+            ads[ads.length - 1].setVisible(false);
+        }
+        else {
+            Dialog.$blinds.css('visibility', 'visible');
+        }
+        Dialog.activeDialogs.push(this);
+        if (!this.loaded) {
+            this._load().then(this._setVisible.bind(this, true));
+        }
+        else {
+            this._setVisible(true);
+        }
+    }
+    _load() {
+        return jQuery.get(this.source)
+            .then(function (fragmentTxt) {
+            const doc = new DOMParser().parseFromString(fragmentTxt, "text/html");
+            const $dialogInst = $(Dialog.template.content.cloneNode(true));
+            const lSlash = this.source.lastIndexOf('/') + 1;
+            const fDot = Math.min(this.source.indexOf('.', lSlash), this.source.length);
+            $dialogInst[0].firstElementChild.id = this.source.substr(lSlash, fDot - lSlash) + '-dialog';
+            const title = doc.getElementById('title');
+            if (title)
+                $dialogInst.find('.dialog-title').html(title.content);
+            const body = doc.getElementById('body');
+            $dialogInst.find('.dialog-body').html(body.content);
+            const ctrls = doc.getElementById('ctrls');
+            const $ctrlsContainer = $dialogInst.find('.dialog-ctrls');
+            if (ctrls)
+                $ctrlsContainer[0].insertBefore(ctrls.content, $ctrlsContainer[0].firstChild);
+            $ctrlsContainer.children('.close-btn').click(this.hide);
+            this.$target = $($dialogInst[0].firstElementChild);
+            Dialog.$blinds.append($dialogInst);
+        }.bind(this))
+            .catch(function (e) {
+            console.error('dialog load', e);
+            alert("A dialog could not be loaded!");
+        });
+    }
+    _hide() {
+        this._setVisible(false);
+        const ads = Dialog.activeDialogs;
+        ads.pop();
+        if (ads.length > 0) {
+            ads[ads.length - 1].setVisible(true);
+        }
+        else {
+            Dialog.$blinds.css('visibility', 'collapse');
+        }
+    }
+    _setVisible(visible) {
+        this.$target.css('visibility', visible ? 'visible' : 'collapse');
+    }
+}
+Dialog.$blinds = $('#overlay-blinds');
+Dialog.template = get('dialog-tmpl');
+Dialog.activeDialogs = [];
+class Dialogs {
+}
+Dialogs.tutorial = new Dialog('./tutorial.frag.html');
+Dialogs.dsgvo = new Dialog('./dsgvo.frag.html');
+if (Cookie.getValue('tutorial') !== 'no') {
+    Dialogs.tutorial.show();
+}
 const Elements = {
     TEXT: {
         displayName: 'Text',
@@ -1372,8 +1393,8 @@ const RenderStyles = [{
                 height: height + 'mm',
             });
             $bundle.children().css(Object.assign({
-                'background-image': 'url("' + web2print.links.materialUrl + card.material.textureSlug + '")',
-            }, this.BgStretchObjs[card.material.tiling]));
+                'background-image': 'url("' + web2print.links.textureUrl + card.texture.textureSlug + '")',
+            }, this.BgStretchObjs[card.texture.tiling]));
             for (let fold of card.cardFormat.folds) {
                 $bundle.find('.folds-layer').append(createFold(fold));
             }
@@ -1490,8 +1511,8 @@ const RenderStyles = [{
             });
             $page2[0].dataset.xOffset = String(w1);
             $page1.add($page2).children().css(Object.assign({
-                'background-image': 'url("' + web2print.links.materialUrl + card.material.textureSlug + '")'
-            }, this.BgStretchObjs[card.material.tiling]));
+                'background-image': 'url("' + web2print.links.textureUrl + card.texture.textureSlug + '")'
+            }, this.BgStretchObjs[card.texture.tiling]));
             let mFront, mBack;
             for (const motive of card.motive) {
                 switch (motive.side) {
@@ -1888,11 +1909,6 @@ $('#save-btn').click(function () {
 });
 const saveSelect = new SelectEx($('#save-select-ex'));
 saveSelect.value = 'Server';
-$('#tutorial').click(Overlay.tutorial.show);
-if (Cookie.getValue('tutorial') !== 'no') {
-    Overlay.tutorial.show();
-}
-$('#dsgvo-btn').click(Overlay.dsgvo.show);
 $('#del-btn')
     .mouseup(stopPropagation)
     .click(function () {

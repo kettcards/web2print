@@ -9,7 +9,7 @@ import {map, startWith} from "rxjs/operators";
 @Component({
   selector: 'app-auto-chips',
   templateUrl: './auto-chips.component.html',
-  styleUrls: ['./auto-chips.component.less']
+  styleUrls: ['./auto-chips.component.scss']
 })
 export class AutoChipsComponent {
 

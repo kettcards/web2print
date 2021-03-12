@@ -10,7 +10,7 @@ import {ImportMenu} from "../import";
 @Component({
   selector: 'app-import-texture',
   templateUrl: './import-texture.component.html',
-  styleUrls: ['./import-texture.component.less'],
+  styleUrls: ['./import-texture.component.scss'],
   providers: [Api]
 })
 export class ImportTextureComponent extends ImportMenu<CardMaterial> implements OnInit {

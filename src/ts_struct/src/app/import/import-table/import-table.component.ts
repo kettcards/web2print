@@ -15,7 +15,7 @@ import {MatSpinner} from "@angular/material/progress-spinner";
 @Component({
   selector: 'app-import-table',
   templateUrl: './import-table.component.html',
-  styleUrls: ['./import-table.component.less'],
+  styleUrls: ['./import-table.component.scss'],
   providers: [Api]
 })
 export class ImportTableComponent {

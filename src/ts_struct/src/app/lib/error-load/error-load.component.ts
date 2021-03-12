@@ -3,7 +3,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 @Component({
   selector: 'app-error-load',
   templateUrl: './error-load.component.html',
-  styleUrls: ['./error-load.component.less']
+  styleUrls: ['./error-load.component.scss']
 })
 export class ErrorLoadComponent {
 

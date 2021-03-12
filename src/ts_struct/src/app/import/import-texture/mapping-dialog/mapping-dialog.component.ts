@@ -6,7 +6,7 @@ import {CardMaterial} from "../../../lib/card";
 @Component({
   selector: 'app-mapping-dialog',
   templateUrl: './mapping-dialog.component.html',
-  styleUrls: ['./mapping-dialog.component.less']
+  styleUrls: ['./mapping-dialog.component.scss']
 })
 export class MappingDialogComponent {
 

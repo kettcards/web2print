@@ -3,7 +3,7 @@ import {Component, EventEmitter, Input, Output} from '@angular/core';
 @Component({
   selector: 'app-drop-controls',
   templateUrl: './drop-controls.component.html',
-  styleUrls: ['./drop-controls.component.less']
+  styleUrls: ['./drop-controls.component.scss']
 })
 export class DropControlsComponent {
 
