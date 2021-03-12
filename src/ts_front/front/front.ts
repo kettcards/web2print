@@ -47,17 +47,22 @@ const hElementsLayerClick = function(e : MouseEvent, target : Node) {
     return;
   e.stopPropagation();
 
-  const el = Editor.storage.addOnClick({left: e.offsetX, top: e.offsetY});
+  const spawnerData = Editor.storage.addOnClick;
+  const el = spawnerData[0]({left: e.offsetX, top: e.offsetY});
+  el[0].dataset.typeId = String(spawnerData[1]);
   $(target).append(el);
   Editor.storage.addOnClick = undefined;
 };
 
-const spawnNewEl = function(objectType : string) {
-  Editor.storage.addOnClick = Elements[objectType].spawn;
-  // (lucas 10.02.21) todo: dont do this
-  if(objectType === 'IMAGE') {
-    $fileUpBtn.click();
-  }
+const hSpawnElBtnClick = function(id : number) {
+  if(Editor.storage.spawnBtn)
+    Editor.storage.spawnBtn.removeClass('active');
+
+  const $toggledBtn = $(this);
+  Editor.storage.spawnBtn = $toggledBtn;
+  $toggledBtn.addClass('active');
+
+  Editor.storage.addOnClick = [Elements[id].getSpawner(), id];
 }
 
 const hChangeFontType = function() {
@@ -87,7 +92,7 @@ const hChangeFontType = function() {
   ResizeBars.show(false);
 };
 
-let $body = $('body')
+$('body')
   .click(function() {
     Fonts.$options.css('visibility', 'collapse');
     saveSelect.close();

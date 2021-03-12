@@ -98,12 +98,7 @@ function serializeSide($els : JQuery, xOffs : number, target : Box[]) : void {
       w: $el.width() * MMPerPx.x,
       h: $el.height() * MMPerPx.y
     };
-    switch($el[0].nodeName){
-      case 'DIV': target.push(Object.assign(Elements.TEXT .serialize($el), bounds)); break;
-      case 'IMG': target.push(Object.assign(Elements.IMAGE.serialize($el), bounds)); break;
-
-      default: console.warn('cannot serialize element', $el[0]);
-    }
+    target.push(Object.assign(Elements[parseInt($el[0].dataset.typeId)].serialize($el), bounds));
   }
 }
 
@@ -152,18 +147,15 @@ function loadSide(side : 'front'|'back', boxes : Box[]) : void {
       height: box.h / MMPerPx.y
     };
     const page = renderStyleState.style.assocPage(side, bounds);
-    let el : JQuery;
-    switch(box.t) {
-      case "i": {
-        el = Elements.IMAGE.spawn(bounds);
-        Elements.IMAGE.restore(el, box);
-      } break;
-      case "t": {
-        el = Elements.TEXT.spawn(bounds);
-        Elements.TEXT.restore(el, box);
-      } break;
-      default: throw new Error(`Can't deserialize box of type '${box['t']}'.`);
+
+    const elType = ElementMap[box.t];
+    if(!elType) {
+      throw new Error(`Can't deserialize box of type '${box['t']}'.`);
     }
-    page.children('.elements-layer').append(el);
+
+    const $el  = elType.spawn(bounds);
+    elType.restore($el, box);
+
+    page.children('.elements-layer').append($el);
   }
 }

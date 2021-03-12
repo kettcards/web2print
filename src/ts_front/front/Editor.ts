@@ -12,7 +12,7 @@ type EditorStorage = {
   dy         : number;
   target     : HTMLElement | undefined;
   $target    : JQuery      | undefined;
-  addOnClick : Spawner     | undefined;
+  addOnClick : SpawnerData | undefined;
   range      : Range;
   currentColor : string;
   spawnBtn   : JQuery<HTMLButtonElement>;

@@ -106,46 +106,49 @@
   <h3>erstellen der Druckdatei</h3>
   <div class="spacer"></div>
   <div class="row">
-    <ol>
+    <ol style="max-width: 100%;">
       <li>auf „PDF erzeugen“ klicken</li>
       <li>die Druckdatei wird an Kettcards gesendet</li>
     </ol>
   </div>
 
   <style>
+    #tutorial-dialog {
+      width: 100%;
+    }
     #tutorial-dialog .row {
-        display: inline-block;
+      display: inline-block;
     }
     #tutorial-dialog .row>*:first-child {
-        display: inline-block;
-        vertical-align: top;
-        max-width: 50%;
-        box-sizing: border-box;
+      display: inline-block;
+      vertical-align: top;
+      max-width: 50%;
+      box-sizing: border-box;
     }
 
     #tutorial-dialog h3 {
-        text-align: center;
-        margin-bottom: calc(.8em - 10px);
+      text-align: center;
+      margin-bottom: calc(.8em - 10px);
     }
 
     #tutorial-dialog ol,
     #tutorial-dialog ul {
-        padding-left: 2ex;
+      padding-left: 2ex;
     }
 
     #tutorial-dialog img {
-        width: 50%;
-        float: right;
+      width: 50%;
+      float: right;
     }
     @media only screen and (max-width: 900px) {
-        #tutorial-dialog .row>*:first-child {
-            display: block;
-            max-width: unset;
-        }
-        #tutorial-dialog img {
-            width: 100%;
-            float: unset;
-        }
+      #tutorial-dialog .row>*:first-child {
+        display: block;
+        max-width: unset;
+      }
+      #tutorial-dialog img {
+        width: 100%;
+        float: unset;
+      }
     }
   </style>
 </template>
