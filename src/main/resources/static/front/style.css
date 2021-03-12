@@ -798,7 +798,7 @@ button.active {
 
 .dialog {
   min-width: 300px;
-  max-width: 85%;
+  max-width: 75%;
   min-height: 150px;
   max-height: 75%;
 
