@@ -132,6 +132,7 @@ task buildTsStructDep(type: NpmTask) {
 }
 
 task buildTsStruct(type: NpmTask) {
+	dependsOn buildTsStructDep
 	description = "Build Struct-Editor"
 	workingDir = file("${project.projectDir}/src/ts_struct")
 	args = ['run', 'buildProd']
