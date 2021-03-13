@@ -5,8 +5,8 @@
     "logLevel": "debug",
     "changeOrigin": true
   },
-  "/api/*": {
-    "target": "http://localhost:8080/web2print",
+  "/web2print/api/*": {
+    "target": "http://localhost:8080/web2print/api/",
     "secure": false,
     "logLevel": "debug",
     "changeOrigin": true
