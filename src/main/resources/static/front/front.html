@@ -160,36 +160,52 @@
         </div>
       </div>
       <div class="dialog center" id="order-dialog" style="visibility: collapse;">
-        <form>
-          <h2 class="dialog-title">[tmp]bestellen</h2>
+        <form autocomplete="on">
+          <h2 class="dialog-title">Anfrage abschicken</h2>
           <div class="spacer"></div>
           <div class="dialog-body">
-            <table>
-              <tr>
-                <td><label for="order-lname">Name:</label></td>
-                <td><input type="text" id="order-lname" name="lastName" required /></td>
-              </tr>
-              <tr>
-                <td><label for="order-name">Vorname:</label></td>
-                <td><input type="text" id="order-name" name="name" required /></td>
-              </tr>
-              <tr>
-                <td><label for="order-email">e-mail:</label></td>
-                <td><input type="text" id="order-email" name="email" required /></td>
-              </tr>
-              <tr>
-                <td><label for="order-addr">Adresse</label></td>
-                <td><input type="text" id="order-addr" name="address" /></td>
-              </tr>
-              <tr>
-                <td><label for="order-tel">Tel.</label></td>
-                <td><input type="text" id="order-tel" name="tel" /></td>
-              </tr>
-            </table>
+            <fieldset id="order-dialog-p1">
+              <span>Bevor wir Ihr Design an Kettkards übertragen brauchen wir noch ein paar Informationen:</span>
+              <h4>Anzal<br /><span>&nbsp;an Karten</span></h4>
+              <input type="number" min="1" value="1" autocomplete="off" />
+            </fieldset>
+            <div class="spacer"></div>
+            <fieldset id="order-dialog-p2">
+              <h4><span>und</span><br />Ihre Anschrift</h4>
+              <table>
+                <tr>
+                  <td><input type="text" id="order-lname" name="fname" placeholder="Vorname" required autocomplete="given-name" /></td>
+                  <td><input type="text"  name="lname" placeholder="Nachanme" required autocomplete="family-name" /></td>
+                </tr>
+                <tr>
+                  <td colspan="2"><input type="email" id="order-email" name="email" placeholder="e-mail" required autocomplete="email" /></td>
+                </tr>
+                <tr>
+                  <td colspan="2"><input type="text" id="order-street" name="address" placeholder="Stra&szlig;e Hausnummer" autocomplete="street-address" /></td>
+                </tr>
+                <tr>
+                  <td><input type="text" name="postal" placeholder="PLZ" autocomplete="postal-code" /></td>
+                  <td><input type="text" name="region" placeholder="Stadt" autocomplete="address-level2" /></td>
+                </tr>
+                <tr>
+                  <td colspan="2"><input type="text" id="order-firm" name="address" placeholder="Firma" /></td>
+                </tr>
+                <tr>
+                  <td colspan="2"><input type="tel" id="order-tel" name="phone" placeholder="Telefonnummer" autocomplete="tel" /></td>
+                </tr>
+              </table>
+            </fieldset>
+            <div class="spacer"></div>
+            <fieldset id="order-dialog-p3">
+              <span>Wenn Sie möchten ist hier Platz für</span>
+              <h4 style="margin-top: 5px">zusätzliche Informationen</h4>
+              <textarea name="additional" autocomplete="off"></textarea>
+            </fieldset>
           </div>
+          <div class="spacer"></div>
           <div class="dialog-ctrls">
-            <input type="submit" value="Senden">
-            <button class="close-btn">Abbrechen</button>
+            <button class="close-btn" id="order-back-btn">Abbrechen</button>
+            <input type="submit" value="Senden" disabled>
           </div>
         </form>
       </div>

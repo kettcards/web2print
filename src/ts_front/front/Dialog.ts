@@ -119,9 +119,42 @@ class LoadingDialog extends Dialog {
 }
 
 class OrderDialog extends Dialog {
+  $reqFields : JQuery<HTMLInputElement>;
+  $submitBtn : JQuery;
+
   constructor() {
     super($('#order-dialog'));
-    this._attach();
+    const $ctrls = this._attach();
+    this.$target.submit(OrderDialog._submit);
+
+    this.$submitBtn = $ctrls.children('input[type="submit"]');
+    this.$reqFields = this.$target.find<HTMLInputElement>('input[required]' as JQuery.Selector)
+      .on('input', this._hFieldChanged.bind(this))
+      .after(make('span.req-marker', makeT('*')));
+  }
+
+  private _hFieldChanged() : void {
+    let disabled = false;
+    for(let i = 0; i < this.$reqFields.length; i++) {
+      if(this.$reqFields[i].value === '') {
+        disabled = true;
+        break;
+      }
+    }
+
+    this.$submitBtn.prop('disabled', disabled);
+  }
+
+  private static _submit(e : JQuery.SubmitEvent) : void {
+    e.preventDefault();
+
+    const form = e.target as HTMLFormElement;
+    if(!form.checkValidity()) {
+      alert("Bitte tragen Sie gültige Datein ein!");
+      return;
+    }
+
+    submit(true, $(e.target).serializeArray());
   }
 }
 
