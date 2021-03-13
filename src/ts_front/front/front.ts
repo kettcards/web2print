@@ -49,12 +49,12 @@ const hElementsLayerClick = function(e : MouseEvent, target : Node) {
 
   const spawnerData = Editor.storage.addOnClick;
   const el = spawnerData[0]({left: e.offsetX, top: e.offsetY});
-  el[0].dataset.typeId = String(spawnerData[1]);
+  el[0].dataset.typeId = spawnerData[1];
   $(target).append(el);
   Editor.storage.addOnClick = undefined;
 };
 
-const hSpawnElBtnClick = function(id : number) {
+const hSpawnElBtnClick = function(id : string) {
   if(Editor.storage.spawnBtn)
     Editor.storage.spawnBtn.removeClass('active');
 
