@@ -163,5 +163,11 @@ const hFontChanged = function() {
   const fName = Fonts.currentSelection;
   makeNodesFromSelection(range, function(curr) {
     $(curr).css('font-family', fName);
+    if(!Fonts.FontAttributeMap[fName][1]){//font has no bold
+      $(curr).removeClass('b');
+    }
+    if(!Fonts.FontAttributeMap[fName][2]){//font has no italic
+      $(curr).removeClass('i');
+    }
   })
 };

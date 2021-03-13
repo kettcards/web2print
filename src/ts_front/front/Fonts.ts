@@ -87,6 +87,18 @@ const Fonts = {
   },
   displaySelected() {
     const fName = Fonts.currentSelection;
+    const boldBtn = $('.fontTypeButton[value=b]');
+    const italicBtn = $('.fontTypeButton[value=i]');
+    boldBtn.css('visibility', 'visible');
+    italicBtn.css('visibility', 'visible');
     Fonts.$label.text(fName).css('font-family', fName);
+    if(fName === "" || !Fonts.FontAttributeMap[fName][1]){
+      console.log('no bold');
+      boldBtn.css('visibility', 'hidden');
+    }
+    if(fName === "" || !Fonts.FontAttributeMap[fName][2]){
+      console.log('no italic');
+      italicBtn.css('visibility', 'hidden');
+    }
   }
 } as FontsObj;
