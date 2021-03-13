@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {Api} from "../lib/api";
+import {Api, Web2Print} from "../lib/api";
 
 @Component({
   selector: 'app-pdf-list',
@@ -8,6 +8,8 @@ import {Api} from "../lib/api";
   providers: [Api]
 })
 export class PdfListComponent implements OnInit {
+
+  declare web2print: Web2Print;
 
   elements: string[] = [];
 

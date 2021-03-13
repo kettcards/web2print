@@ -1,8 +1,11 @@
 <div class="nav-content">
+  <div *ngIf="elements.length === 0">
+    <span>Es sind keine PDF's vorhanden.</span>
+  </div>
   <mat-list *ngFor="let element of elements" class="import-list">
     <mat-divider></mat-divider>
     <div>
-      <a href="http://localhost:8080/web2print/api/pdfs/{{element}}" target="_blank">{{element}}</a>
+      <a href="{{web2print.links.apiUrl}}/api/pdfs/{{element}}" target="_blank">{{element}}</a>
     </div>
   </mat-list>
 </div>

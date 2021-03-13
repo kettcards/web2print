@@ -5,10 +5,22 @@ import {Pageable, PageRequest} from "./pageable";
 import {CardFormat, CardMaterial, CardMotive, CardOverview} from "./card";
 import {StatefulWrappedFileType, WrappedFileType} from "./utils";
 
+export interface Web2Print {
+  links: {
+    basePath : string;
+    thumbnailUrl : string;
+    textureUrl : string;
+    motiveUrl : string;
+    fontUrl : string;
+    apiUrl : string;
+  };
+}
+export declare const web2print: Web2Print;
+
 @Injectable()
 export class Api {
 
-  static apiUrl = 'http://localhost:8080/web2print/api';
+  static apiUrl = web2print.links.apiUrl;
 
   constructor(private http: HttpClient) {
   }
