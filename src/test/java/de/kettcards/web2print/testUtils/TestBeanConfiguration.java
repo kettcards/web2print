@@ -69,7 +69,7 @@ public class TestBeanConfiguration implements EnvironmentAware {
             apiPath = "api/";
         l.setApiPath(apiPath);
         l.setFontUrl(l.getBaseUrl() + "fonts/");
-        l.setMaterialUrl(l.getBaseUrl() + "textures/");
+        l.setTextureUrl(l.getBaseUrl() + "textures/");
         if (useLocalThumbnails)
             l.setThumbnailUrl(l.getBaseUrl() + "thumbnail/");
         else
