@@ -76,11 +76,6 @@
           "options": {
             "browserTarget": "ts-struct:build",
             "proxyConfig": "src/proxy.conf.json"
-          },
-          "configurations": {
-            "production": {
-              "browserTarget": "ts-struct:build:production"
-            }
           }
         },
         "extract-i18n": {
