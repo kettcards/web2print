@@ -28,19 +28,19 @@ export class Api {
   public getCardOverview(pageRequest?: PageRequest): Observable<Pageable<CardOverview>> {
     console.log('requesting: ', pageRequest);
     if (pageRequest != undefined) {
-      return this.http.get<Pageable<CardOverview>>(Api.apiUrl + '/cards?page='
+      return this.http.get<Pageable<CardOverview>>(Api.apiUrl + 'cards?page='
         + pageRequest.currentPage + '&size=' + pageRequest.pageSize);
     } else {
-      return this.http.get<Pageable<CardOverview>>(Api.apiUrl + '/cards');
+      return this.http.get<Pageable<CardOverview>>(Api.apiUrl + 'cards');
     }
   }
 
   public getCardFormats(): Observable<CardFormat[]> {
-    return this.http.get<CardFormat[]>(Api.apiUrl + '/format');
+    return this.http.get<CardFormat[]>(Api.apiUrl + 'format');
   }
 
   public getTextures(): Observable<CardMaterial[]> {
-    return this.http.get<CardMaterial[]>(Api.apiUrl + '/texture');
+    return this.http.get<CardMaterial[]>(Api.apiUrl + 'texture');
   }
 
   public setTexture(texture: WrappedFileType<CardMaterial>): Observable<Object> {
@@ -48,14 +48,14 @@ export class Api {
       throw Error('texture id not set');
     const data = new FormData();
     data.append('file', texture.file);
-    return this.http.post(Api.apiUrl + '/texture/' + texture.type.id + '/texture', data);
+    return this.http.post(Api.apiUrl + 'texture/' + texture.type.id + '/texture', data);
   }
 
   public importCardTable(file: File | null): Observable<Object> | null {
     if (file != null) {
       const data: FormData = new FormData();
       data.append('file', file);
-      return this.http.post(Api.apiUrl + '/import/table', data);
+      return this.http.post(Api.apiUrl + 'import/table', data);
     }
     return null;
   }
@@ -64,38 +64,38 @@ export class Api {
     const data: FormData = new FormData();
     data.append('file', format.file);
     data.append('cards', JSON.stringify(format.additionalAttributes));
-    return this.http.post<Object>(Api.apiUrl + '/import/motive', data);
+    return this.http.post<Object>(Api.apiUrl + 'import/motive', data);
   }
 
   public importFrontMotive(format: StatefulWrappedFileType<CardMotive>): Observable<Object> | null {
     const data: FormData = new FormData();
     data.append('file', format.file);
     data.append('cards', JSON.stringify(format.additionalAttributes));
-    return this.http.post<Object>(Api.apiUrl + '/import/motive/front', data);
+    return this.http.post<Object>(Api.apiUrl + 'import/motive/front', data);
   }
 
   public importBackMotive(format: StatefulWrappedFileType<CardMotive>): Observable<Object> | null {
     const data: FormData = new FormData();
     data.append('file', format.file);
     data.append('cards', JSON.stringify(format.additionalAttributes));
-    return this.http.post<Object>(Api.apiUrl + '/import/motive/back', data);
+    return this.http.post<Object>(Api.apiUrl + 'import/motive/back', data);
   }
 
   public importDefaultMotive(format: StatefulWrappedFileType<CardFormat>): Observable<Object> | null {
     const data: FormData = new FormData();
     data.append('file', format.file);
-    return this.http.post(Api.apiUrl + '/import/defaultMotive/' + format.type?.id, data);
+    return this.http.post(Api.apiUrl + 'import/defaultMotive/' + format.type?.id, data);
   }
 
   public listPdfs(): Observable<string[]> {
-    return this.http.get<string[]>(Api.apiUrl + '/pdfs');
+    return this.http.get<string[]>(Api.apiUrl + 'pdfs');
   }
 
   public getFonts(): Observable<string[]> {
-    return this.http.get<string[]>(Api.apiUrl + '/fonts');
+    return this.http.get<string[]>(Api.apiUrl + 'fonts');
   }
 
   saveDefaultFonts(fonts : string[]): Observable<Object> {
-    return this.http.post(Api.apiUrl + '/defaultFonts', fonts);
+    return this.http.post(Api.apiUrl + 'defaultFonts', fonts);
   }
 }
