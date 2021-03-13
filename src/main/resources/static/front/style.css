@@ -838,3 +838,7 @@ button.active {
 #loading-prog {
   display: inline-block;
 }
+
+#order-dialog input[type="text"] {
+  height: 31px;
+}

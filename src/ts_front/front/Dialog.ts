@@ -44,6 +44,7 @@ class Dialog {
       .then(function(fragmentTxt : string) {
         const doc = new DOMParser().parseFromString(fragmentTxt, "text/html");
         const $dialogInst = $(Dialog.template.content.cloneNode(true) as DocumentFragment);
+        this.$target = $($dialogInst[0].firstElementChild as HTMLDivElement);
 
         const lSlash = this.source.lastIndexOf('/') + 1;
         const fDot   = Math.min(this.source.indexOf('.', lSlash), this.source.length);
@@ -57,20 +58,22 @@ class Dialog {
         $dialogInst.find('.dialog-body' as JQuery.Selector).html(body.content);
 
         const ctrls = doc.getElementById('ctrls') as HTMLTemplateElement;
-        const $ctrlsContainer = $dialogInst.find('.dialog-ctrls' as JQuery.Selector);
+        const $ctrlsContainer = this._attach();
         if(ctrls)
           // JQ straight up breaks here
           $ctrlsContainer[0].insertBefore(ctrls.content, $ctrlsContainer[0].firstChild);
 
-        $ctrlsContainer.children('.close-btn').click(this.hide);
-
-        this.$target = $($dialogInst[0].firstElementChild as HTMLDivElement);
         Dialog.$blinds.append($dialogInst);
       }.bind(this))
       .catch(function(e) {
         console.error('dialog load', e);
         alert("A dialog could not be loaded!");
       });
+  }
+  protected _attach() : JQuery {
+    const $container = this.$target.find('.dialog-ctrls' as JQuery.Selector);
+    $container.children('.close-btn').click(this.hide);
+    return $container;
   }
 
   hide : () => void;
@@ -115,10 +118,18 @@ class LoadingDialog extends Dialog {
   }
 }
 
+class OrderDialog extends Dialog {
+  constructor() {
+    super($('#order-dialog'));
+    this._attach();
+  }
+}
+
 class Dialogs {
   static tutorial = new Dialog('./tutorial.frag.html');
   static dsgvo    = new Dialog('./dsgvo.frag.html');
   static loading  = new LoadingDialog();
+  static order    = new OrderDialog();
 }
 
 if(Cookie.getValue('tutorial') !== 'no') {
