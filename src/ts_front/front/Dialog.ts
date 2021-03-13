@@ -125,7 +125,7 @@ class OrderDialog extends Dialog {
   constructor() {
     super($('#order-dialog'));
     const $ctrls = this._attach();
-    this.$target.submit(OrderDialog._submit);
+    this.$target.find('form').submit(OrderDialog._submit);
 
     this.$submitBtn = $ctrls.children('input[type="submit"]');
     this.$reqFields = this.$target.find<HTMLInputElement>('input[required]' as JQuery.Selector)
