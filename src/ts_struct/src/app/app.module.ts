@@ -25,7 +25,6 @@ import {HttpClientModule} from "@angular/common/http";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {ErrorLoadComponent} from './lib/error-load/error-load.component';
 import {MatInputModule} from "@angular/material/input";
-import {AutoChipsComponent} from './lib/auto-chips/auto-chips.component';
 import {MatChipsModule} from "@angular/material/chips";
 import {MatAutocompleteModule} from "@angular/material/autocomplete";
 import {MatSelectModule} from "@angular/material/select";
@@ -57,7 +56,6 @@ const routes: Routes = [
     ErrorDialogComponent,
     DropControlsComponent,
     ErrorLoadComponent,
-    AutoChipsComponent,
     MappingDialogComponent,
     ImportMotiveDialogComponent,
     PdfListComponent,
