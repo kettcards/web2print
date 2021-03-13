@@ -44,14 +44,6 @@ dependencies {
 	runtimeOnly 'org.hsqldb:hsqldb'
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 
-
-	//jwt
-	implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.2'
-
-	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.2'
-	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.2'
-
-
 	//pdf generator
 	implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.22'
 	implementation 'com.twelvemonkeys.imageio:imageio:3.6.2'
@@ -60,31 +52,22 @@ dependencies {
 	implementation group: 'de.rototor.pdfbox', name: 'graphics2d', version: '0.31'
 	implementation 'com.weblookandfeel:svg-salamander:1.1.2.2'
 
-
-
 	//table import
 	implementation group: 'org.apache.poi', name: 'poi', version: '4.1.2'
 	implementation group: 'org.apache.poi', name: 'poi-ooxml', version: '4.1.2'
 
-
 	//webjars
 	runtimeOnly group: 'org.webjars.bower', name: 'jquery', version: '3.5.1'
-
 
 	//dev
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	developmentOnly 'org.springframework.boot:spring-boot-starter-actuator'
 
-
 	//test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-	testImplementation 'org.testcontainers:junit-jupiter'
-	testImplementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '3.141.59'
-	testImplementation group: 'org.seleniumhq.selenium', name: 'selenium-firefox-driver', version: '3.141.59'
 	testImplementation group: 'org.apache.pdfbox', name: 'preflight', version: '2.0.22'
-	testImplementation 'com.github.romankh3:image-comparison:4.3.0'
 
 }
 
@@ -92,13 +75,8 @@ node {
 	version = '14.16.0'
 	distBaseUrl = 'https://nodejs.org/dist'
 	download = true
-	// Set the work directory for unpacking node
 	workDir = file(".gradle/nodejs")
-
-	// Set the work directory for NPM
-	npmWorkDir = file("${project.buildDir}/npm")
-
-	// Set the work directory where node_modules should be located
+	npmWorkDir = file(".gradle/npm")
 	nodeModulesDir = file("${project.projectDir}")
 }
 
@@ -147,6 +125,12 @@ task buildTs(type:Exec) {
 	standardOutput = System.out;
 }
 
+task buildTsStructDep(type: NpmTask) {
+	description = "Build Struct-Editor Dep"
+	workingDir = file("${project.projectDir}/src/ts_struct")
+	args = ['install']
+}
+
 task buildTsStruct(type: NpmTask) {
 	description = "Build Struct-Editor"
 	workingDir = file("${project.projectDir}/src/ts_struct")
@@ -156,6 +140,7 @@ task buildTsStruct(type: NpmTask) {
 
 build {
 	dependsOn buildTs
+	dependsOn buildTsStructDep
 	dependsOn buildTsStruct
 }
 
