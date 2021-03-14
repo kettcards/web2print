@@ -68,17 +68,17 @@ public class MotiveImportService extends StorageContextAware implements WebConte
         if (side == null) { // null side should be a pdf
             content.assertContentExtension(MediaTypeFileExtension.PDF);
             List<ByteArrayOutputStream> byteArrayOutputStreams = printPdfToImage(content.getInputStream(), getScaleFactor());
-            if (byteArrayOutputStreams.size() > 2 || byteArrayOutputStreams.isEmpty())
-                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Druckdatei hat ungültige Seitenanzahl:" +
-                        byteArrayOutputStreams.size());
-            var frontContent = new Content(new InMemoryResource(byteArrayOutputStreams.get(0).toByteArray()));
-            saveImageForCard(frontContent, cards, "FRONT", ".png");
-            if (byteArrayOutputStreams.size() > 1) {
-                var backContent = new Content(new InMemoryResource(byteArrayOutputStreams.get(1).toByteArray()));
-                saveImageForCard(backContent, cards, "BACK", ".png");
-            }
             //cleanup
             try {
+                if (byteArrayOutputStreams.size() > 2 || byteArrayOutputStreams.isEmpty())
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Druckdatei hat ungültige Seitenanzahl:" +
+                            byteArrayOutputStreams.size());
+                var frontContent = new Content(new InMemoryResource(byteArrayOutputStreams.get(0).toByteArray()));
+                saveImageForCard(frontContent, cards, "FRONT", ".png");
+                if (byteArrayOutputStreams.size() > 1) {
+                    var backContent = new Content(new InMemoryResource(byteArrayOutputStreams.get(1).toByteArray()));
+                    saveImageForCard(backContent, cards, "BACK", ".png");
+                }
                 for (ByteArrayOutputStream stream : byteArrayOutputStreams) {
                     stream.close();
                 }
