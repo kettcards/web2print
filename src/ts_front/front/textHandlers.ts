@@ -72,12 +72,11 @@ const hTxtKeyDown = function(e : JQuery.KeyDownEvent) {
     // (lucas 25.01.21) ctrl z
     // todo: dont just block it, resolve it properly
     e.preventDefault();
-  }else if(key === 9){
+  } else if(key === 9) {
     // tab
     e.preventDefault();
-    //inserting 4 non-breaking spaces
     document.execCommand('insertHTML', false, '&nbsp;&nbsp;&nbsp;&nbsp');
-  }else if(key >= 33 && key <= 34){
+  } else if(key >= 33 && key <= 34) {
     //page up and page down shifted the card which breaks the editor
     e.preventDefault();
   }
@@ -111,7 +110,7 @@ const hTxtKeyUp = function(e : JQuery.KeyUpEvent) {
     }
   }
 
-  if(key >= 33 && key <= 40) {
+  if(key >= 33 && key <= 40) {//33: pageUp, 34: pageDown, 35: end, 36: home, 37-40: arrow keys
     TextEl.displaySelectedProperties();
   }
 };
