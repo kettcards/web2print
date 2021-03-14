@@ -75,7 +75,7 @@ public final class LayoutStorageService extends StorageContextAware {
             var stream = new ByteArrayOutputStream();
             generate.save(stream);
             inMemPdf = stream.toByteArray();
-            fileName = save(new Content(new ByteArrayResource(inMemPdf), "application/pdf", "generated.pdf", Collections.emptyList()));
+            fileName = save(new Content(new ByteArrayResource(inMemPdf), "application/pdf", "generated.pdf"));
         }
 
         mailService.sendInternalMail(additionalData, new ByteArrayResource(inMemPdf), fileName);
