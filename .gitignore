@@ -119,5 +119,5 @@ src/main/resources/application-*Dev.properties
 /data/**
 !/data/fonts/**
 
-src/main/resources/front/front.js
-src/main/resources/struct/*
+src/main/resources/static/front/front.js
+src/main/resources/static/struct/*
