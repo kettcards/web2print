@@ -32,8 +32,24 @@ class TextEl {
 
     let fontFam  =  $(startEl).css('font-family');
     let fontSize = +$(startEl).css('font-size').slice(0, -2);
+    if(!Fonts.FontAttributeMap[fontFam][Fonts.FontStyleValues.b]){
+      Fonts.$boldBtn.prop('disabled', true);
+    } else {
+      Fonts.$boldBtn.prop('disabled', false);
+    }
+    if(!Fonts.FontAttributeMap[fontFam][Fonts.FontStyleValues.i]){
+      Fonts.$italicBtn.prop('disabled', true);
+    } else {
+      Fonts.$italicBtn.prop('disabled', false);
+    }
     for(let n = startEl;;){
       const nextFam  =  $(n).css('font-family');
+      if(!Fonts.FontAttributeMap[nextFam][Fonts.FontStyleValues.b]) {
+        Fonts.$boldBtn.prop('disabled', true);
+      }
+      if(!Fonts.FontAttributeMap[nextFam][Fonts.FontStyleValues.i]) {
+        Fonts.$italicBtn.prop('disabled', true);
+      }
       const nextSize = +$(n).css('font-size').slice(0, -2);
       if(fontFam !== nextFam) {
         fontFam = '';
@@ -62,7 +78,7 @@ const hTxtKeyDown = function(e : JQuery.KeyDownEvent) {
   const ev = e.originalEvent;
   const key = ev.keyCode;
 
-  if(Editor.state == EditorStates.EL_FOCUSED && key !== 46)
+  if(Editor.state == EditorStates.EL_FOCUSED && key !== 46) //key 46 is delete key
     Editor.state = EditorStates.TXT_EDITING;
   if(ev.shiftKey && key === 13) {
     // (lucas 25.01.21) shift return
@@ -71,6 +87,13 @@ const hTxtKeyDown = function(e : JQuery.KeyDownEvent) {
   } else if(ev.ctrlKey && key === 90) {
     // (lucas 25.01.21) ctrl z
     // todo: dont just block it, resolve it properly
+    e.preventDefault();
+  } else if(key === 9) {
+    // tab
+    e.preventDefault();
+    document.execCommand('insertHTML', false, '&nbsp;&nbsp;&nbsp;&nbsp');
+  } else if(key >= 33 && key <= 34) {
+    //page up and page down shifted the card which breaks the editor
     e.preventDefault();
   }
 };
@@ -103,7 +126,7 @@ const hTxtKeyUp = function(e : JQuery.KeyUpEvent) {
     }
   }
 
-  if((key >= 37 && key <= 40) || (key >= 33 && key <= 36)) {
+  if(key >= 33 && key <= 40) {//33: pageUp, 34: pageDown, 35: end, 36: home, 37-40: arrow keys
     TextEl.displaySelectedProperties();
   }
 };
@@ -162,6 +185,13 @@ const hFontChanged = function() {
   const range = getSel().getRangeAt(0);
   const fName = Fonts.currentSelection;
   makeNodesFromSelection(range, function(curr) {
-    $(curr).css('font-family', fName);
+    const cur = $(curr);
+    cur.css('font-family', fName);
+    if(!Fonts.FontAttributeMap[fName][Fonts.FontStyleValues.b]){
+      cur.removeClass('b');
+    }
+    if(!Fonts.FontAttributeMap[fName][Fonts.FontStyleValues.i]){
+      cur.removeClass('i');
+    }
   })
 };
