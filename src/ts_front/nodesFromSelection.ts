@@ -32,7 +32,7 @@ const getSelectedNodes = function (range: Range) : [Element, number, Element, nu
     } else if (range.endContainer.isA('P')) {
       console.assert(range.endContainer.childNodes.length > 0, 'there must be at least one child', range);
       endEl = range.endContainer.childNodes[range.endOffset - 1] as Element
-        || range.endContainer.previousSibling.childNodes[range.endContainer.childNodes.length - 1] as Element;
+        || range.endContainer.previousSibling.childNodes[range.endContainer.previousSibling.childNodes.length - 1] as Element;
       endOffs = endEl.textContent.length;
     } else if (range.endContainer.isA('SPAN')) {
       console.error('how did we get here', range);
