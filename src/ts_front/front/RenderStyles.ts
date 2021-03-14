@@ -157,8 +157,8 @@ const RenderStyles : RenderStyle[] = [{
     $page2[0].dataset.xOffset = String(w1);
 
     $page1.add($page2).children().css(Object.assign({
-      'background-image': 'url("'+web2print.links.textureUrl+card.texture.textureSlug+'")'
-    }, this.BgStretchObjs[card.texture.tiling]));
+      'background-image': 'url("'+web2print.links.materialUrl+card.material.textureSlug+'")'
+    }, this.BgStretchObjs[card.material.tiling]));
 
     let mFront, mBack;
     for(const motive of card.motive) {
