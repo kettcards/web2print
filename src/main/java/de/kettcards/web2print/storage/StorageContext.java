@@ -2,6 +2,8 @@ package de.kettcards.web2print.storage;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
+import java.util.function.Supplier;
 
 public interface StorageContext {
 
@@ -41,6 +43,13 @@ public interface StorageContext {
      */
     default boolean keepExtension() {
         return false;
+    }
+
+    /**
+     * @return the name generator for unspecified content
+     */
+    default Supplier<String> getNameGenerator() {
+        return () -> UUID.randomUUID().toString();
     }
 
 }

@@ -15,7 +15,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Supplier;
 
 @Slf4j
 @Service
@@ -92,4 +95,9 @@ public final class LayoutStorageService extends StorageContextAware {
         return true;
     }
 
+    @Override
+    public Supplier<String> getNameGenerator() {
+        var dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss");
+        return () -> LocalDate.now().format(dateFormat);
+    }
 }
