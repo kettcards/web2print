@@ -136,7 +136,7 @@ public class MotiveImportService extends StorageContextAware implements WebConte
         if (MediaTypeFileExtension.PDF.isValidFileExtension(extension)) {
             try {
                 var streams = printPdfToImage(content.getInputStream(), getScaleFactor());
-                if (streams.get(0) != null) {
+                if (!streams.isEmpty() && streams.get(0) != null) {
                     saveDefaultFormat(format, streams.get(0), "-front.png");
                 }
 
