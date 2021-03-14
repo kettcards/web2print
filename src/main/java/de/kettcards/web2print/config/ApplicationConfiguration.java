@@ -19,7 +19,7 @@ public class ApplicationConfiguration {
     @NestedConfigurationProperty
     private Page page;
 
-    @JsonView(Include.Api.class)
+    @JsonView(Include.Public.class)
     @NestedConfigurationProperty
     private EditorConfiguration editor;
 
@@ -55,10 +55,10 @@ public class ApplicationConfiguration {
     @Data
     public static class EditorConfiguration {
 
-        @JsonView(Include.Internal.class)
+        @JsonView(Include.Public.class)
         private DataSize maxFileSize;
 
-        @JsonView(Include.Internal.class)
+        @JsonView(Include.Public.class)
         private DataSize maxRequestSize;
 
     }

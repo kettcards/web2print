@@ -16,6 +16,7 @@ public class ConfigurationResourceSerializer extends JsonSerializer<ApplicationC
         gen.writeStartObject();
 
         ApplicationConfiguration.Link links = value.getLinks();
+        ApplicationConfiguration.EditorConfiguration config = value.getEditor();
         gen.writeFieldName("links");
         gen.writeStartObject();
         gen.writeStringField("basePath", links.getBasePath());
@@ -25,6 +26,14 @@ public class ConfigurationResourceSerializer extends JsonSerializer<ApplicationC
         gen.writeStringField("thumbnailUrl", links.getThumbnailUrl());
         gen.writeStringField("fontUrl", links.getFontUrl());
         gen.writeStringField("motiveUrl", links.getMotiveUrl());
+        gen.writeEndObject();
+
+        gen.writeFieldName("editorConfiguration");
+        gen.writeStartObject();
+
+        gen.writeNumberField("maxFileSize", config.getMaxFileSize().toMegabytes());
+        gen.writeNumberField("maxRequestSize", config.getMaxRequestSize().toMegabytes());
+
         gen.writeEndObject();
 
         gen.writeEndObject();
