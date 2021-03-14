@@ -9,12 +9,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebResourceConfiguration implements WebMvcConfigurer {
 
-    private final ApplicationConfiguration configuration;
-
     private final StoragePool storagePool;
 
-    public WebResourceConfiguration(ApplicationConfiguration configuration, StoragePool storagePool) {
-        this.configuration = configuration;
+    public WebResourceConfiguration(StoragePool storagePool) {
         this.storagePool = storagePool;
     }
 

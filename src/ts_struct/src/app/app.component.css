@@ -1,0 +1,31 @@
+.nav {
+  width: 90%;
+  margin: 1em auto 0;
+}
+.translate-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.import-list-item {
+  width: 100%;
+  display: table;
+  box-sizing: border-box;
+  margin: 2em 1em 0 0;
+}
+.import-list-item-content {
+  float: left;
+  display: table-cell;
+}
+.import-list-item-content-name {
+  width: 30%;
+}
+.import-list-item-action {
+  float: right;
+  display: table-cell;
+}
+.import-list-item-action {
+  padding: 1em 0 0em 0;
+}
+/*# sourceMappingURL=app.component.css.map */

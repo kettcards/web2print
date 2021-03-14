@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -110,7 +109,7 @@ public abstract class StoragePool {
      * @throws IOException if saving fails
      */
     public String save(StorageContext storageContext, Content content) throws IOException {
-        String contentName = UUID.randomUUID().toString();
+        String contentName = storageContext.getNameGenerator().get();
         if (storageContext.keepExtension()) {
             //try splitting
             var extension = "";

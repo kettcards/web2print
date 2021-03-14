@@ -1,0 +1,16 @@
+<div class="drop-control">
+  <ng-container *ngIf="list.length > 0">
+    <button *ngIf="showSubmitAll" mat-raised-button color="primary" (click)="submitAll.emit($event)">
+      <mat-icon>upload</mat-icon>
+      <span>Alle Hochladen</span>
+    </button>
+    <button *ngIf="showDeleteAll" mat-raised-button color="warn" (click)="deleteAll.emit($event)">
+      <mat-icon>delete</mat-icon>
+      <span>Alle Löschen</span>
+    </button>
+    <span class="max-hgrow"></span>
+    <button *ngIf="showClearSuccessful" mat-raised-button color="primary" (click)="clearSuccessful.emit($event)">
+      <span>Erfolgreiche Entfernen</span>
+    </button>
+  </ng-container>
+</div>

@@ -44,6 +44,17 @@ public class MediaTypeFileExtension {
             new String[]{"application/pdf"},
             new String[]{".pdf"});
 
-    private String[] contentTypes, fileExtensions;
+    public static final MediaTypeFileExtension XLSX = new MediaTypeFileExtension(
+            new String[]{"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
+            new String[]{".xlsx"});
+
+    String[] contentTypes, fileExtensions;
+
+    public boolean isValidFileExtension(String extension) {
+        for (String fileExtension : fileExtensions) {
+            if (fileExtension.equals(extension)) return true;
+        }
+        return false;
+    }
 
 }

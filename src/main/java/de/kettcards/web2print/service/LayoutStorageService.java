@@ -17,7 +17,10 @@ import javax.mail.MessagingException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Supplier;
 
 @Slf4j
 @Service
@@ -45,7 +48,7 @@ public final class LayoutStorageService extends StorageContextAware {
     public String storeCard(String storageId, String cardData) throws IOException {
         var constraints = new LinkedList<StorageConstraint>();
         //constraints.add(new MaxAgeConstraint(Period.ofMonths(1))); // (lucas 15.02.21) todo: implement maxAgeConstraint
-        var content = new Content(new InMemoryResource(cardData), "application/octet-stream", null, constraints);
+        var content = new Content(new InMemoryResource(cardData), "application/octet-stream", null);
         if(storageId == null) {
             return save(content);
         } else {
@@ -74,7 +77,7 @@ public final class LayoutStorageService extends StorageContextAware {
             var stream = new ByteArrayOutputStream();
             generate.save(stream);
             inMemPdf = stream.toByteArray();
-            fileName = save(new Content(new ByteArrayResource(inMemPdf), "application/pdf", "generated.pdf", Collections.emptyList()));
+            fileName = save(new Content(new ByteArrayResource(inMemPdf), "application/pdf", "generated.pdf"));
         }
 
         mailService.sendInternalMail(additionalData, new ByteArrayResource(inMemPdf), fileName);
@@ -106,4 +109,9 @@ public final class LayoutStorageService extends StorageContextAware {
         return true;
     }
 
+    @Override
+    public Supplier<String> getNameGenerator() {
+        var dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+        return () -> LocalDateTime.now().format(dateFormat);
+    }
 }
