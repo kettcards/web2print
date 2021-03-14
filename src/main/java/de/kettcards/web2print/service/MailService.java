@@ -1,15 +1,12 @@
 package de.kettcards.web2print.service;
 
 import de.kettcards.web2print.model.OrderFormData;
-import de.kettcards.web2print.storage.Content;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.apache.poi.openxml4j.opc.ContentTypes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import javax.mail.Address;
@@ -24,67 +21,67 @@ import java.util.Objects;
 @Slf4j
 @Service
 public class MailService {
-  @Autowired
-  private JavaMailSender mailer;
-  private final Address  senderAddr = new InternetAddress("noreply@kettcards.de", "Kettcards Automailer");
-  private final InternetAddress internalReceiverAddr;
+    @Autowired
+    private JavaMailSender mailer;
+    private final Address  senderAddr = new InternetAddress("noreply@kettcards.de", "Kettcards Automailer");
+    private final InternetAddress internalReceiverAddr;
 
-  private final String internalTemplate;
-  private final String     userTemplate;
+    private final String internalTemplate;
+    private final String     userTemplate;
 
 
-  @SneakyThrows(UnsupportedEncodingException.class)
-  public MailService() throws IOException, AddressException {
-    // (lucas 14.03.21) todo: load from external folder
-    try (var s = getClass().getClassLoader().getResourceAsStream("InternalTemplate.html")) {
-      internalTemplate = IOUtils.toString(s, String.valueOf(StandardCharsets.UTF_8));
-    }
-    try (var s = getClass().getClassLoader().getResourceAsStream("UserTemplate.html")) {
-      userTemplate = IOUtils.toString(s, String.valueOf(StandardCharsets.UTF_8));
-    }
-    // (lucas 14.03.21) todo: load from config file
-    internalReceiverAddr = new InternetAddress("lucas.broenner@gmail.com");
-  }
-
-  public void sendInternalMail(OrderFormData data, Resource pdf, String fileName) throws MessagingException {
-    var content = substituteTokens(internalTemplate, data)
-        .replace("${filename}", fileName);
-
-    var mail = prepareMail(internalReceiverAddr, "Neue Anfrage", content);
-
-    // (lucas 14.03.21) todo: find out why this does not work
-    //var helper = new MimeMessageHelper(mail, true);
-    //helper.addAttachment(fileName, pdf, "application/pdf");
-
-    mailer.send(mail);
-  }
-  public void sendUserMail(OrderFormData data) throws MessagingException {
-    var content = substituteTokens(userTemplate, data);
-
-    var mail = prepareMail(new InternetAddress(data.getEmail()), "Bestätigung der Anfrage", content);
-
-    mailer.send(mail);
-  }
-
-  private MimeMessage prepareMail(Address to, String subject, String content) throws MessagingException {
-    var mail = mailer.createMimeMessage();
-    mail.setFrom(senderAddr);
-    mail.setRecipient(Message.RecipientType.TO, to);
-    mail.setSubject(subject);
-    mail.setContent(content, "text/html; charset=UTF-8");
-
-   return mail;
-  }
-
-  @SneakyThrows(IllegalAccessException.class)
-  private String substituteTokens(String template, OrderFormData data) {
-    var ret = template;
-    for(var field : OrderFormData.class.getDeclaredFields()) {
-      field.setAccessible(true);
-
-      ret = ret.replace("${"+field.getName()+"}", Objects.toString(field.get(data), ""));
+    @SneakyThrows(UnsupportedEncodingException.class)
+    public MailService() throws IOException, AddressException {
+        // (lucas 14.03.21) todo: load from external folder
+        try (var s = getClass().getClassLoader().getResourceAsStream("InternalTemplate.html")) {
+            internalTemplate = IOUtils.toString(s, String.valueOf(StandardCharsets.UTF_8));
+        }
+        try (var s = getClass().getClassLoader().getResourceAsStream("UserTemplate.html")) {
+            userTemplate = IOUtils.toString(s, String.valueOf(StandardCharsets.UTF_8));
+        }
+        // (lucas 14.03.21) todo: load from config file
+        internalReceiverAddr = new InternetAddress("lucas.broenner@gmail.com");
     }
 
-    return ret;
-  }
+    public void sendInternalMail(OrderFormData data, Resource pdf, String fileName) throws MessagingException {
+        var content = substituteTokens(internalTemplate, data)
+            .replace("${filename}", fileName);
+
+        var mail = prepareMail(internalReceiverAddr, "Neue Anfrage", content);
+
+        // (lucas 14.03.21) todo: find out why this does not work
+        //var helper = new MimeMessageHelper(mail, true);
+        //helper.addAttachment(fileName, pdf, "application/pdf");
+
+        mailer.send(mail);
+    }
+    public void sendUserMail(OrderFormData data) throws MessagingException {
+        var content = substituteTokens(userTemplate, data);
+
+        var mail = prepareMail(new InternetAddress(data.getEmail()), "Bestätigung der Anfrage", content);
+
+        mailer.send(mail);
+    }
+
+    private MimeMessage prepareMail(Address to, String subject, String content) throws MessagingException {
+        var mail = mailer.createMimeMessage();
+        mail.setFrom(senderAddr);
+        mail.setRecipient(Message.RecipientType.TO, to);
+        mail.setSubject(subject);
+        mail.setContent(content, "text/html; charset=UTF-8");
+
+        return mail;
+    }
+
+    @SneakyThrows(IllegalAccessException.class)
+    private String substituteTokens(String template, OrderFormData data) {
+        var ret = template;
+        for(var field : OrderFormData.class.getDeclaredFields()) {
+            field.setAccessible(true);
+
+            ret = ret.replace("${"+field.getName()+"}", Objects.toString(field.get(data), ""));
+        }
+
+        return ret;
+    }
 }
