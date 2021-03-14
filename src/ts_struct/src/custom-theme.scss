@@ -25,6 +25,7 @@ $struct-theme: mat-light-theme((
     primary: $struct-primary,
     accent: $struct-accent,
     warn: $struct-warn,
+    accept: mat-palette($mat-green)
   )
 ));
 

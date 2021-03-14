@@ -15,7 +15,7 @@ export interface Web2Print {
     apiUrl : string;
   };
 }
-export declare const web2print: Web2Print;
+declare const web2print: Web2Print;
 
 @Injectable()
 export class Api {
