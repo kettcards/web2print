@@ -44,6 +44,7 @@ class Dialog {
       .then(function(fragmentTxt : string) {
         const doc = new DOMParser().parseFromString(fragmentTxt, "text/html");
         const $dialogInst = $(Dialog.template.content.cloneNode(true) as DocumentFragment);
+        this.$target = $($dialogInst[0].firstElementChild as HTMLDivElement);
 
         const lSlash = this.source.lastIndexOf('/') + 1;
         const fDot   = Math.min(this.source.indexOf('.', lSlash), this.source.length);
@@ -57,20 +58,22 @@ class Dialog {
         $dialogInst.find('.dialog-body' as JQuery.Selector).html(body.content);
 
         const ctrls = doc.getElementById('ctrls') as HTMLTemplateElement;
-        const $ctrlsContainer = $dialogInst.find('.dialog-ctrls' as JQuery.Selector);
+        const $ctrlsContainer = this._attach();
         if(ctrls)
           // JQ straight up breaks here
           $ctrlsContainer[0].insertBefore(ctrls.content, $ctrlsContainer[0].firstChild);
 
-        $ctrlsContainer.children('.close-btn').click(this.hide);
-
-        this.$target = $($dialogInst[0].firstElementChild as HTMLDivElement);
         Dialog.$blinds.append($dialogInst);
       }.bind(this))
       .catch(function(e) {
         console.error('dialog load', e);
         alert("A dialog could not be loaded!");
       });
+  }
+  protected _attach() : JQuery {
+    const $container = this.$target.find('.dialog-ctrls' as JQuery.Selector);
+    $container.children('.close-btn').click(this.hide);
+    return $container;
   }
 
   hide : () => void;
@@ -115,10 +118,56 @@ class LoadingDialog extends Dialog {
   }
 }
 
+class OrderDialog extends Dialog {
+  $reqFields : JQuery<HTMLInputElement>;
+  $submitBtn : JQuery;
+
+  constructor() {
+    super($('#order-dialog'));
+    const $ctrls = this._attach();
+    this.$target.find('form').submit(OrderDialog._submit);
+
+    this.$submitBtn = $ctrls.children('input[type="submit"]');
+    this.$reqFields = this.$target.find<HTMLInputElement>('input[required]' as JQuery.Selector)
+      .on('input', this._hFieldChanged.bind(this))
+      .after(make('span.req-marker', makeT('*')));
+  }
+
+  private _hFieldChanged() : void {
+    let disabled = false;
+    for(let i = 0; i < this.$reqFields.length; i++) {
+      if(this.$reqFields[i].value === '') {
+        disabled = true;
+        break;
+      }
+    }
+
+    this.$submitBtn.prop('disabled', disabled);
+  }
+
+  private static _submit(e : JQuery.SubmitEvent) : void {
+    e.preventDefault();
+
+    const form = e.target as HTMLFormElement;
+    if(!form.checkValidity()) {
+      alert("Bitte tragen Sie gültige Datein ein!");
+      return;
+    }
+
+    const array = $(e.target).serializeArray();
+    const data = {};
+    for(const entry of array) {
+      data[entry.name] = entry.value;
+    }
+    submit(true, data);
+  }
+}
+
 class Dialogs {
   static tutorial = new Dialog('./tutorial.frag.html');
   static dsgvo    = new Dialog('./dsgvo.frag.html');
   static loading  = new LoadingDialog();
+  static order    = new OrderDialog();
 }
 
 if(Cookie.getValue('tutorial') !== 'no') {
