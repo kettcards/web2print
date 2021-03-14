@@ -739,60 +739,81 @@ Editor.storage = {
     currentColor: "#000000",
     spawnBtn: undefined
 };
-class Overlay {
-}
-Overlay.tutorial = {
-    $container: $('<div style="visibility: hidden"></div>'),
-    isLoaded: false,
-    show() {
-        const This = Overlay.tutorial;
-        if (!This.isLoaded) {
-            This.$container.load('./tutorial.html', function () {
-                const center = $('#tutCenter');
-                $('#closeTut').css({
-                    top: center.offset().top,
-                    left: center.offset().left + center.outerWidth(),
-                });
-                const dontShowAgain = This.$container.find('#dont-show-again')[0];
-                dontShowAgain.checked = Cookie.getValue('tutorial') === 'no';
-                This.$container.find('button').click(function () {
-                    if (dontShowAgain.checked) {
-                        Cookie.set('tutorial', 'no');
-                    }
-                    else {
-                        Cookie.set('tutorial', 'yes');
-                    }
-                    This.$container.css('visibility', 'hidden');
-                });
-            });
-            $body.append(This.$container);
-            This.isLoaded = true;
-        }
-        This.$container.css('visibility', 'visible');
-    },
-};
-Overlay.dsgvo = {
-    $container: $('<div style="visibility: hidden"></div>'),
-    isLoaded: false,
-    show() {
-        const This = Overlay.dsgvo;
-        if (!This.isLoaded) {
-            This.$container.load('./datenschutzerklaerung.html', function () {
-                const center = $('#dsgvoCenter');
-                $('#closeDsgvo').css({
-                    top: center.offset().top,
-                    left: center.offset().left + center.outerWidth(),
-                });
-                This.$container.find('button').click(function () {
-                    This.$container.css('visibility', 'hidden');
-                });
-            });
-            $body.append(This.$container);
-            This.isLoaded = true;
-        }
-        This.$container.css('visibility', 'visible');
+class Dialog {
+    constructor(source) {
+        this.loaded = false;
+        this.source = source;
+        this.show = this._show.bind(this);
+        this.hide = this._hide.bind(this);
+        this.setVisible = this._setVisible.bind(this);
     }
-};
+    _show() {
+        const ads = Dialog.activeDialogs;
+        if (ads.length > 0) {
+            ads[ads.length - 1].setVisible(false);
+        }
+        else {
+            Dialog.$blinds.css('visibility', 'visible');
+        }
+        Dialog.activeDialogs.push(this);
+        if (!this.loaded) {
+            this._load().then(this._setVisible.bind(this, true));
+        }
+        else {
+            this._setVisible(true);
+        }
+    }
+    _load() {
+        return jQuery.get(this.source)
+            .then(function (fragmentTxt) {
+            const doc = new DOMParser().parseFromString(fragmentTxt, "text/html");
+            const $dialogInst = $(Dialog.template.content.cloneNode(true));
+            const lSlash = this.source.lastIndexOf('/') + 1;
+            const fDot = Math.min(this.source.indexOf('.', lSlash), this.source.length);
+            $dialogInst[0].firstElementChild.id = this.source.substr(lSlash, fDot - lSlash) + '-dialog';
+            const title = doc.getElementById('title');
+            if (title)
+                $dialogInst.find('.dialog-title').html(title.content);
+            const body = doc.getElementById('body');
+            $dialogInst.find('.dialog-body').html(body.content);
+            const ctrls = doc.getElementById('ctrls');
+            const $ctrlsContainer = $dialogInst.find('.dialog-ctrls');
+            if (ctrls)
+                $ctrlsContainer[0].insertBefore(ctrls.content, $ctrlsContainer[0].firstChild);
+            $ctrlsContainer.children('.close-btn').click(this.hide);
+            this.$target = $($dialogInst[0].firstElementChild);
+            Dialog.$blinds.append($dialogInst);
+        }.bind(this))
+            .catch(function (e) {
+            console.error('dialog load', e);
+            alert("A dialog could not be loaded!");
+        });
+    }
+    _hide() {
+        this._setVisible(false);
+        const ads = Dialog.activeDialogs;
+        ads.pop();
+        if (ads.length > 0) {
+            ads[ads.length - 1].setVisible(true);
+        }
+        else {
+            Dialog.$blinds.css('visibility', 'collapse');
+        }
+    }
+    _setVisible(visible) {
+        this.$target.css('visibility', visible ? 'visible' : 'collapse');
+    }
+}
+Dialog.$blinds = $('#overlay-blinds');
+Dialog.template = get('dialog-tmpl');
+Dialog.activeDialogs = [];
+class Dialogs {
+}
+Dialogs.tutorial = new Dialog('./tutorial.frag.html');
+Dialogs.dsgvo = new Dialog('./dsgvo.frag.html');
+if (Cookie.getValue('tutorial') !== 'no') {
+    Dialogs.tutorial.show();
+}
 const Elements = {
     TEXT: {
         displayName: 'Text',
@@ -1001,8 +1022,26 @@ class TextEl {
         const [startEl, _, endEl, __] = getSelectedNodes(getSel().getRangeAt(0));
         let fontFam = $(startEl).css('font-family');
         let fontSize = +$(startEl).css('font-size').slice(0, -2);
+        if (!Fonts.FontAttributeMap[fontFam][1]) {
+            Fonts.$boldBtn.prop('disabled', true);
+        }
+        else {
+            Fonts.$boldBtn.prop('disabled', false);
+        }
+        if (!Fonts.FontAttributeMap[fontFam][Fonts.FontStyleValues.i]) {
+            Fonts.$italicBtn.prop('disabled', true);
+        }
+        else {
+            Fonts.$italicBtn.prop('disabled', false);
+        }
         for (let n = startEl;;) {
             const nextFam = $(n).css('font-family');
+            if (!Fonts.FontAttributeMap[nextFam][1]) {
+                Fonts.$boldBtn.prop('disabled', true);
+            }
+            if (!Fonts.FontAttributeMap[nextFam][Fonts.FontStyleValues.i]) {
+                Fonts.$italicBtn.prop('disabled', true);
+            }
             const nextSize = +$(n).css('font-size').slice(0, -2);
             if (fontFam !== nextFam) {
                 fontFam = '';
@@ -1073,7 +1112,14 @@ const hFontChanged = function () {
     const range = getSel().getRangeAt(0);
     const fName = Fonts.currentSelection;
     makeNodesFromSelection(range, function (curr) {
-        $(curr).css('font-family', fName);
+        const cur = $(curr);
+        cur.css('font-family', fName);
+        if (!Fonts.FontAttributeMap[fName][1]) {
+            cur.removeClass('b');
+        }
+        if (!Fonts.FontAttributeMap[fName][Fonts.FontStyleValues.i]) {
+            cur.removeClass('i');
+        }
     });
 };
 class ImageEl {
@@ -1123,7 +1169,8 @@ function hFileUploadChanged(e) {
         Editor.storage.addOnClick = undefined;
         $fileUpBtn.val(null);
         console.error('failed to fetch xhr', e);
-        alert("Die ausgewählte Datei konnte nicht hochgeladen werden.\nBitte stellen Sie sicher, dass das Dateiformat: .jpg,.jpeg,.png,.svg ist \nund die Dateigröße nicht 10MB überschreitet.");
+        alert("Die ausgewählte Datei konnte nicht hochgeladen werden.\nBitte stellen Sie sicher, dass das Dateiformat:" +
+            " .jpg,.jpeg,.png,.svg ist \nund die Dateigröße nicht " + web2print.editorConfiguration.maxFileSize + "MB überschreitet.");
     });
 }
 const xhrProvider = function () {
@@ -1160,6 +1207,8 @@ const Fonts = {
     defaultFont: undefined,
     $options: $('#font-options'),
     $label: $('#font-label'),
+    $boldBtn: $('.fontTypeButton[value=b]'),
+    $italicBtn: $('.fontTypeButton[value=i]'),
     currentSelection: undefined,
     FontStyleValues: {
         b: 0b001,
@@ -1212,6 +1261,20 @@ const Fonts = {
     displaySelected() {
         const fName = Fonts.currentSelection;
         Fonts.$label.text(fName).css('font-family', fName);
+    },
+    checkFontTypes() {
+        if (!Fonts.FontAttributeMap[Fonts.currentSelection][1]) {
+            Fonts.$boldBtn.prop('disabled', true);
+        }
+        else {
+            Fonts.$boldBtn.prop('disabled', false);
+        }
+        if (!Fonts.FontAttributeMap[Fonts.currentSelection][Fonts.FontStyleValues.i]) {
+            Fonts.$italicBtn.prop('disabled', true);
+        }
+        else {
+            Fonts.$italicBtn.prop('disabled', false);
+        }
     }
 };
 function submit(_export) {
@@ -1888,11 +1951,6 @@ $('#save-btn').click(function () {
 });
 const saveSelect = new SelectEx($('#save-select-ex'));
 saveSelect.value = 'Server';
-$('#tutorial').click(Overlay.tutorial.show);
-if (Cookie.getValue('tutorial') !== 'no') {
-    Overlay.tutorial.show();
-}
-$('#dsgvo-btn').click(Overlay.dsgvo.show);
 $('#del-btn')
     .mouseup(stopPropagation)
     .click(function () {
@@ -1931,6 +1989,7 @@ Fonts.$options
         return;
     Fonts.currentSelection = e.target.textContent;
     Fonts.displaySelected();
+    Fonts.checkFontTypes();
     Editor.loadSelection();
     hFontChanged();
 });
