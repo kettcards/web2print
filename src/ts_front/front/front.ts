@@ -60,7 +60,7 @@ const hSpawnElBtnClick = function(e : ClickEvent, id : string) {
   if(Editor.storage.spawnBtn)
     Editor.storage.spawnBtn.removeClass('active');
 
-  const $toggledBtn = $(e.target);
+  const $toggledBtn = $<HTMLButtonElement>(e.target);
   Editor.storage.spawnBtn = $toggledBtn;
   $toggledBtn.addClass('active');
 
