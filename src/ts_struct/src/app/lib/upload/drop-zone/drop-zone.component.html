@@ -1,0 +1,19 @@
+<!-- drop zone for files -->
+<div class="upload-drop-area"
+     [style.background-color]="dropBackground"
+     (dragenter)="onDragEnter()"
+     (dragleave)="onDragLeave()"
+     (dragover)="onDragOver($event)"
+     (drop)="onDrop($event)">
+  <div class="upload-drop-area-content" *ngIf="dropBackground!=dropBackgroundActive; else awaitDrop">
+    <h3>{{dropPromptText}}</h3>
+    <ng-container *ngIf="enableSelectionButton">
+      <h4>oder</h4>
+      <button mat-raised-button color="primary" (click)="sectionDialog.click()">Datei Auswählen</button>
+      <input type="file" hidden #sectionDialog (change)="onFileSelected($event)"/>
+    </ng-container>
+  </div>
+  <ng-template class="upload-drop-area-content" #awaitDrop>
+    <h2>Loslassen zum hinzufügen</h2>
+  </ng-template>
+</div>

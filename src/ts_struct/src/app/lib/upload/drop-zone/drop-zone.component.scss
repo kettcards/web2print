@@ -1,0 +1,15 @@
+.upload-drop-area {
+  position: relative;
+  height: 10em;
+  text-align: center;
+  border: dashed 1px #979797;
+  border-radius: 1em;
+  padding: 1em;
+}
+
+.upload-drop-area-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%)
+}

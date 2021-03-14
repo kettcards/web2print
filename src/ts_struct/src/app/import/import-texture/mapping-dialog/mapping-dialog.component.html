@@ -1,0 +1,20 @@
+<h3 mat-dialog-title>{{data.selected.file.name}} zuweisen</h3>
+<div mat-dialog-content>
+  <mat-form-field appearance="fill">
+    <mat-label>Kartenformat</mat-label>
+    <mat-select [(value)]="selected">
+      <mat-option [value]="undefined">--</mat-option>
+      <mat-option [value]="texture" *ngFor="let texture of data.options">
+        <span *ngIf="texture.id!=undefined">{{texture.id + ' : '}}</span>
+        <span *ngIf="texture.name!=undefined; else isUndefined">{{texture.name}}</span>
+        <ng-template #isUndefined>
+          <span><i>(Namenlos)</i></span>
+        </ng-template>
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-raised-button color="accent" (click)="onCancel()">Abbrechen</button>
+  <button mat-raised-button color="primary" [mat-dialog-close]="selected">Übernehmen</button>
+</div>

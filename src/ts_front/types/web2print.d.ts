@@ -3,7 +3,7 @@ declare interface Web2print {
         basePath : string;
 
     thumbnailUrl : string;
-     materialUrl : string;
+      textureUrl : string;
        motiveUrl : string;
          fontUrl : string;
           apiUrl : string;

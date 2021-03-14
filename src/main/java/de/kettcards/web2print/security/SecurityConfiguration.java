@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -53,7 +54,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 //TODO enable csrf, unlikely that its necessary,
                 // however we still embedding content that's pointing to external resources
                 .csrf().disable()
-                .cors().disable() //TODO enable cors
+                .cors(Customizer.withDefaults())
                 .authorizeRequests()
                 //specify resources that dont need authentication
                 .antMatchers(HttpMethod.GET, "/define.js", "/tileview/**", "/front/**", "/fonts/**", "/textures/**").permitAll();
@@ -119,6 +120,5 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected org.springframework.security.authentication.AuthenticationManager getAuthenticationManager() throws Exception {
         return authenticationManager();
     }
-
 
 }

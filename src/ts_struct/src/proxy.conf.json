@@ -1,0 +1,14 @@
+{
+  "/define.js": {
+    "target": "http://localhost:8080/web2print",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/web2print/api/*": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  }
+}

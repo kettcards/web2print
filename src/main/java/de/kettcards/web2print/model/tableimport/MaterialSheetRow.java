@@ -1,6 +1,6 @@
 package de.kettcards.web2print.model.tableimport;
 
-import de.kettcards.web2print.model.db.Material;
+import de.kettcards.web2print.model.db.Texture;
 import de.kettcards.web2print.model.db.VirtualId;
 import lombok.AllArgsConstructor;
 import lombok.Value;
@@ -40,8 +40,8 @@ public final class MaterialSheetRow implements VirtualId {
         return data;
     }
 
-    public Material toMaterial() {
-        var material = new Material();
+    public Texture toMaterial() {
+        var material = new Texture();
         material.setName(name);
         material.setTiling("stretch");
         return material;

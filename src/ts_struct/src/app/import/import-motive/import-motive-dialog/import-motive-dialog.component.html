@@ -1,0 +1,27 @@
+<h3 mat-dialog-title>Zuweisung für {{data.motive.file.name}}</h3>
+<div mat-dialog-content>
+  <mat-form-field class="import-chip-map">
+    <mat-chip-list #chipList>
+      <mat-chip *ngFor="let card of result.assignedCards"
+                [removable]="true" (removed)="remove(card)">
+        {{card}}
+        <mat-icon matChipRemove>cancel</mat-icon>
+      </mat-chip>
+      <input placeholder="Weitere Karten zuweisen..."
+             [matChipInputFor]="chipList"
+             [matChipInputSeparatorKeyCodes]="spaceKeyCodes"
+             (matChipInputTokenEnd)="assign($event)">
+    </mat-chip-list>
+  </mat-form-field>
+  <mat-form-field *ngIf="result.side !== undefined" appearance="fill">
+    <mat-label>Kartenformat</mat-label>
+    <mat-select [(value)]="result.side">
+      <mat-option [value]="Side.FRONT">Vorderseite</mat-option>
+      <mat-option [value]="Side.BACK">Hinterseite</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+  <button mat-raised-button color="accent" (click)="onCancel()">Abbrechen</button>
+  <button mat-raised-button color="primary" [mat-dialog-close]="result">Übernehmen</button>
+</div>
