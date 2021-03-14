@@ -43,7 +43,7 @@ public final class LayoutStorageService extends StorageContextAware {
     public String storeCard(String storageId, String cardData) throws IOException {
         var constraints = new LinkedList<StorageConstraint>();
         //constraints.add(new MaxAgeConstraint(Period.ofMonths(1))); // (lucas 15.02.21) todo: implement maxAgeConstraint
-        var content = new Content(new InMemoryResource(cardData), "application/octet-stream", null, constraints);
+        var content = new Content(new InMemoryResource(cardData), "application/octet-stream", null);
         if(storageId == null) {
             return save(content);
         } else {
@@ -79,7 +79,7 @@ public final class LayoutStorageService extends StorageContextAware {
         try (PDDocument generate = generator.generate(cardData)) {
             var stream = new ByteArrayOutputStream();
             generate.save(stream);
-            save(new Content(new InMemoryResource(stream.toByteArray()), "application/pdf", "generated.pdf", Collections.emptyList()));
+            save(new Content(new InMemoryResource(stream.toByteArray()), "application/pdf", "generated.pdf"));
 
         }
 
