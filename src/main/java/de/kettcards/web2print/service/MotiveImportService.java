@@ -82,14 +82,16 @@ public class MotiveImportService extends StorageContextAware implements WebConte
 
             } finally {
                 //cleanup
-                try {
-                    for (ByteArrayOutputStream stream : byteArrayOutputStreams) {
+
+                for (ByteArrayOutputStream stream : byteArrayOutputStreams) {
+                    try {
                         stream.close();
+                    } catch (IOException ex) { //should never happen
+                        log.debug("failed to close image stream:" + ex.getMessage(), ex.getCause());
                     }
-                } catch (IOException ex) { //should never happen
-                    log.debug("failed to close image stream:" + ex.getMessage(), ex.getCause());
                 }
             }
+
         } else { // assume that it's a png, jpg
             if (!(side.equals("FRONT") || side.equals("BACK")))
                 throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "unngültige Seitenangabe: " + side);
