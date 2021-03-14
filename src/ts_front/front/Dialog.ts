@@ -5,18 +5,25 @@ class Dialog {
 
   source  : string;
   loaded  : boolean = false;
+  visible : boolean = false;
 
   $target : JQuery;
 
-  constructor(source : string) {
-    this.source     = source;
+  constructor(source : string | JQuery) {
+    if(typeof(source) == "string")
+      this.source = source;
+    else {
+      this.loaded  = true;
+      this.$target = source;
+    }
+
     this.show       = this._show.bind(this);
     this.hide       = this._hide.bind(this);
     this.setVisible = this._setVisible.bind(this);
   }
 
   show : () => void;
-  private _show() : void {
+  protected _show() : void {
     const ads = Dialog.activeDialogs;
     if(ads.length > 0) {
       ads[ads.length - 1].setVisible(false);
@@ -30,6 +37,7 @@ class Dialog {
     } else {
       this._setVisible(true);
     }
+    this.visible = true;
   }
   private _load() {
     return jQuery.get(this.source)
@@ -56,7 +64,6 @@ class Dialog {
 
         $ctrlsContainer.children('.close-btn').click(this.hide);
 
-
         this.$target = $($dialogInst[0].firstElementChild as HTMLDivElement);
         Dialog.$blinds.append($dialogInst);
       }.bind(this))
@@ -68,6 +75,9 @@ class Dialog {
 
   hide : () => void;
   private _hide() {
+    if(!this.visible)
+      return;
+
     this._setVisible(false);
     const ads = Dialog.activeDialogs;
     ads.pop();
@@ -84,9 +94,31 @@ class Dialog {
   }
 }
 
+class LoadingDialog extends Dialog {
+  private $bar = $<HTMLProgressElement>('#loading-prog');
+
+  constructor() {
+    super($('#loading-dialog'));
+    this.show   = this._show.bind(this);
+    this.setVal = this._setVal.bind(this);
+  }
+
+  show : () => void;
+  protected _show() : void {
+    this.$bar.val(0);
+    super._show();
+  }
+
+  setVal : (val : number) => void;
+  private _setVal(val : number) : void {
+    this.$bar.val(val);
+  }
+}
+
 class Dialogs {
   static tutorial = new Dialog('./tutorial.frag.html');
   static dsgvo    = new Dialog('./dsgvo.frag.html');
+  static loading  = new LoadingDialog();
 }
 
 if(Cookie.getValue('tutorial') !== 'no') {

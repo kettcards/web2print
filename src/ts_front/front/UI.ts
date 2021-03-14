@@ -3,15 +3,13 @@
 /// <reference path="./textHandlers.ts" />
 {
   const $addBtnContainer = $('#add-el-btns');
-  for(const [k, v] of Object.entries(Elements)) {
-    $addBtnContainer.append($(`<button class="addElBtn" onclick="{
-      const $toggledBtn = $(this);
-      if(Editor.storage.spawnBtn) Editor.storage.spawnBtn.toggleClass('active');
-      Editor.storage.spawnBtn = $toggledBtn;
-      spawnNewEl('${k}');
-      $toggledBtn.toggleClass('active');
-    }">${v.displayName}</button>`));
+  for(const el of Elements) {
+    $addBtnContainer.append($(`<button class="addElBtn" onclick="hSpawnElBtnClick(event, '${el.serializedType}');">${el.displayName}</button>`));
   }
+}
+
+class UI {
+  static $fileUpBtn = $<HTMLInputElement>('#fileUpload').change(ImageEl.hFileUploadChanged);
 }
 
 $("#logoRotation").change(function(e){
