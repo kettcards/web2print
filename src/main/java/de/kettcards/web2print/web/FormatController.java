@@ -14,18 +14,18 @@ public final class FormatController {
     @Autowired
     private CardService cardService;
 
-    @GetMapping({"/aspectRatio", "/format"})
+    @GetMapping( "/format")
     public List<CardFormat> getRatio() {
         return cardService.listCardFormats();
     }
 
-    @PostMapping({"/aspectRatio" , "/format"})
+    @PostMapping("/format")
     public void addRatio(@RequestBody CardFormat cardFormat) {
         cardService.updateCardFormat(cardFormat);
     }
 
 
-    @GetMapping({"/aspectRatio/{id}", "/format/{id}"})
+    @GetMapping("/format/{id}")
     public CardFormat getRatios(@PathVariable Integer id) {
         return cardService.findCardFormat(id);
     }
