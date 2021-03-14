@@ -68,8 +68,8 @@ public class MotiveImportService extends StorageContextAware implements WebConte
         if (side == null) { // null side should be a pdf
             content.assertContentExtension(MediaTypeFileExtension.PDF);
             List<ByteArrayOutputStream> byteArrayOutputStreams = printPdfToImage(content.getInputStream(), getScaleFactor());
-            //cleanup
             try {
+
                 if (byteArrayOutputStreams.size() > 2 || byteArrayOutputStreams.isEmpty())
                     throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Druckdatei hat ungültige Seitenanzahl:" +
                             byteArrayOutputStreams.size());
@@ -79,11 +79,16 @@ public class MotiveImportService extends StorageContextAware implements WebConte
                     var backContent = new Content(new InMemoryResource(byteArrayOutputStreams.get(1).toByteArray()));
                     saveImageForCard(backContent, cards, "BACK", ".png");
                 }
-                for (ByteArrayOutputStream stream : byteArrayOutputStreams) {
-                    stream.close();
+
+            } finally {
+                //cleanup
+                try {
+                    for (ByteArrayOutputStream stream : byteArrayOutputStreams) {
+                        stream.close();
+                    }
+                } catch (IOException ex) { //should never happen
+                    log.debug("failed to close image stream:" + ex.getMessage(), ex.getCause());
                 }
-            } catch (IOException ex) { //should never happen
-                log.debug("failed to close image stream:" + ex.getMessage(), ex.getCause());
             }
         } else { // assume that it's a png, jpg
             if (!(side.equals("FRONT") || side.equals("BACK")))
