@@ -82,7 +82,6 @@ public class MotiveImportService extends StorageContextAware implements WebConte
 
             } finally {
                 //cleanup
-
                 for (ByteArrayOutputStream stream : byteArrayOutputStreams) {
                     try {
                         stream.close();
