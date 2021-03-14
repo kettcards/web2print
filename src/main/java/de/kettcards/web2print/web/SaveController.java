@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -19,13 +20,15 @@ public final class SaveController {
     private LayoutStorageService storageService;
 
     @PostMapping(value = {"/save/", "/save/{storageId}"})
-    public String save(@PathVariable(required = false) String storageId,
-                     @RequestParam String export,
-                     @RequestParam("data") String cardData)
-            throws IOException, ParseException {
+    public String save(
+        @PathVariable(required = false) String storageId,
+        @RequestParam                   String export,
+        @RequestParam("data")           String cardData,
+        @RequestParam("form")           String additionalData
+    ) throws IOException, ParseException, MessagingException {
         storageId = storageService.storeCard(storageId, cardData);
         if (export.equals("true"))
-            storageService.exportCard(cardData);
+            storageService.exportCard(cardData, additionalData);
         return storageId;
     }
 

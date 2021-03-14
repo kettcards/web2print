@@ -154,7 +154,12 @@ class OrderDialog extends Dialog {
       return;
     }
 
-    submit(true, $(e.target).serializeArray());
+    const array = $(e.target).serializeArray();
+    const data = {};
+    for(const entry of array) {
+      data[entry.name] = entry.value;
+    }
+    submit(true, data);
   }
 }
 
