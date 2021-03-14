@@ -32,14 +32,22 @@ class TextEl {
 
     let fontFam  =  $(startEl).css('font-family');
     let fontSize = +$(startEl).css('font-size').slice(0, -2);
-    Fonts.$boldBtn.prop('disabled', false);
-    Fonts.$italicBtn.prop('disabled', false);
+    if(!Fonts.FontAttributeMap[fontFam][Fonts.FontStyleValues.b]){
+      Fonts.$boldBtn.prop('disabled', true);
+    } else {
+      Fonts.$boldBtn.prop('disabled', false);
+    }
+    if(!Fonts.FontAttributeMap[fontFam][Fonts.FontStyleValues.i]){
+      Fonts.$italicBtn.prop('disabled', true);
+    } else {
+      Fonts.$italicBtn.prop('disabled', false);
+    }
     for(let n = startEl;;){
       const nextFam  =  $(n).css('font-family');
-      if(!Fonts.FontAttributeMap[nextFam][1]) {
+      if(!Fonts.FontAttributeMap[nextFam][Fonts.FontStyleValues.b]) {
         Fonts.$boldBtn.prop('disabled', true);
       }
-      if(!Fonts.FontAttributeMap[nextFam][2]) {
+      if(!Fonts.FontAttributeMap[nextFam][Fonts.FontStyleValues.i]) {
         Fonts.$italicBtn.prop('disabled', true);
       }
       const nextSize = +$(n).css('font-size').slice(0, -2);
@@ -172,10 +180,10 @@ const hFontChanged = function() {
   makeNodesFromSelection(range, function(curr) {
     const cur = $(curr);
     cur.css('font-family', fName);
-    if(!Fonts.FontAttributeMap[fName][1]){//font has no bold
+    if(!Fonts.FontAttributeMap[fName][Fonts.FontStyleValues.b]){
       cur.removeClass('b');
     }
-    if(!Fonts.FontAttributeMap[fName][2]){//font has no italic
+    if(!Fonts.FontAttributeMap[fName][Fonts.FontStyleValues.i]){
       cur.removeClass('i');
     }
   })

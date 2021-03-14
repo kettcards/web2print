@@ -96,12 +96,12 @@ const Fonts = {
     Fonts.$label.text(fName).css('font-family', fName);
   },
   checkFontTypes() {
-    if(!Fonts.FontAttributeMap[Fonts.currentSelection][1]) {
+    if(!Fonts.FontAttributeMap[Fonts.currentSelection][Fonts.FontStyleValues.b]) {
       Fonts.$boldBtn.prop('disabled', true);
     } else {
       Fonts.$boldBtn.prop('disabled', false);
     }
-    if(!Fonts.FontAttributeMap[Fonts.currentSelection][2]) {
+    if(!Fonts.FontAttributeMap[Fonts.currentSelection][Fonts.FontStyleValues.i]) {
       Fonts.$italicBtn.prop('disabled', true);
     } else {
       Fonts.$italicBtn.prop('disabled', false);
