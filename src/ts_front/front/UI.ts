@@ -4,7 +4,7 @@
 {
   const $addBtnContainer = $('#add-el-btns');
   for(const [i, el] of Object.entries(ElementMap)) {
-    $addBtnContainer.append($(`<button class="addElBtn" onclick="hSpawnElBtnClick(${i});">${el.displayName}</button>`));
+    $addBtnContainer.append($(`<button class="addElBtn" onclick="hSpawnElBtnClick(event,'${i}');">${el.displayName}</button>`));
   }
 }
 

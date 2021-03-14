@@ -1,5 +1,7 @@
 'use strict';
 
+import ClickEvent = JQuery.ClickEvent;
+
 const $cardContainer = $('#card-container')
 const rsContainer = get('render-styles-container');
 const $navDotsUl  = $('.floater.bottom>ul');
@@ -54,15 +56,15 @@ const hElementsLayerClick = function(e : MouseEvent, target : Node) {
   Editor.storage.addOnClick = undefined;
 };
 
-const hSpawnElBtnClick = function(id : string) {
+const hSpawnElBtnClick = function(e : ClickEvent, id : string) {
   if(Editor.storage.spawnBtn)
     Editor.storage.spawnBtn.removeClass('active');
 
-  const $toggledBtn = $(this);
+  const $toggledBtn = $(e.target);
   Editor.storage.spawnBtn = $toggledBtn;
   $toggledBtn.addClass('active');
 
-  Editor.storage.addOnClick = [Elements[id].getSpawner(), id];
+  Editor.storage.addOnClick = [ElementMap[id].getSpawner(), id];
 }
 
 const hChangeFontType = function() {
