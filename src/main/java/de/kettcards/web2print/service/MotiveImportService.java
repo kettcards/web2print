@@ -171,11 +171,13 @@ public class MotiveImportService extends StorageContextAware implements WebConte
      * @param inputStream pdf input
      * @param scaleFactor scale factor for image resolution
      * @return list of images (as stream) in png format for each page
-     * @throws IOException
+     * @throws IOException if pdf has more than 2 pages or pdf is not readable
      */
     public List<ByteArrayOutputStream> printPdfToImage(InputStream inputStream, float scaleFactor) throws IOException {
         var listOut = new LinkedList<ByteArrayOutputStream>();
         try (PDDocument document = PDDocument.load(inputStream)) {
+            if (document.getNumberOfPages() > 2)
+                throw new IOException("PDF hat zu viele Seiten: " + document.getNumberOfPages());
             for (int i = 0; i < document.getNumberOfPages(); i++) {
                 PDPage page = document.getPage(i);
                 page.setMediaBox(page.getTrimBox());
