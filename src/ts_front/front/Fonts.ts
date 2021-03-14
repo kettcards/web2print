@@ -4,6 +4,8 @@ interface FontsObj {
   FontNames   : string[];
   $options    : JQuery;
   $label      : JQuery;
+  $boldBtn    : JQuery;
+  $italicBtn  : JQuery;
   currentSelection  : string;
   loadFonts(fontNames : string[]);
   FontStyleValues  : { [p: string]: number; };
@@ -31,6 +33,8 @@ const Fonts = {
   defaultFont: undefined,
   $options: $('#font-options'),
   $label: $('#font-label'),
+  $boldBtn: $('.fontTypeButton[value=b]'),
+  $italicBtn: $('.fontTypeButton[value=i]'),
   currentSelection: undefined,
   FontStyleValues: {
     b: 0b001,
@@ -87,18 +91,17 @@ const Fonts = {
   },
   displaySelected() {
     const fName = Fonts.currentSelection;
-    const boldBtn = $('.fontTypeButton[value=b]');
-    const italicBtn = $('.fontTypeButton[value=i]');
-    boldBtn.css('visibility', 'visible');
-    italicBtn.css('visibility', 'visible');
+
     Fonts.$label.text(fName).css('font-family', fName);
-    if(fName === "" || !Fonts.FontAttributeMap[fName][1]){
-      console.log('no bold');
-      boldBtn.css('visibility', 'hidden');
+    if(!fName || !Fonts.FontAttributeMap[fName][1]) {
+      Fonts.$boldBtn.prop('disabled', true);
+    } else {
+      Fonts.$boldBtn.prop('disabled', false);
     }
-    if(fName === "" || !Fonts.FontAttributeMap[fName][2]){
-      console.log('no italic');
-      italicBtn.css('visibility', 'hidden');
+    if(!fName || !Fonts.FontAttributeMap[fName][2]) {
+      Fonts.$italicBtn.prop('disabled', true);
+    } else {
+      Fonts.$italicBtn.prop('disabled', false);
     }
   }
 } as FontsObj;
