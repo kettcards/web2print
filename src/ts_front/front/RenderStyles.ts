@@ -86,12 +86,41 @@ const RenderStyles : RenderStyle[] = [{
 
     //intrinsic colliders
     $bundle.find('.colliders-layer' as JQuery.Selector)
-      .append(make('div.intrinsic.top')   )
-      .append(make('div.intrinsic.right') )
-      .append(make('div.intrinsic.bottom'))
-      .append(make('div.intrinsic.left')  );
+      .append(
+        make('div.intrinsic.top'),
+        make('div.intrinsic.right'),
+        make('div.intrinsic.bottom'),
+        make('div.intrinsic.left'),
+      );
+
+    // (lucas) this only exists because you can't move move elements across pages in the foldable view
+    // and should be removed if the issue is ever resolved
+    // (markus) this only works if there is exactly one vertical or horizontal fold
+    if(lineDefs[0].dir === 'v')
+      $bundle.find('.colliders-layer' as JQuery.Selector).
+        append($(make('div')).css({
+          left  : "calc(50% - 5mm)",
+          width : "10mm",
+          top   : "-50mm",
+          height: "calc(100% + 100mm)",
+        }));
+    else if(lineDefs[0].dir === 'h')
+      $bundle.find('.colliders-layer' as JQuery.Selector).
+      append($(make('div')).css({
+        left  : "-50mm",
+        width : "calc(100% + 100mm)",
+        top   : "calc(50% - 5mm)",
+        height: "10mm",
+      }));
+
+    // (lucas 12.03.21) todo: this should be generated from geometry data from the server
     $bundle.find('.front>.colliders-layer' as JQuery.Selector)
-      .append(make('div.intrinsic.front'));
+      .append($(make('div')).css({
+        left  : "-50mm",
+        width : "calc(100% + 100mm)",
+        top   : "-50mm",
+        height: "calc(100% + 100mm)",
+      }));
 
 
     this.data.rot     = 0;
@@ -156,7 +185,9 @@ const RenderStyles : RenderStyle[] = [{
     });
     $page2[0].dataset.xOffset = String(w1);
 
-    $page1.add($page2).children().css(Object.assign({
+    const $both = $page1.add($page2);
+
+    $both.children().css(Object.assign({
       'background-image': 'url("'+web2print.links.materialUrl+card.material.textureSlug+'")'
     }, this.BgStretchObjs[card.material.tiling]));
 
@@ -180,7 +211,7 @@ const RenderStyles : RenderStyle[] = [{
     }
 
     //intrinsic colliders
-    $page1.add($page2).find('.colliders-layer' as JQuery.Selector)
+    $both.find('.colliders-layer' as JQuery.Selector)
       .append(make('div.intrinsic.top')   )
       .append(make('div.intrinsic.bottom'));
     const $rightInnerCollider = $(make('div')).css({
@@ -208,10 +239,15 @@ const RenderStyles : RenderStyle[] = [{
       .append(make('div.intrinsic.left')  )
       .append($rightInnerCollider         );
 
-    $page1.find('.front>.colliders-layer' as JQuery.Selector)
-      .append(make('div.intrinsic.front'));
-    $page2.find('.front>.colliders-layer' as JQuery.Selector)
-      .append(make('div.intrinsic.front'));
+
+    // (lucas 12.03.21) todo: this should be generated from geometry data from the server
+    $both.find('.front>.colliders-layer' as JQuery.Selector)
+      .append($(make('div')).css({
+        left  : "-50mm",
+        width : "calc(100% + 100mm)",
+        top   : "-50mm",
+        height: "calc(100% + 100mm)",
+      }));
 
     Snaplines.LineMap = [];
     for(const $p of [$page1, $page2]) {
@@ -225,20 +261,6 @@ const RenderStyles : RenderStyle[] = [{
         }]));
       }
     }
-
-    //intrinsic colliders
-    $page1.add($page2).find('.colliders-layer' as JQuery.Selector)
-      .append(make('div.intrinsic.top')   )
-      .append(make('div.intrinsic.bottom'));
-    $page1.find('.back>.colliders-layer' as JQuery.Selector)
-      .append(make('div.intrinsic.left')  );
-    $page1.find('.front>.colliders-layer' as JQuery.Selector)
-      .append(make('div.intrinsic.right') );
-    $page2.find('.back>.colliders-layer' as JQuery.Selector)
-      .append(make('div.intrinsic.right') );
-    $page2.find('.front>.colliders-layer' as JQuery.Selector)
-      .append(make('div.intrinsic.left')  );
-
 
     this.data.p1r = 0;
     this.data.p2r = 0;
