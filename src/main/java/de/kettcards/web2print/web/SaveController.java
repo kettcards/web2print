@@ -4,7 +4,6 @@ import de.kettcards.web2print.service.LayoutStorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
@@ -19,11 +18,6 @@ public final class SaveController {
 
     @Autowired
     private LayoutStorageService storageService;
-
-    @Scheduled(fixedDelay = 10000)
-    public void deleteFilesScheduledTask() throws IOException {
-        System.out.println("oeky boomer");
-    }
 
     @PostMapping(value = {"/save/", "/save/{storageId}"})
     public String save(
