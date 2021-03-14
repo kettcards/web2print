@@ -4,6 +4,8 @@ interface FontsObj {
   FontNames   : string[];
   $options    : JQuery;
   $label      : JQuery;
+  $boldBtn    : JQuery;
+  $italicBtn  : JQuery;
   currentSelection  : string;
   loadFonts(fontNames : string[]);
   FontStyleValues  : { [p: string]: number; };
@@ -13,6 +15,7 @@ interface FontsObj {
   loadFont(font : Font) : void;
 
   displaySelected() : void;
+  checkFontTypes() : void;
 }
 
 interface IFontFace {
@@ -31,6 +34,8 @@ const Fonts = {
   defaultFont: undefined,
   $options: $('#font-options'),
   $label: $('#font-label'),
+  $boldBtn: $('.fontTypeButton[value=b]'),
+  $italicBtn: $('.fontTypeButton[value=i]'),
   currentSelection: undefined,
   FontStyleValues: {
     b: 0b001,
@@ -87,6 +92,19 @@ const Fonts = {
   },
   displaySelected() {
     const fName = Fonts.currentSelection;
+
     Fonts.$label.text(fName).css('font-family', fName);
+  },
+  checkFontTypes() {
+    if(!Fonts.FontAttributeMap[Fonts.currentSelection][Fonts.FontStyleValues.b]) {
+      Fonts.$boldBtn.prop('disabled', true);
+    } else {
+      Fonts.$boldBtn.prop('disabled', false);
+    }
+    if(!Fonts.FontAttributeMap[Fonts.currentSelection][Fonts.FontStyleValues.i]) {
+      Fonts.$italicBtn.prop('disabled', true);
+    } else {
+      Fonts.$italicBtn.prop('disabled', false);
+    }
   }
 } as FontsObj;

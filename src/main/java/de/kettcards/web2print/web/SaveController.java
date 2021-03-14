@@ -7,6 +7,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -25,13 +26,15 @@ public final class SaveController {
     }
 
     @PostMapping(value = {"/save/", "/save/{storageId}"})
-    public String save(@PathVariable(required = false) String storageId,
-                     @RequestParam String export,
-                     @RequestParam("data") String cardData)
-            throws IOException, ParseException {
+    public String save(
+        @PathVariable(required = false) String storageId,
+        @RequestParam                   String export,
+        @RequestParam("data")           String cardData,
+        @RequestParam(required = false) String form
+    ) throws IOException, ParseException, MessagingException {
         storageId = storageService.storeCard(storageId, cardData);
         if (export.equals("true"))
-            storageService.exportCard(cardData);
+            storageService.exportCard(cardData, form);
         return storageId;
     }
 
@@ -48,5 +51,10 @@ public final class SaveController {
     @GetMapping(value = {"/pdfs/{storageId}"}, produces = "application/pdf")
     public Resource show(@PathVariable(required = false) String storageId) throws IOException {
         return storageService.load(storageId);
+    }
+
+    @PostMapping("/order")
+    public void order(String storageId) {
+
     }
 }

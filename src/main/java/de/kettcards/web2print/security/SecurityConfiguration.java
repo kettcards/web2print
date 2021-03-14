@@ -91,10 +91,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Bean
     @Override
     protected UserDetailsService userDetailsService() {
+        var struct = configuration.getStructEditor();
         //TODO remove user when jdbc user management is implemented
         UserDetails admin = User.builder()
-                .username("admin")
-                .password(passwordEncoder().encode("admin"))
+                .username(struct.getUsername())
+                .password(passwordEncoder().encode(struct.getPassword()))
                 .roles(ADMIN.name()).build();
         //TODO switch to JdbcUserDetailsManager.class
         return new InMemoryUserDetailsManager(admin);
