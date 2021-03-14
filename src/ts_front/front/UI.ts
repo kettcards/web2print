@@ -3,8 +3,8 @@
 /// <reference path="./textHandlers.ts" />
 {
   const $addBtnContainer = $('#add-el-btns');
-  for(const [i, el] of Object.entries(ElementMap)) {
-    $addBtnContainer.append($(`<button class="addElBtn" onclick="hSpawnElBtnClick(event,'${i}');">${el.displayName}</button>`));
+  for(const el of Elements) {
+    $addBtnContainer.append($(`<button class="addElBtn" onclick="hSpawnElBtnClick(event, '${el.serializedType}');">${el.displayName}</button>`));
   }
 }
 
@@ -76,6 +76,7 @@ Fonts.$options
 
     Fonts.currentSelection = e.target.textContent;
     Fonts.displaySelected();
+    Fonts.checkFontTypes();
     Editor.loadSelection();
     hFontChanged();
   });

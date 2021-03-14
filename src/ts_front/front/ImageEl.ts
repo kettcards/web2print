@@ -70,13 +70,9 @@ class ImageEl {
 
     console.error('failed to fetch xhr', e);
     Dialogs.loading.hide();
-    alert("Die ausgewählte Datei konnte nicht hochgeladen werden.\nBitte stellen Sie sicher, dass das Dateiformat: .jpg,.jpeg,.png,.svg ist \nund die Dateigröße nicht 10MB überschreitet.");
+    alert("Die ausgewählte Datei konnte nicht hochgeladen werden.\nBitte stellen Sie sicher, dass das Dateiformat: .jpg,.jpeg,.png,.svg ist \nund die Dateigröße nicht "+web2print.editorConfiguration.maxFileSize+"MB überschreitet.");
   }
 }
-
-
-
-
 
 //function to return transform rotation angle of the state.target
 const getRotation = function() {
