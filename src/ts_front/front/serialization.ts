@@ -98,7 +98,7 @@ function serializeSide($els : JQuery, xOffs : number, target : Box[]) : void {
       w: $el.width() * MMPerPx.x,
       h: $el.height() * MMPerPx.y
     };
-    target.push(Object.assign(Elements[parseInt($el[0].dataset.typeId)].serialize($el), bounds));
+    target.push(Object.assign(ElementMap[$el[0].dataset.typeId].serialize($el), bounds));
   }
 }
 
@@ -153,8 +153,9 @@ function loadSide(side : 'front'|'back', boxes : Box[]) : void {
       throw new Error(`Can't deserialize box of type '${box['t']}'.`);
     }
 
-    const $el  = elType.spawn(bounds);
+    const $el = elType.spawn(bounds);
     elType.restore($el, box);
+    $el[0].dataset.typeId = box.t;
 
     page.children('.elements-layer').append($el);
   }

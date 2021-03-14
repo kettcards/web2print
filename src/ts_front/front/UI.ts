@@ -3,8 +3,8 @@
 /// <reference path="./textHandlers.ts" />
 {
   const $addBtnContainer = $('#add-el-btns');
-  for(const [i, el] of Elements.entries()) {
-    $addBtnContainer.append($(`<button class="addElBtn" onclick="hSpawnElBtnClick(${i});">${el.displayName}</button>`));
+  for(const el of Elements) {
+    $addBtnContainer.append($(`<button class="addElBtn" onclick="hSpawnElBtnClick(event, '${el.serializedType}');">${el.displayName}</button>`));
   }
 }
 

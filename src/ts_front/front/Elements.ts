@@ -1,5 +1,5 @@
 type Spawner = (p : JQuery.Coordinates | JQuery.PlainObject) => JQuery;
-type SpawnerData = [fn : Spawner, index : number];
+type SpawnerData = [fn : Spawner, id : string];
 
 interface IElement {
   displayName    : string;
