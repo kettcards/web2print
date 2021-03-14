@@ -136,7 +136,7 @@
               </div>
             </div>
           </div>
-          <button id="submit-btn" class="lower-btn" onclick="submit(true);">Layout abschicken</button>
+          <button id="submit-btn" class="lower-btn" onclick="Dialogs.order.show();">Layout abschicken</button>
         </div>
       </div>
     </div>
@@ -158,6 +158,56 @@
         <div class="dialog-body">
           <progress id="loading-prog" value="0" max="1">%</progress>
         </div>
+      </div>
+      <div class="dialog center" id="order-dialog" style="visibility: collapse;">
+        <form autocomplete="on">
+          <h2 class="dialog-title">Anfrage abschicken</h2>
+          <div class="spacer"></div>
+          <div class="dialog-body">
+            <fieldset id="order-dialog-p1">
+              <span>Bevor wir Ihr Design an Kettkards übertragen brauchen wir noch ein paar Informationen:</span>
+              <h4>Anzal<br /><span>&nbsp;an Karten</span></h4>
+              <input type="number" name="amount" min="1" value="1" autocomplete="off" />
+            </fieldset>
+            <div class="spacer"></div>
+            <fieldset id="order-dialog-p2">
+              <h4><span>und</span><br />Ihre Anschrift</h4>
+              <table>
+                <tr>
+                  <td><input type="text" name="fname" placeholder="Vorname" required autocomplete="given-name" /></td>
+                  <td><input type="text" name="lname" placeholder="Nachanme" required autocomplete="family-name" /></td>
+                </tr>
+                <tr>
+                  <td colspan="2"><input type="email" name="email" placeholder="E-Mail Adresse" required autocomplete="email" /></td>
+                </tr>
+                <tr>
+                  <td colspan="2"><input type="text" name="address" placeholder="Stra&szlig;e Hausnummer" autocomplete="street-address" /></td>
+                </tr>
+                <tr>
+                  <td><input type="text" name="postal" placeholder="PLZ" autocomplete="postal-code" /></td>
+                  <td><input type="text" name="region" placeholder="Ort" autocomplete="address-level2" /></td>
+                </tr>
+                <tr>
+                  <td colspan="2"><input type="text" name="company" placeholder="Firma" /></td>
+                </tr>
+                <tr>
+                  <td colspan="2"><input type="tel" name="phone" placeholder="Telefonnummer" autocomplete="tel" /></td>
+                </tr>
+              </table>
+            </fieldset>
+            <div class="spacer"></div>
+            <fieldset id="order-dialog-p3">
+              <span>Wenn Sie möchten ist hier Platz für</span>
+              <h4 style="margin-top: 5px">zusätzliche Informationen</h4>
+              <textarea name="additional" autocomplete="off"></textarea>
+            </fieldset>
+          </div>
+          <div class="spacer"></div>
+          <div class="dialog-ctrls">
+            <button type="button" class="close-btn">Abbrechen</button>
+            <input type="submit" value="Senden" disabled>
+          </div>
+        </form>
       </div>
     </div>
     <script src="./front.js" type="text/javascript"></script>
