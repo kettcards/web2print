@@ -44,7 +44,7 @@ public final class Card implements Serializable, VirtualId {
     @JsonManagedReference
     @ManyToOne
     @JoinColumn(name = "material_id")
-    private Material material;
+    private Texture texture;
 
     @JsonProperty("geometry")
     @OneToMany(mappedBy = "card")

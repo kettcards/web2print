@@ -74,7 +74,7 @@ public final class FileStoragePool extends StoragePool {
                 super.visitFile(file, attrs);
                 var contentType = Files.probeContentType(file);
                 var resource = new FileSystemResource(file);
-                contentList.add(new Content(resource, contentType, file.getFileName().toString(), Collections.emptyList()));
+                contentList.add(new Content(resource, contentType, file.getFileName().toString()));
                 return FileVisitResult.CONTINUE;
             }
 
@@ -139,7 +139,7 @@ public final class FileStoragePool extends StoragePool {
             throw new IOException("unable to load requested file \"" + contentName + "\"");
         var contentType = Files.probeContentType(resolve);
         var resource = new FileSystemResource(resolve);
-        Content content = new Content(resource, contentType, contentName, Collections.emptyList());//TODO constrain checking/setting
+        Content content = new Content(resource, contentType, contentName);//TODO constrain checking/setting
         return content;
     }
 

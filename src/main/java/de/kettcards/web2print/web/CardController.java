@@ -19,9 +19,9 @@ public final class CardController {
     }
 
     @GetMapping({"/card", "/cards"})
-    public ResponseEntity<Page<CardOverview>> getCardOverview(@RequestParam(required = false) Integer page,
-                                                              @RequestParam(required = false) Integer size) {
-        return ResponseEntity.ok(cardService.listCardOverview(page, size));
+    public Page<CardOverview> getCardOverview(@RequestParam(required = false) Integer page,
+                                              @RequestParam(required = false) Integer size) {
+        return cardService.listCardOverview(page, size);
     }
 
     @GetMapping("/card/{orderId}")

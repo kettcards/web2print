@@ -13,12 +13,6 @@ import java.io.IOException;
 @JsonComponent
 public class PageSerializer extends JsonSerializer<PageImpl<?>> {
 
-    private final ApplicationConfiguration configuration;
-
-    public PageSerializer(ApplicationConfiguration configuration) {
-        this.configuration = configuration;
-    }
-
     @Override
     public void serialize(PageImpl<?> value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         gen.writeStartObject();
@@ -29,7 +23,7 @@ public class PageSerializer extends JsonSerializer<PageImpl<?>> {
         gen.writeNumberField("currentPage", value.getPageable().getPageNumber());
         gen.writeNumberField("totalPages", value.getTotalPages());
         gen.writeNumberField("pageSize", value.getPageable().getPageSize());
-        gen.writeNumberField("maxPageSize", configuration.getPage().getMaxPageSize());
+        gen.writeNumberField("maxPageSize", Integer.MAX_VALUE);
         gen.writeNumberField("totalElements", value.getTotalElements());
 
 

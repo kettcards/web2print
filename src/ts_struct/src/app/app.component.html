@@ -1,0 +1,33 @@
+<mat-sidenav-container class="sidenav-container" style="height: 100%; margin: 0;">
+  <mat-sidenav #drawer class="sidenav" fixedInViewport
+               [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+               [mode]="(isHandset$ | async) ? 'over' : 'side'"
+               [opened]="(isHandset$ | async) === false">
+    <mat-toolbar>
+      Web2Print
+    </mat-toolbar>
+    <mat-nav-list>
+      <mat-list-item routerLink="/import-table" routerLinkActive="active">Kartenimport</mat-list-item>
+      <mat-list-item routerLink="/import-motive" routerLinkActive="active">Motivimport</mat-list-item>
+      <mat-list-item routerLink="/import-motive-default" routerLinkActive="active">Standardmotivimport</mat-list-item>
+      <mat-list-item routerLink="/import-texture" routerLinkActive="active">Texturimport</mat-list-item>
+      <mat-list-item routerLink="/font-config" routerLinkActive="active">Fontkonfiguration</mat-list-item>
+      <mat-list-item routerLink="/pdf-list" routerLinkActive="active">PDF's</mat-list-item>
+    </mat-nav-list>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <mat-toolbar color="primary">
+      <button
+        type="button"
+        aria-label="Toggle sidenav"
+        mat-icon-button
+        (click)="drawer.toggle()"
+        *ngIf="isHandset$ | async">
+        <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+      </button>
+      <span class="max-hgrow"></span>
+      <a id="logout" href="../logout">Abmelden</a>
+    </mat-toolbar>
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>
