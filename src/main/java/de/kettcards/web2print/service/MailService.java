@@ -40,7 +40,7 @@ public class MailService {
             userTemplate = IOUtils.toString(s, String.valueOf(StandardCharsets.UTF_8));
         }
         // (lucas 14.03.21) todo: load from config file
-        internalReceiverAddr = new InternetAddress("lucas.broenner@gmail.com");
+        internalReceiverAddr = new InternetAddress("web4printtest@gmail.com");
     }
 
     public void sendInternalMail(OrderFormData data, Resource pdf, String fileName) throws MessagingException {
