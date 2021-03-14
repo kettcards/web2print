@@ -31,11 +31,17 @@ interface BoundingBox {
   h : number;
 }
 
-function submit(_export : boolean) : void {
+function submit(_export : boolean, additionalData ?: any) : void {
   const data = serialize();
 
   console.log("sending", data);
-  $.post(`${web2print.links.apiUrl}save/${Parameters.sId || ''}?export=${_export}`, 'data='+btoa(JSON.stringify(data)))
+  let postData = "data="+btoa(JSON.stringify(data));
+  if(additionalData) {
+    console.log('also sending', additionalData);
+    postData += "&form="+btoa(JSON.stringify(additionalData));
+  }
+
+  $.post(`${web2print.links.apiUrl}save/${Parameters.sId || ''}?export=${_export}`, postData)
     .then(function(response : string) {
       Parameters.sId = response;
       window.history.replaceState({}, Editor.storage.loadedCard.name+" - Web2Print", stringifyParameters());
