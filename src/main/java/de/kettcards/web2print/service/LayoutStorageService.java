@@ -17,8 +17,7 @@ import javax.mail.MessagingException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Supplier;
@@ -112,7 +111,7 @@ public final class LayoutStorageService extends StorageContextAware {
 
     @Override
     public Supplier<String> getNameGenerator() {
-        var dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH:mm:ss");
-        return () -> LocalDate.now().format(dateFormat);
+        var dateFormat = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+        return () -> LocalDateTime.now().format(dateFormat);
     }
 }
