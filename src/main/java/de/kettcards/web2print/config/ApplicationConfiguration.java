@@ -19,6 +19,10 @@ public class ApplicationConfiguration {
     private Page page;
 
     @JsonView(Include.Internal.class)
+    @NestedConfigurationProperty
+    private MailConfiguration mail;
+
+    @JsonView(Include.Internal.class)
     private String baseDir;
 
     @Data
@@ -44,6 +48,12 @@ public class ApplicationConfiguration {
 
         @JsonView(Include.Public.class)
         private String motiveUrl;
+
+    }
+
+    @Data
+    public static class Web {
+
 
     }
 

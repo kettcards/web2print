@@ -46,4 +46,9 @@ public final class SaveController {
     public Resource show(@PathVariable(required = false) String storageId) throws IOException {
         return storageService.load(storageId);
     }
+
+    @PostMapping("/order")
+    public void order(String storageId) {
+
+    }
 }

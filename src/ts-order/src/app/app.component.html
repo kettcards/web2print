@@ -1,0 +1,93 @@
+<mat-vertical-stepper class="form mat-elevation-z4" linear>
+  <!--<mat-step [stepControl]="overview">
+    <form>
+      <div class="form-content">
+        <ng-template matStepLabel>
+          Kontaktdaten
+        </ng-template>
+      </div>
+      <div class="form-actions">
+        <button mat-raised-button color="primary" matStepperNext>Weiter</button>
+      </div>
+    </form>
+  </mat-step>-->
+  <mat-step [stepControl]="contactFormGroup">
+    <form [formGroup]="contactFormGroup">
+      <div class="form-content">
+        <ng-template matStepLabel>
+          Kontaktdaten
+        </ng-template>
+        <div class="form-content-row">
+          <mat-radio-group formControlName="gender">
+            <mat-radio-button value="Herr">Herr</mat-radio-button>
+            <mat-radio-button value="Frau">Frau</mat-radio-button>
+          </mat-radio-group>
+        </div>
+        <div class="form-content-row">
+          <mat-form-field>
+            <mat-label>Vorname</mat-label>
+            <input matInput formControlName="firstname" required>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Name</mat-label>
+            <input matInput formControlName="lastname" required>
+          </mat-form-field>
+        </div>
+        <div class="form-content-row">
+          <mat-form-field>
+            <mat-label>Straße/Hausnummer</mat-label>
+            <input matInput formControlName="street" required>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Adresse</mat-label>
+            <input matInput formControlName="address" required>
+          </mat-form-field>
+        </div>
+        <div class="form-content-row">
+          <mat-form-field>
+            <mat-label>Postleitzahl</mat-label>
+            <input matInput formControlName="zip" required>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Ort</mat-label>
+            <input matInput formControlName="region" required>
+          </mat-form-field>
+        </div>
+        <div class="form-content-row">
+          <mat-form-field>
+            <mat-label>E-Mail</mat-label>
+            <input matInput formControlName="mail" required>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Ort</mat-label>
+            <input matInput formControlName="region" required>
+          </mat-form-field>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button mat-raised-button color="primary" matStepperNext>Weiter</button>
+      </div>
+    </form>
+  </mat-step>
+  <!--
+  <mat-step [stepControl]="secondFormGroup" [editable]="isEditable">
+    <form [formGroup]="secondFormGroup">
+      <ng-template matStepLabel>Fill out your address</ng-template>
+      <mat-form-field formControlName="secondCtrl">
+        <mat-label>Address</mat-label>
+        <input matInput placeholder="Ex. 1 Main St, New York, NY"
+               required>
+      </mat-form-field>
+      <div>
+        <button mat-button matStepperPrevious>Back</button>
+        <button mat-button matStepperNext>Next</button>
+      </div>
+    </form>
+  </mat-step> -->
+  <mat-step>
+    <ng-template matStepLabel>Bestätigen</ng-template>
+    <div>
+      <button mat-raised-button color="primary" (click)="submit()">Angebot anfordern</button>
+    </div>
+  </mat-step>
+</mat-vertical-stepper>
