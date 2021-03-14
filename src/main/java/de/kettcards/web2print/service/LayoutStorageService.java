@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.security.util.InMemoryResource;
 import org.springframework.stereotype.Service;
 
@@ -67,14 +68,17 @@ public final class LayoutStorageService extends StorageContextAware {
         var cardData       = jsonMapper.readValue(decode(rawData)          ,      CardData.class);
         var additionalData = jsonMapper.readValue(decode(rawAdditionalData), OrderFormData.class);
 
+        byte[] inMemPdf;
+        String fileName;
         try (PDDocument generate = generator.generate(cardData)) {
             var stream = new ByteArrayOutputStream();
             generate.save(stream);
-            save(new Content(new InMemoryResource(stream.toByteArray()), "application/pdf", "generated.pdf", Collections.emptyList()));
-
+            inMemPdf = stream.toByteArray();
+            fileName = save(new Content(new ByteArrayResource(inMemPdf), "application/pdf", "generated.pdf", Collections.emptyList()));
         }
 
-        mailService.sendInternalMail(additionalData);
+        mailService.sendInternalMail(additionalData, new ByteArrayResource(inMemPdf), fileName);
+        mailService.sendUserMail(additionalData);
     }
 
     private byte[] decodingBuffer = null;
