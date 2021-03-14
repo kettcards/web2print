@@ -39,7 +39,7 @@ public interface StorageContext {
 
 
     /**
-     * @return whether the storage implementation should keep the file extension
+     * @return whether the storage implementation should keep the file extension when using name generator
      */
     default boolean keepExtension() {
         return false;

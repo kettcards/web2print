@@ -48,7 +48,7 @@ export class Api {
       throw Error('texture id not set');
     const data = new FormData();
     data.append('file', texture.file);
-    return this.http.post(Api.apiUrl + 'texture/' + texture.type.id + 'texture', data);
+    return this.http.post(Api.apiUrl + 'texture/' + texture.type.id + '/texture', data);
   }
 
   public importCardTable(file: File | null): Observable<Object> | null {
