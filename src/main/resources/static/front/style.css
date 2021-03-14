@@ -210,8 +210,8 @@ body {
   white-space: nowrap;
   position: absolute;
   left: 50%;
-  transform: translate(-50%, -50%);
   top: 50%;
+  transform: translate(-50%, -50%);
 }
 .no-select {
   -webkit-touch-callout: none;
@@ -767,14 +767,6 @@ button.active {
   width: 0.75em;
   cursor: ne-resize;
 }
-.translucentBG{
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.66);
-}
 
 /*todo: look at this*/
 #upl-des-btn {
@@ -789,7 +781,7 @@ button.active {
 }
 
 #overlay-blinds {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -798,13 +790,8 @@ button.active {
 }
 
 .dialog {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-
   min-width: 300px;
-  max-width: 85%;
+  max-width: 75%;
   min-height: 150px;
   max-height: 75%;
 
@@ -821,6 +808,7 @@ button.active {
   padding: 10px;
   overflow-y: auto;
   flex-grow: 2;
+  white-space: initial;
 }
 .dialog-ctrls {
   display: flex;
@@ -835,4 +823,11 @@ button.active {
 .spacer {
   margin: 10px 20% 10px 20%;
   border-top: solid black 1px;
+}
+
+#loading-dialog .dialog-body {
+  text-align: center;
+}
+#loading-prog {
+  display: inline-block;
 }
