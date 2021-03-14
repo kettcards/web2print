@@ -32,8 +32,8 @@ const RenderStyles : RenderStyle[] = [{
     });
 
     $bundle.children().css(Object.assign({
-      'background-image': 'url("'+web2print.links.materialUrl+card.material.textureSlug+'")',
-    }, this.BgStretchObjs[card.material.tiling]));
+      'background-image': 'url("'+web2print.links.textureUrl+card.texture.textureSlug+'")',
+    }, this.BgStretchObjs[card.texture.tiling]));
 
     for(let fold of card.cardFormat.folds) {
       $bundle.find('.folds-layer' as JQuery.Selector).append(createFold(fold));
@@ -188,8 +188,8 @@ const RenderStyles : RenderStyle[] = [{
     const $both = $page1.add($page2);
 
     $both.children().css(Object.assign({
-      'background-image': 'url("'+web2print.links.materialUrl+card.material.textureSlug+'")'
-    }, this.BgStretchObjs[card.material.tiling]));
+      'background-image': 'url("'+web2print.links.textureUrl+card.texture.textureSlug+'")'
+    }, this.BgStretchObjs[card.texture.tiling]));
 
     let mFront, mBack;
     for(const motive of card.motive) {
