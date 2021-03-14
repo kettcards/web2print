@@ -78,6 +78,7 @@ Fonts.$options
 
     Fonts.currentSelection = e.target.textContent;
     Fonts.displaySelected();
+    Fonts.checkFontTypes();
     Editor.loadSelection();
     hFontChanged();
   });

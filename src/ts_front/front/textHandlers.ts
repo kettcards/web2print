@@ -32,8 +32,16 @@ class TextEl {
 
     let fontFam  =  $(startEl).css('font-family');
     let fontSize = +$(startEl).css('font-size').slice(0, -2);
+    Fonts.$boldBtn.prop('disabled', false);
+    Fonts.$italicBtn.prop('disabled', false);
     for(let n = startEl;;){
       const nextFam  =  $(n).css('font-family');
+      if(!Fonts.FontAttributeMap[nextFam][1]) {
+        Fonts.$boldBtn.prop('disabled', true);
+      }
+      if(!Fonts.FontAttributeMap[nextFam][2]) {
+        Fonts.$italicBtn.prop('disabled', true);
+      }
       const nextSize = +$(n).css('font-size').slice(0, -2);
       if(fontFam !== nextFam) {
         fontFam = '';

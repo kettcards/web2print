@@ -15,6 +15,7 @@ interface FontsObj {
   loadFont(font : Font) : void;
 
   displaySelected() : void;
+  checkFontTypes() : void;
 }
 
 interface IFontFace {
@@ -93,12 +94,14 @@ const Fonts = {
     const fName = Fonts.currentSelection;
 
     Fonts.$label.text(fName).css('font-family', fName);
-    if(!fName || !Fonts.FontAttributeMap[fName][1]) {
+  },
+  checkFontTypes() {
+    if(!Fonts.FontAttributeMap[Fonts.currentSelection][1]) {
       Fonts.$boldBtn.prop('disabled', true);
     } else {
       Fonts.$boldBtn.prop('disabled', false);
     }
-    if(!fName || !Fonts.FontAttributeMap[fName][2]) {
+    if(!Fonts.FontAttributeMap[Fonts.currentSelection][2]) {
       Fonts.$italicBtn.prop('disabled', true);
     } else {
       Fonts.$italicBtn.prop('disabled', false);
