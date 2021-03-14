@@ -8,6 +8,10 @@ declare interface Web2print {
          fontUrl : string;
           apiUrl : string;
   };
+  editorConfiguration: {
+    maxFileSize : number;
+    maxRequestSize : number;
+  };
 }
 
 declare const web2print: Web2print;
