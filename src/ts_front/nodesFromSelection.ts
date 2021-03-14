@@ -42,6 +42,10 @@ const getSelectedNodes = function (range: Range) : [Element, number, Element, nu
       endOffs = endEl.textContent.length;
     } else
       console.warn('cant handle end', range);
+  }else if(range.commonAncestorContainer.isA('SPAN')){//case for empty line
+    startEl = endEl = range.startContainer as Element;
+    startOffs = range.startOffset;
+    endOffs = range.endOffset;
   } else
     console.warn('cant handle', range);
 
