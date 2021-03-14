@@ -46,7 +46,7 @@ public class ApplicationConfiguration {
         private String apiPath;
 
         @JsonView(Include.Public.class)
-        private String materialUrl;
+        private String textureUrl;
 
         @JsonView(Include.Public.class)
         private String thumbnailUrl;

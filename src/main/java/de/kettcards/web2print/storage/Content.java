@@ -2,6 +2,7 @@ package de.kettcards.web2print.storage;
 
 import de.kettcards.web2print.exceptions.content.ContentException;
 import de.kettcards.web2print.storage.contraint.MediaTypeFileExtension;
+import de.kettcards.web2print.storage.contraint.MediaTypeFileExtensionFilter;
 import lombok.NonNull;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -32,36 +33,29 @@ public final class Content implements Resource {
 
     private final String originalFilename;
 
-    private final List<StorageConstraint> constraints;
-
     public Content(Content content, Resource resource) {
-        this(resource, content.getContentType(), content.getOriginalFilename(), content.getConstraints());
+        this(resource, content.getContentType(), content.getOriginalFilename());
     }
 
     public Content(Resource resource) {
-        this(resource, null, null, Collections.emptyList());
-    }
-
-    public Content(Resource resource, List<StorageConstraint> constraints) {
-        this(resource, null, null, constraints);
+        this(resource, null, null);
     }
 
     public Content(Resource resource, String contentType) {
-        this(resource, contentType, null, Collections.emptyList());
+        this(resource, contentType, null);
     }
 
-    public Content(Resource resource, String contentType, String originalFilename, List<StorageConstraint> constraints) {
+    public Content(Resource resource, String contentType, String originalFilename) {
         this.resource = resource;
         this.contentType = contentType;
         this.originalFilename = originalFilename;
-        this.constraints = constraints;
     }
 
     public static Content from(MultipartFile multipartFile) {
         Resource resource = multipartFile.getResource();
         String contentType = multipartFile.getContentType();
         String originalFilename = multipartFile.getOriginalFilename();
-        return new Content(resource, contentType, originalFilename, Collections.emptyList());
+        return new Content(resource, contentType, originalFilename);
     }
 
     @Override
@@ -176,16 +170,23 @@ public final class Content implements Resource {
         return originalFilename;
     }
 
-    public List<StorageConstraint> getConstraints() {
-        return Collections.unmodifiableList(constraints);
-    }
-
     /*
      * assertions
      */
 
     /**
-     * asserts that at least one ContentExtension is matchinf file extension and content type
+     * asserts that at least one ContentExtension is matching file extension and content type
+     *
+     * @param extensionFilter allowed content extensions
+     * @return matching content extension
+     * @throws ContentException if theres no match
+     */
+    public MediaTypeFileExtension assertContentExtension(@NonNull MediaTypeFileExtensionFilter extensionFilter) throws ContentException {
+        return assertContentExtension(extensionFilter.getContentExtensions());
+    }
+
+    /**
+     * asserts that at least one ContentExtension is matching file extension and content type
      *
      * @param contentExtensions allowed content extensions
      * @return matching content extension

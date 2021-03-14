@@ -11,25 +11,27 @@ import de.kettcards.web2print.repository.MotiveRepository;
 import de.kettcards.web2print.storage.Content;
 import de.kettcards.web2print.storage.StorageContextAware;
 import de.kettcards.web2print.storage.WebContextAware;
+import de.kettcards.web2print.storage.contraint.MediaTypeFileExtension;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.util.InMemoryResource;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Component
-public final class MotiveImportService extends StorageContextAware implements WebContextAware {
+public class MotiveImportService extends StorageContextAware implements WebContextAware {
 
     private static final String DEFAULT_PREFIX = "default/";
 
@@ -51,64 +53,103 @@ public final class MotiveImportService extends StorageContextAware implements We
         this.cardFormatRepository = cardFormatRepository;
     }
 
-    public String importMotive(Content content) {
-        String name = content.getOriginalFilename();
-        log.info("importing " + name);
-        int lastDotIndex = name.lastIndexOf(".");
-        name = name.substring(0, lastDotIndex);
 
-        try {
-            Card card = cardRepository.findCardByOrderId(name);
-            float scaleFactor = getScaleFactor();
-            List<ByteArrayOutputStream> outputStreams = printPdfToImage(content.getInputStream(), scaleFactor);
-            for (int i = 0; i < outputStreams.size(); i++) {
-                String out = null;
-                ByteArrayOutputStream stream = outputStreams.get(i);
-                if (stream.size() == 0)
-                    continue;
-                switch (i) {
-                    case 0:
-                        out = name + "-front.png";
-                        updateDatabase(out, card, "FRONT");
-                        break;
-                    case 1:
-                        out = name + "-back.png";
-                        updateDatabase(out, card, "BACK");
-                        break;
-                    default:
-                        log.warn("unexpected page for document \"" + name + "\"");
+    public void importMotive(Content content, List<String> orderIds, String side) throws IOException {
+        //check that all order ids are valid
+        var cards = new ArrayList<Card>();
+        for (String orderId : orderIds) {
+            Optional<Card> cardByOrderId = cardRepository.findCardByOrderId(orderId);
+            if (cardByOrderId.isPresent()) {
+                cards.add(cardByOrderId.get());
+            } else {
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "ungültige Bestellnummer: " + orderId);
+            }
+        }
+        if (side == null) { // null side should be a pdf
+            content.assertContentExtension(MediaTypeFileExtension.PDF);
+            List<ByteArrayOutputStream> byteArrayOutputStreams = printPdfToImage(content.getInputStream(), getScaleFactor());
+            try {
+
+                if (byteArrayOutputStreams.size() > 2 || byteArrayOutputStreams.isEmpty())
+                    throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Druckdatei hat ungültige Seitenanzahl:" +
+                            byteArrayOutputStreams.size());
+                var frontContent = new Content(new InMemoryResource(byteArrayOutputStreams.get(0).toByteArray()));
+                saveImageForCard(frontContent, cards, "FRONT", ".png");
+                if (byteArrayOutputStreams.size() > 1) {
+                    var backContent = new Content(new InMemoryResource(byteArrayOutputStreams.get(1).toByteArray()));
+                    saveImageForCard(backContent, cards, "BACK", ".png");
                 }
-                if (out == null)
-                    continue;
-                save(new Content(new InMemoryResource(stream.toByteArray())), out);
+
+            } finally {
+                //cleanup
+                for (ByteArrayOutputStream stream : byteArrayOutputStreams) {
+                    try {
+                        stream.close();
+                    } catch (IOException ex) { //should never happen
+                        log.debug("failed to close image stream:" + ex.getMessage(), ex.getCause());
+                    }
+                }
             }
 
-        } catch (IOException e) {
-            log.warn("unable to save motive \"" + name + "\"");
-            return "500";
+        } else { // assume that it's a png, jpg
+            if (!(side.equals("FRONT") || side.equals("BACK")))
+                throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "unngültige Seitenangabe: " + side);
+            var extension = content.assertContentExtension(MediaTypeFileExtension.PNG, MediaTypeFileExtension.JPG);
+            saveImageForCard(content, cards, side, extension.getFileExtensions()[0]); //TODO save access extension
         }
-        return "200";
+
     }
 
-    public void importDefaultMotive(Content content) throws IOException {
-        String originalFilename = content.getOriginalFilename();
-        String id = originalFilename.substring(0, originalFilename.lastIndexOf('.'));
-        var format = cardFormatRepository.findById(Integer.parseInt(id)).orElseThrow();
-
-        var streams = printPdfToImage(content.getInputStream(), getScaleFactor());
-
-        if (streams.get(0) != null) {
-            saveDefaultFormat(format, streams.get(0), "-front.png");
-        }
-
-        if (streams.get(1) != null) {
-            saveDefaultFormat(format, streams.get(1), "-back.png");
-        }
-
-        save(content, DEFAULT_PREFIX.concat(originalFilename));
+    public void saveImageForCard(Content content, List<Card> cards, String side, String imageType) throws IOException {
+        var filename = UUID.randomUUID().toString() + imageType;
+        save(content, filename);
         Motive motive = new Motive();
-        motive.setTextureSlug(originalFilename);
+        motive.setTextureSlug(filename);
+        motive = motiveRepository.save(motive);
+        for (Card card : cards) {
+            List<MotiveMap> motiveMaps = card.getMotiveMaps();
+            var existing = motiveMaps.stream().filter(e -> e.getSide().equals(side)).findFirst();
+            if (existing.isPresent()) { // update current motive assignment
+                var motiveMap = existing.get();
+                motiveMap.setMotive(motive);
+                motiveMapRepository.save(motiveMap);
+            } else { // card hasn't had an existing motive
+                MotiveMap motiveMap = new MotiveMap();
+                var motiveMapId = new MotiveMap.MotiveMapId();
+                motiveMapId.setCard(card.getId());
+                motiveMapId.setMotive(motive.getId());
+                motiveMap.setMotiveMapId(motiveMapId);
+                motiveMap.setCard(card);
+                motiveMap.setMotive(motive);
+                motiveMap.setSide(side);
+                motiveMapRepository.save(motiveMap);
+            }
+        }
+    }
 
+    public void importDefaultMotive(Content content, int cardFormat) throws IOException {
+        String originalFilename = content.getOriginalFilename();
+        int lastDotIndex = originalFilename.lastIndexOf('.');
+        String extension = originalFilename.substring(lastDotIndex);
+        var format = cardFormatRepository.findById(cardFormat).orElseThrow();
+
+        if (MediaTypeFileExtension.PDF.isValidFileExtension(extension)) {
+            try {
+                var streams = printPdfToImage(content.getInputStream(), getScaleFactor());
+                if (!streams.isEmpty() && streams.get(0) != null) {
+                    saveDefaultFormat(format, streams.get(0), "-front.png");
+                }
+
+                if (streams.size() > 1 && streams.get(1) != null) {
+                    saveDefaultFormat(format, streams.get(1), "-back.png");
+                }
+                save(content, DEFAULT_PREFIX.concat(originalFilename));
+            } catch (IOException exception) {
+                throw new IOException("500: encountered IOException while importing " + originalFilename);
+            }
+        } else {
+            throw new IllegalArgumentException("unbekannte Dateiendung: " + extension);
+        }
     }
 
     private void saveDefaultFormat(CardFormat cardFormat, ByteArrayOutputStream stream, String suffix) throws IOException {
@@ -119,33 +160,6 @@ public final class MotiveImportService extends StorageContextAware implements We
             motive.setTextureSlug(name);
             cardFormat.setDefaultFrontMotive(motive);
             cardFormatRepository.save(cardFormat);
-        }
-    }
-
-
-    private void updateDatabase(String motiveName, Card card, String side) {
-        Motive frontMotive = new Motive();
-        frontMotive.setTextureSlug(motiveName);
-
-        Motive motive;
-        if (motiveRepository.existsMotiveByTextureSlug(motiveName)) {
-            motive = motiveRepository.findByTextureSlug(motiveName);
-        } else {
-            motive = motiveRepository.save(frontMotive);
-        }
-
-        if (card != null) {
-            MotiveMap map = new MotiveMap();
-            map.setMotive(motive);
-            map.setSide(side);
-            map.setCard(card);
-            MotiveMap.MotiveMapId mapId = new MotiveMap.MotiveMapId();
-            mapId.setMotive(motive.getId());
-            mapId.setCard(card.getId());
-            map.setMotiveMapId(mapId);
-            motiveMapRepository.save(map);
-        } else {
-            log.warn("couldn't map " + motiveName + " to a card because there is no database entry for it");
         }
     }
 
@@ -163,11 +177,13 @@ public final class MotiveImportService extends StorageContextAware implements We
      * @param inputStream pdf input
      * @param scaleFactor scale factor for image resolution
      * @return list of images (as stream) in png format for each page
-     * @throws IOException
+     * @throws IOException if pdf has more than 2 pages or pdf is not readable
      */
     public List<ByteArrayOutputStream> printPdfToImage(InputStream inputStream, float scaleFactor) throws IOException {
         var listOut = new LinkedList<ByteArrayOutputStream>();
         try (PDDocument document = PDDocument.load(inputStream)) {
+            if (document.getNumberOfPages() > 2)
+                throw new IOException("PDF hat zu viele Seiten: " + document.getNumberOfPages());
             for (int i = 0; i < document.getNumberOfPages(); i++) {
                 PDPage page = document.getPage(i);
                 page.setMediaBox(page.getTrimBox());
