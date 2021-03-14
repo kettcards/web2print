@@ -24,11 +24,11 @@ public final class SaveController {
         @PathVariable(required = false) String storageId,
         @RequestParam                   String export,
         @RequestParam("data")           String cardData,
-        @RequestParam("form")           String additionalData
+        @RequestParam(required = false) String form
     ) throws IOException, ParseException, MessagingException {
         storageId = storageService.storeCard(storageId, cardData);
         if (export.equals("true"))
-            storageService.exportCard(cardData, additionalData);
+            storageService.exportCard(cardData, form);
         return storageId;
     }
 
