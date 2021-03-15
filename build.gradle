@@ -9,7 +9,7 @@ plugins {
 }
 
 group = 'de.kettcards'
-version = '0.0.1-SNAPSHOT'
+version = '0.1'
 sourceCompatibility = '11'
 
 configurations {
@@ -24,7 +24,6 @@ repositories {
 
 ext {
 	set('snippetsDir', file("build/generated-snippets"))
-	set('testcontainersVersion', "1.15.1")
 }
 
 dependencies {
@@ -38,8 +37,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-
-
 
 	//db
 	runtimeOnly 'org.hsqldb:hsqldb'
@@ -108,12 +105,6 @@ jacocoTestReport {
 	dependsOn test // tests are required to run before generating the report
 }
 
-dependencyManagement {
-	imports {
-		mavenBom "org.testcontainers:testcontainers-bom:${testcontainersVersion}"
-	}
-}
-
 /**
  * Struct Editor Tasks
  */
@@ -133,6 +124,10 @@ task buildTsStruct(type: NpmTask) {
 	workingDir = file("${project.projectDir}/src/ts_struct")
 	args = ['run', 'buildProd']
 }
+
+/**
+ * Front Editor Tasks
+ */
 
 task cleanTsFront() {
 	delete "${project.projectDir}/src/main/resources/static/front/front.js"
@@ -163,6 +158,10 @@ task buildTs() {
 }
 
 assemble() {
+	dependsOn buildTs
+}
+
+bootRun() {
 	dependsOn buildTs
 }
 
