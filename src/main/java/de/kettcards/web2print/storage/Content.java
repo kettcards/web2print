@@ -197,21 +197,19 @@ public final class Content implements Resource {
             throw new ContentException("Media-Typ ist nicht gesetzt");
         if (this.originalFilename == null)
             throw new ContentException("keine gültige Dateiendung feststellbar");
+
+        var lowerFileExt = originalFilename.substring(originalFilename.lastIndexOf('.')).toLowerCase();
         for (var contentExtension : contentExtensions) {
             for (var contentType : contentExtension.getContentTypes()) {
                 if (contentType.equals(this.contentType)) {
-                    for (var fileExtension : contentExtension.getFileExtensions()) {
-                        if (fileExtension.equals(originalFilename.substring(originalFilename.lastIndexOf('.')))) {
-                            return contentExtension;
-                        }
-                    }
+                    if(contentExtension.isValidFileExtension(lowerFileExt))
+                        return contentExtension;
                     break;
                 }
             }
         }
-        throw new ContentException("die Dateiendung \"" +
-                originalFilename.substring(originalFilename.lastIndexOf('.')) +
-                " \" wird nicht unterstützt");
+
+        throw new ContentException("die Dateiendung \"" + lowerFileExt + " \" wird nicht unterstützt");
     }
 
     /**
