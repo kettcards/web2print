@@ -120,8 +120,10 @@ src/main/resources/application-*Dev.properties
 !/data/fonts/**
 
 #front editor
+src/ts_front/front/node_modules
 src/ts_front/front/package-lock.json
 src/main/resources/static/front/front.js
 
 #struct editor
+src/ts_struct/node_modules
 src/main/resources/static/struct/*
