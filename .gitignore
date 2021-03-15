@@ -127,3 +127,6 @@ src/main/resources/static/front/front.js
 #struct editor
 src/ts_struct/node_modules
 src/main/resources/static/struct/*
+
+#default properties
+config/application.properties
