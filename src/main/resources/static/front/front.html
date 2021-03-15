@@ -49,8 +49,12 @@
                 </div>
               </div>
               <div id="font-line-select">
-                <div><label for="fontSizeSelect">Schriftgrö&szlig;e:&nbsp;</label><input type="number" id="fontSizeSelect" min="1" value="16">Pt</div>
-                <div><label for="lh-spinner">Zeilenabstand:&nbsp;</label><input type="number" id="lh-spinner" min="1" value="1.2" max="2.5" step=".1"></div>
+                <table>
+                  <tbody>
+                  <tr><td><label for="fontSizeSelect">Schriftgrö&szlig;e:</label></td><td><input type="number" id="fontSizeSelect" min="1" value="16"></td><td>Pt</td></tr>
+                    <tr><td><label for="lh-spinner">Zeilenabstand:</label></td><td><input type="number" id="lh-spinner" min="1" value="1.2" max="2.5" step=".1"></td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -129,10 +133,10 @@
             <input id="upl-des" class="lower-btn" type="file" accept=".des" onchange="hUpload(event);">
             <button id="save-btn">Speichern</button>
             <div id="save-select-ex" class="select-ex">
-              <p><span class="select-ex-label">Server</span><span class="select-ex-tick">V</span></p>
+              <p><span class="select-ex-label">mein Rechner</span><span class="select-ex-tick">V</span></p>
               <div class="select-ex-options" style="visibility: collapse;">
-                <p>Server</p>
-                <p>lokal</p>
+                <p>bei Kettcards</p>
+                <p>mein Rechner</p>
               </div>
             </div>
           </div>

@@ -476,11 +476,13 @@ body {
   position: relative;
 }
 .select-ex-label {
+  flex-grow: 2;
   overflow: hidden;
   overflow: -moz-hidden-unscrollable;
   overflow: clip;
 }
 .select-ex>p {
+  display: flex;
   border: solid gray 1px;
   background-color: white;
   transition: border-color .25s;
