@@ -119,5 +119,9 @@ src/main/resources/application-*Dev.properties
 /data/**
 !/data/fonts/**
 
+#front editor
+src/ts_front/front/package-lock.json
 src/main/resources/static/front/front.js
+
+#struct editor
 src/main/resources/static/struct/*

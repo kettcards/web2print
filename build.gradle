@@ -114,34 +114,56 @@ dependencyManagement {
 	}
 }
 
-task buildTs(type:Exec) {
-	task cleanJs(type: Delete) {
-		delete "./src/main/resources/static/front/front.js";
-	}
-	dependsOn tasks.cleanJs
+/**
+ * Struct Editor Tasks
+ */
 
-	commandLine 'tools/node/14.15.4/win64/node.exe', "./tools/ts/4.0.b/tsc.js",
-			'-p', './src/ts_front/front/tsconfig.json'
-
-	standardOutput = System.out;
+task cleanTsStruct() {
+	delete "${project.projectDir}/src/main/resources/static/struct"
 }
 
 task buildTsStructDep(type: NpmTask) {
-	description = "Build Struct-Editor Dep"
 	workingDir = file("${project.projectDir}/src/ts_struct")
 	args = ['install']
 }
 
 task buildTsStruct(type: NpmTask) {
+	dependsOn cleanTsStruct
 	dependsOn buildTsStructDep
-	description = "Build Struct-Editor"
 	workingDir = file("${project.projectDir}/src/ts_struct")
 	args = ['run', 'buildProd']
 }
 
+task cleanTsFront() {
+	delete "${project.projectDir}/src/main/resources/static/front/front.js"
+}
 
-build {
-	dependsOn buildTs;
+task buildTsFrontDep(type: NpmTask) {
+	workingDir = file("${project.projectDir}/src/ts_front/front/")
+	args = ['install']
+}
+
+task buildTsFront(type: NpmTask) {
+	dependsOn cleanTsFront
+	dependsOn buildTsFrontDep
+	workingDir = file("${project.projectDir}/src/ts_front/front/")
+	args = ['run', 'build']
+}
+
+
+task cleanTs() {
+	dependsOn cleanTsFront
+	dependsOn cleanTsStruct
+}
+
+task buildTs() {
+	group build
+	dependsOn buildTsFront
+	dependsOn buildTsStruct
+}
+
+assemble() {
+	dependsOn buildTs
 }
 
 tasks.register("bootRunDebug") {
