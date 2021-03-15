@@ -143,14 +143,14 @@ const RenderStyles : IRenderStyle[] = [{
     //find which collider 'section' will house the element
     const mmPos = {
       x: bounds.left * MMPerPx.x,
-      y: (bounds.left + bounds.width) * MMPerPx.x
-    }
+      y: bounds.top  * MMPerPx.y
+    };
     const mmSect = {
       l: 0,
       r: cardFormat.width,
       t: 0,
       b: cardFormat.height
-    }
+    };
 
     for(const fold of cardFormat.folds) {
       if(fold.x1 === fold.x2) {
