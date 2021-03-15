@@ -1,7 +1,6 @@
 package de.kettcards.web2print.web;
 
 import de.kettcards.web2print.service.LayoutStorageService;
-import de.kettcards.web2print.service.PDFExportService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -17,8 +16,8 @@ import java.util.List;
 @RequestMapping("${web2print.links.api-path}")
 public final class SaveController {
 
-    @Autowired private LayoutStorageService storageService;
-    @Autowired private PDFExportService     exportService;
+    @Autowired
+    private LayoutStorageService storageService;
 
     @PostMapping(value = {"/save/", "/save/{storageId}"})
     public String save(
@@ -27,15 +26,15 @@ public final class SaveController {
         @RequestParam("data")           String cardData,
         @RequestParam(required = false) String form
     ) throws IOException, ParseException, MessagingException {
-        storageId = storageService.storeLayout(storageId, cardData);
+        storageId = storageService.storeCard(storageId, cardData);
         if (export.equals("true"))
-            exportService.exportPDF(cardData, form);
+            storageService.exportCard(cardData, form);
         return storageId;
     }
 
     @GetMapping(value = {"/load/{storageId}"}, produces = "application/octet-stream")
     public String load(@PathVariable String storageId) throws IOException {
-        return storageService.loadLayout(storageId);
+        return storageService.loadCard(storageId);
     }
 
     @GetMapping(value = {"/pdfs"})
