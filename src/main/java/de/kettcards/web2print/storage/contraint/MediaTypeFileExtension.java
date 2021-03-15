@@ -5,6 +5,8 @@ import lombok.Value;
 /**
  * associates media type (Content-Type attribute) with the necessary file extension
  * https://wiki.selfhtml.org/wiki/MIME-Type/%C3%9Cbersicht
+ *
+ * File extensions must always be specified in lower case!
  */
 @Value
 public class MediaTypeFileExtension {
@@ -50,6 +52,9 @@ public class MediaTypeFileExtension {
 
     String[] contentTypes, fileExtensions;
 
+    /**
+     * @param extension The extension that should be checked for validity. The extension *must* be in lower case.
+     */
     public boolean isValidFileExtension(String extension) {
         for (String fileExtension : fileExtensions) {
             if (fileExtension.equals(extension)) return true;
