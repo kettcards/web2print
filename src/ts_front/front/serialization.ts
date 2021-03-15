@@ -32,6 +32,7 @@ interface BoundingBox {
 }
 
 function submit(_export : boolean, additionalData ?: any) : void {
+  Dialogs.loading.show();
   const data = serialize();
 
   console.log("sending", data);
@@ -50,8 +51,8 @@ function submit(_export : boolean, additionalData ?: any) : void {
         txt += ` Sie befinden sich nun auf \n${window.location}\n Besuchen Sie diese Addresse später erneut wird das gespeicherte Design automatisch geladen.`;
       alert(txt);
     }).catch(function(e){
-    alert('Fehler beim Senden der Daten!\n'+JSON.stringify(e));
-  });
+      alert('Fehler beim Senden der Daten!\n'+JSON.stringify(e));
+    }).always(Dialogs.loading.hide);
 }
 
 function download() {
