@@ -156,7 +156,7 @@ class Editor {
     document.body.style.cursor = cursor;
   }
   static displayZoom() : void {
-    Editor.$zoomLabel.text(Math.round(Editor.transform.scale * 100));
+    Editor.$zoomLabel.text(Editor.transform.scale.toFixed(2));
   }
   static enableTransition(enable) : void {
     this.$transformAnchor.css('transition', enable ? 'transform 1s' : '');
