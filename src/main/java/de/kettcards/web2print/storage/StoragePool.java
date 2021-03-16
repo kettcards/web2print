@@ -174,7 +174,7 @@ public abstract class StoragePool {
      * @return list of content for the entire context
      * @throws IOException if content can't be listed
      */
-    public abstract List<Content> listContent(StorageContext storageContext) throws IOException;
+    public abstract List<Content> getContents(StorageContext storageContext) throws IOException;
 
     /**
      * deletes content form context by identifier,

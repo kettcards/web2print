@@ -37,7 +37,7 @@ public final class FileStoragePool extends StoragePool {
         Files.createDirectories(determineContextDirectory(storageContext));
 
         //collect entire content
-        storageContext.initialize(listContent(storageContext));
+        storageContext.initialize(getContents(storageContext));
     }
 
     @Override
@@ -65,7 +65,7 @@ public final class FileStoragePool extends StoragePool {
      * @return list of content for the entire context
      * @throws IOException if content can't be listed
      */
-    public List<Content> listContent(StorageContext storageContext) throws IOException {
+    public List<Content> getContents(StorageContext storageContext) throws IOException {
         Path contentPath = determineContextDirectory(storageContext);
         List<Content> contentList = new LinkedList<>();
         Files.walkFileTree(contentPath, new SimpleFileVisitor<>() {
