@@ -83,6 +83,14 @@ public final class Card implements Serializable, VirtualId {
 
      */
 
+    public Motive getFrontMotive() {
+        return frontMotive;
+    }
+
+    public Motive getBackMotive() {
+        return backMotive;
+    }
+
     @Override
     public int getVirtualId() {
         return id;
