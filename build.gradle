@@ -17,6 +17,8 @@ configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
+	//we cant include this because of license issues
+	runtime.exclude group: 'org.aspectj'
 }
 
 repositories {
