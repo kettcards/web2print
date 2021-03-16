@@ -160,7 +160,7 @@ function loadSide(side : 'front'|'back', boxes : Box[]) : void {
       throw new Error(`Can't deserialize box of type '${box['t']}'.`);
     }
 
-    const $el = elType.spawn(bounds);
+    const $el = elType.spawn(bounds, false);
     elType.restore($el, box);
     $el[0].dataset.typeId = box.t;
 
