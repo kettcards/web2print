@@ -81,6 +81,10 @@ export class ImportMotiveDefaultComponent implements OnInit {
         return e.id?.toString() === fileName;
       },
       e => {
+      console.log(fileName.replace( /(^.+)(\w\d+\w)(.+$)/i,'$2'));
+        return e.id?.toString() === fileName.replace( /^\d+|\d+\b|\d+(?=\w)/g,'$2')[0];
+      },
+      e => { //direct naming match
         return e.name === fileName
       }
     ], this.availableFormats);
