@@ -23,14 +23,14 @@ $(".alignmentBtn").click(function(){
 $(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
 
 $('#save-btn').click(function() {
-  if(saveSelect.value === 'Server') {
+  if(saveSelect.value === 'bei Kettcards') {
     submit(false);
   } else {
     download();
   }
 });
 const saveSelect = new SelectEx($('#save-select-ex'));
-saveSelect.value = 'Server';
+saveSelect.value = 'mein Rechner';
 
 $('#del-btn')
   .mouseup(stopPropagation)
