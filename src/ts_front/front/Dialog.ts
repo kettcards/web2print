@@ -77,7 +77,7 @@ class Dialog {
   }
 
   hide : () => void;
-  private _hide() {
+  protected _hide() {
     if(!this.visible)
       return;
 
@@ -97,11 +97,11 @@ class Dialog {
   }
 }
 
-class LoadingDialog extends Dialog {
-  private $bar = $<HTMLProgressElement>('#loading-prog');
+class ProgressDialog extends Dialog {
+  private $bar = $<HTMLProgressElement>('#prog-bar');
 
   constructor() {
-    super($('#loading-dialog'));
+    super($('#progress-dialog'));
     this.show   = this._show.bind(this);
     this.setVal = this._setVal.bind(this);
   }
@@ -125,7 +125,7 @@ class OrderDialog extends Dialog {
   constructor() {
     super($('#order-dialog'));
     const $ctrls = this._attach();
-    this.$target.find('form').submit(OrderDialog._submit);
+    this.$target.parent().submit(this._submit.bind(this));
 
     this.$submitBtn = $ctrls.children('input[type="submit"]');
     this.$reqFields = this.$target.find<HTMLInputElement>('input[required]' as JQuery.Selector)
@@ -145,7 +145,7 @@ class OrderDialog extends Dialog {
     this.$submitBtn.prop('disabled', disabled);
   }
 
-  private static _submit(e : JQuery.SubmitEvent) : void {
+  private _submit(e : JQuery.SubmitEvent) : void {
     e.preventDefault();
 
     const form = e.target as HTMLFormElement;
@@ -159,6 +159,7 @@ class OrderDialog extends Dialog {
     for(const entry of array) {
       data[entry.name] = entry.value;
     }
+    this._hide();
     submit(true, data);
   }
 }
@@ -166,8 +167,9 @@ class OrderDialog extends Dialog {
 class Dialogs {
   static tutorial = new Dialog('./tutorial.frag.html');
   static dsgvo    = new Dialog('./dsgvo.frag.html');
-  static loading  = new LoadingDialog();
+  static progress = new ProgressDialog();
   static order    = new OrderDialog();
+  static loading  = new Dialog($('#loading-dialog'));
 }
 
 if(Cookie.getValue('tutorial') !== 'no') {
