@@ -27,6 +27,7 @@ body {
 }
 
 #right-container {
+  min-width: 10em;
   width: 20%;
   max-width: 300px;
   background-color: lightgray;
@@ -127,25 +128,13 @@ body {
   display: block;
   width: 100%;
 }
-#font-size-select {
+.spinner {
   outline: none;
   max-width: 6ex;
   background: white;
   font-size: inherit;
   text-align: right;
   box-sizing: border-box;
-  border: solid transparent 1px;
-  border: none;
-}
-
-#lh-spinner {
-  outline: none;
-  text-align: right;
-  max-width: 6ex;
-  background: white;
-  font-size: inherit;
-  box-sizing: border-box;
-  border: solid transparent 1px;
   border: none;
 }
 
@@ -539,13 +528,9 @@ body {
 #font-tick {
   height: 25px;
   width: 10px;
-  background-color: rgba(0, 0, 0, 0);
   background-image: url('data:image/svg+xml;utf8,<svg preserveAspectRatio="none" viewBox="0 0 400 600" xmlns="http://www.w3.org/2000/svg"><path fill="%23565656" d="M310 177.998L200 421.995 90.003 177.998H310z"/></svg>');
   background-size: 100% 100%;
   background-repeat: no-repeat;
-}
-#font-tick:hover {
-  background-color: rgba(33, 33, 33, 0.2);
 }
 #font-tick:active {
   background-color: rgba(33, 33, 33, 0.4);
@@ -598,17 +583,18 @@ body {
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23B8B8B8" d="M0 0h26v26H0z"/><path fill="none" stroke="%23FFF" stroke-width="2" d="M3.319 5.661h19.362M11.887 10.554h10.794M3.319 15.445h19.362M9.237 20.338h13.444"/></svg>');
 }
 
-/*todo: dont use a button and all be good*/
 #color-div {
+  border: solid black 1px;
   display: flex;
   margin: 2px
 }
 #toolbar #apply-color {
   background-color: white;
+  cursor: default;
   color: black;
   font-size: 22px;
   font-weight: 700;
-  margin: 0;
+  padding: 0 4px 0 4px;
 }
 #toolbar #apply-color:hover {
   background-color: lightgray;
@@ -616,7 +602,6 @@ body {
 #toolbar #apply-color:active {
   background-color: darkgray;
 }
-/*odot*/
 #color-picker {
   visibility: collapse;
   width: 0;
@@ -625,13 +610,10 @@ body {
   border: none;
   outline: none;
 }
-/*todo: dont use a button and all be good*/
 #toolbar #color-tick {
-  width: 12px;
-  background-color: rgba(0, 0, 0, 0);
+  width: 10px;
   background-image: url('data:image/svg+xml;utf8,<svg width="10" height="26" xmlns="http://www.w3.org/2000/svg"><path fill="%23707070" d="M1.074 7.63l3.927 10.737L8.927 7.63H1.074z"/></svg>');
-  margin: 0;
-  border-left: none;
+  border-left: solid black 1px;
   transition: background-color 0.3s;
 }
 #toolbar #color-tick:hover {
@@ -640,7 +622,6 @@ body {
 #toolbar #color-tick:active {
   background-color: rgba(33, 33, 33, 0.4);
 }
-/*odot*/
 
 .hFold{
   position: absolute;
@@ -778,7 +759,6 @@ input[type="submit"]:not(:disabled):active {
   cursor: ne-resize;
 }
 
-/*todo: look at this*/
 #upl-des-btn {
   width: 100%;
   font-size: 22px;
