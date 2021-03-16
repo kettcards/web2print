@@ -111,19 +111,31 @@ jacocoTestReport {
  */
 
 task cleanTsStruct() {
+	group 'ts'
 	delete "${project.projectDir}/src/main/resources/static/struct"
 }
 
 task buildTsStructDep(type: NpmTask) {
+	group 'ts'
 	workingDir = file("${project.projectDir}/src/ts_struct")
 	args = ['install']
 }
 
 task buildTsStruct(type: NpmTask) {
+	group 'ts'
 	dependsOn cleanTsStruct
 	dependsOn buildTsStructDep
 	workingDir = file("${project.projectDir}/src/ts_struct")
 	args = ['run', 'buildProd']
+}
+
+//you might want to configure proxy for authentication
+//by default webserver is available at localhost:4200
+task debugTsStruct(type: NpmTask) {
+	group 'ts'
+	dependsOn buildTsStructDep
+	workingDir = file("${project.projectDir}/src/ts_struct")
+	args = ['run', 'start']
 }
 
 /**
@@ -131,37 +143,38 @@ task buildTsStruct(type: NpmTask) {
  */
 
 task cleanTsFront() {
+	group 'ts'
 	delete "${project.projectDir}/src/main/resources/static/front/front.js"
 }
 
 task buildTsFrontDep(type: NpmTask) {
+	group 'ts'
 	workingDir = file("${project.projectDir}/src/ts_front/front/")
 	args = ['install']
 }
 
 task buildTsFront(type: NpmTask) {
+	group 'ts'
 	dependsOn cleanTsFront
 	dependsOn buildTsFrontDep
 	workingDir = file("${project.projectDir}/src/ts_front/front/")
 	args = ['run', 'build']
 }
 
+// auto reload for front editor can be enabled in on framed change detection
 
 task cleanTs() {
+	group 'ts'
 	dependsOn cleanTsFront
 	dependsOn cleanTsStruct
 }
 
 task buildTs() {
-	group build
+	group 'ts'
 	dependsOn buildTsFront
 	dependsOn buildTsStruct
 }
 
-assemble() {
-	dependsOn buildTs
-}
-
-bootRun() {
+processResources() {
 	dependsOn buildTs
 }
