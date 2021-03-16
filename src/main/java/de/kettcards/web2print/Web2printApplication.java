@@ -11,7 +11,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @ConfigurationPropertiesScan
 @SpringBootApplication
-@ComponentScan({"de.kettcards.web2print.repository"})
 public class Web2printApplication {
 
     public static void main(String[] args) {
