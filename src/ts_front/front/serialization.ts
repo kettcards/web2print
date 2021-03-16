@@ -108,12 +108,13 @@ function serializeSide($els : JQuery, xOffs : number, target : Box[]) : void {
   }
 }
 
-function hUpload(e : JQuery.ChangeEvent) {
+function hDesUpload(e : JQuery.ChangeEvent) {
   const file = e.target.files[0] as File;
   if (!file)
     return;
 
   file.text().then(loadElementsCompressed.bind(null, true));
+  $('#upl-des').val(null);//clearing the filelist
 }
 
 function loadElementsCompressed(fileSource : Boolean, b64data : string) : void {
