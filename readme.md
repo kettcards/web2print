@@ -46,4 +46,13 @@ The method above should only be used for testing since it requires an active gra
 
 2. use ```java -jar web2print-1.0.jar``` to run the jar
 
+### Setup
+
+The application will start a werbserver at ```http://localhost:8080/web2print```.
+
+The Editor is available at ```http://localhost:8080/web2print/front/front.html```.
+
+The admin interface is available at ```http://localhost:8080/web2print/struct/index.html```.
+By default you can sign in with user ```admin``` with password ```admin``` .
+
 If you want to change the configuration have a look at the available [Properties](properties.md)
