@@ -28,26 +28,26 @@ You can find the executable jar in ```build/libs/web2print-1.0.jar```.
 
 **Note:** If you're running the build process for the first time it might take a while.
 
-# How to run the Application
+## How to run the Application
 
-## Running directly from source
+### Running directly from source
 
 * If you want to test the application you can use the gradle task **bootRun** to run directly from the project directory.
 
-## Running as jar
+### Running from jar
 The method above should only be used for testing since it requires an active gradle daemon in the background. For production use the executable jar, see [Build Instructions](readme.md#build-instructions)
 
 1. create an empty directory and copy the executable jar into it
 
 2. use ```java -jar web2print-1.0.jar``` to run the jar
 
-### Setup
+## How to use
 
 The application will start a werbserver at ```http://localhost:8080/web2print```.
 
 The Editor is available at ```http://localhost:8080/web2print/front/front.html```.
 
 The admin interface is available at ```http://localhost:8080/web2print/struct/index.html```.
-By default you can sign in with user ```admin``` with password ```admin``` .
+By default, you can sign in with user ```admin``` with password ```admin``` .
 
 If you want to change the configuration have a look at the available [Properties](properties.md)
