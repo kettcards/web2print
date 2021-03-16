@@ -15,12 +15,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 import java.util.List;
 
@@ -89,28 +85,10 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .httpBasic();
     }
 
-    /*
     /**
-     * https://docs.spring.io/spring-security/site/docs/5.4.2/reference/html5/#servlet-authentication-jdbc-bean
-     *
-     * @return the active user detail service
+     * authenticates users using the database
+     * https://reflectoring.io/spring-security-password-handling/
      */
-    /*
-    @Bean
-    @Override
-    protected UserDetailsService userDetailsService() {
-        log.error(passwordEncoder().encode("admin"));
-        var struct = configuration.getStructEditor();
-        //TODO remove user when jdbc user management is implemented
-        UserDetails admin = User.builder()
-                .username(struct.getUsername())
-                .password(passwordEncoder().encode(struct.getPassword()))
-                .roles(ADMIN.name()).build();
-        //TODO switch to JdbcUserDetailsManager.class
-        return new InMemoryUserDetailsManager(admin);
-    }
-    */
-
     @Bean
     public AuthenticationProvider daoAuthenticationProvider() {
         log.error(passwordEncoder().encode("admin"));
