@@ -1,7 +1,7 @@
 # web2print
 
 
-# Build Instructions
+## Build Instructions
 
 The following build instructions were tested on Windows 10 and Debian 9.
 
