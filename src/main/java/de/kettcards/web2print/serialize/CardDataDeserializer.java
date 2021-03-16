@@ -49,10 +49,8 @@ public class CardDataDeserializer extends JsonDeserializer<CardData> {
     }
 
     /** todo doc
+     * parses a single page with given elements as a Json node
      *
-     * @param textBoxArrayNode
-     * @return
-     * @throws IOException
      */
     private List<BoxData> parsePage(JsonNode textBoxArrayNode) throws IOException {
         List<BoxData> ret = new ArrayList<>();

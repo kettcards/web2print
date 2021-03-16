@@ -30,6 +30,9 @@ public class MailConfiguration {
     @JsonView(Include.Internal.class)
     private String password;
 
+    @JsonView(Include.Internal.class)
+    private String recipient;
+
     /**
      * direct configuration over properties only works with spring > 5
      * @param configuration requires the config for mail credentials
