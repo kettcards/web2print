@@ -10,7 +10,7 @@ plugins {
 }
 
 group = 'de.kettcards'
-version = '0.1'
+version = '1.0'
 sourceCompatibility = '11'
 
 configurations {
