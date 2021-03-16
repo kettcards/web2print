@@ -85,7 +85,7 @@ const RenderStyles : RenderStyle[] = [{
     ];
 
     //intrinsic colliders
-    $bundle.find('.colliders-layer' as JQuery.Selector)
+    const $collLayer = $bundle.find('.colliders-layer' as JQuery.Selector)
       .append(
         make('div.intrinsic.top'),
         make('div.intrinsic.right'),
@@ -95,23 +95,25 @@ const RenderStyles : RenderStyle[] = [{
 
     // (lucas) this only exists because you can't move move elements across pages in the foldable view
     // and should be removed if the issue is ever resolved
-    // (markus) this only works if there is exactly one vertical or horizontal fold
-    if(lineDefs[0].dir === 'v')
-      $bundle.find('.colliders-layer' as JQuery.Selector).
-        append($(make('div')).css({
-          left  : "calc(50% - 5mm)",
+    for(const fold of card.cardFormat.folds) {
+      if(fold.x1 === fold.x2) {
+        $collLayer.append($(make('div')).css({
+          left  : (fold.x1 - 5)+"mm",
           width : "10mm",
           top   : "-50mm",
           height: "calc(100% + 100mm)",
         }));
-    else if(lineDefs[0].dir === 'h')
-      $bundle.find('.colliders-layer' as JQuery.Selector).
-      append($(make('div')).css({
-        left  : "-50mm",
-        width : "calc(100% + 100mm)",
-        top   : "calc(50% - 5mm)",
-        height: "10mm",
-      }));
+      } else if(fold.y1 === fold.y2) {
+        $collLayer.append($(make('div')).css({
+          left  : "-50mm",
+          width : "calc(100% + 100mm)",
+          top   : (fold.y1 - 5)+"mm",
+          height: "10mm",
+        }));
+      } else {
+        console.warn("Can't create collider for angled folds.");
+      }
+    }
 
     // (lucas 12.03.21) todo: this should be generated from geometry data from the server
     $bundle.find('.front>.colliders-layer' as JQuery.Selector)

@@ -251,7 +251,7 @@ body {
   background-color: #d1d5d4;
 }
 .ruler.top {
-  width: calc(100% + 10px);
+  width: calc(100% + 20px);
   height: 50px;
   top: -60px;
 }
@@ -285,7 +285,7 @@ body {
   transform: translate(-50%, -21px);
 }
 .ruler.left {
-  height: calc(100% + 10px);
+  height: calc(100% + 20px);
   left: -60px;
   width: 50px;
 }
@@ -834,10 +834,10 @@ input[type="submit"]:not(:disabled):active {
   border-top: solid black 1px;
 }
 
-#loading-dialog .dialog-body {
+#progress-dialog .dialog-body {
   text-align: center;
 }
-#loading-prog {
+#progress-prog {
   display: inline-block;
 }
 
@@ -896,4 +896,40 @@ input[type="submit"]:not(:disabled):active {
   position: absolute;
   top: 4px;
   right: 4px;
+}
+
+#lds-ring {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+#lds-ring div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border: 8px solid;
+  border-radius: 50%;
+  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: gray transparent transparent transparent;
+}
+#lds-ring div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+#lds-ring div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+#lds-ring div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+@keyframes lds-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

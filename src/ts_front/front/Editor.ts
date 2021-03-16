@@ -165,11 +165,11 @@ class Editor {
   static createRuler() : void {
     const $topRuler = $('.ruler.top');
     //sadly the stepping needs to be done in js because the cumulative error of stacking css is noticeable
-    for(let i = 0; i < Editor.storage.loadedCard.cardFormat.width; i += 5)
+    for(let i = 0; i <= Editor.storage.loadedCard.cardFormat.width; i += 5)
       $topRuler.append($(make('li')).css('left', i + 'mm').attr('data-val', i / 10));
 
     const $leftRuler = $('.ruler.left');
-    for(let i = 0; i < Editor.storage.loadedCard.cardFormat.height; i += 5)
+    for(let i = 0; i <= Editor.storage.loadedCard.cardFormat.height; i += 5)
       $leftRuler.append($(make('li')).css('top', i + 'mm').attr('data-val', i / 10));
   }
 

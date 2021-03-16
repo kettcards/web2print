@@ -32,6 +32,7 @@ interface BoundingBox {
 }
 
 function submit(_export : boolean, additionalData ?: any) : void {
+  Dialogs.loading.show();
   const data = serialize();
 
   console.log("sending", data);
@@ -50,8 +51,8 @@ function submit(_export : boolean, additionalData ?: any) : void {
         txt += ` Sie befinden sich nun auf \n${window.location}\n Besuchen Sie diese Addresse später erneut wird das gespeicherte Design automatisch geladen.`;
       alert(txt);
     }).catch(function(e){
-    alert('Fehler beim Senden der Daten!\n'+JSON.stringify(e));
-  });
+      alert('Fehler beim Senden der Daten!\n'+JSON.stringify(e));
+    }).always(Dialogs.loading.hide);
 }
 
 function download() {
@@ -108,12 +109,13 @@ function serializeSide($els : JQuery, xOffs : number, target : Box[]) : void {
   }
 }
 
-function hUpload(e : JQuery.ChangeEvent) {
+function hDesUpload(e : JQuery.ChangeEvent) {
   const file = e.target.files[0] as File;
   if (!file)
     return;
 
   file.text().then(loadElementsCompressed.bind(null, true));
+  $('#upl-des').val(null);//clearing the filelist
 }
 
 function loadElementsCompressed(fileSource : Boolean, b64data : string) : void {
@@ -159,7 +161,7 @@ function loadSide(side : 'front'|'back', boxes : Box[]) : void {
       throw new Error(`Can't deserialize box of type '${box['t']}'.`);
     }
 
-    const $el = elType.spawn(bounds);
+    const $el = elType.spawn(bounds, false);
     elType.restore($el, box);
     $el[0].dataset.typeId = box.t;
 

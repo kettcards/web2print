@@ -130,7 +130,7 @@
         <div class="floater bottom no-select">
           <div class="lower-btn">
             <button id="upl-des-btn" onclick="$('#upl-des').trigger('click')">&Ouml;ffnen</button>
-            <input id="upl-des" class="lower-btn" type="file" accept=".des" onchange="hUpload(event);">
+            <input id="upl-des" class="lower-btn" type="file" accept=".des" onchange="hDesUpload(event);">
             <button id="save-btn">Speichern</button>
             <div id="save-select-ex" class="select-ex">
               <p><span class="select-ex-label">mein Rechner</span><span class="select-ex-tick">V</span></p>
@@ -156,15 +156,15 @@
           </div>
         </div>
       </template>
-      <div class="dialog center" id="loading-dialog" style="visibility: collapse;">
+      <div class="dialog center" id="progress-dialog" style="visibility: collapse;">
         <h2 class="dialog-title">Hochladen...</h2>
         <div class="spacer"></div>
         <div class="dialog-body">
-          <progress id="loading-prog" value="0" max="1">%</progress>
+          <progress id="prog-bar" value="0" max="1">%</progress>
         </div>
       </div>
-      <div class="dialog center" id="order-dialog" style="visibility: collapse;">
-        <form autocomplete="on">
+      <form autocomplete="on">
+        <div class="dialog center" id="order-dialog" style="visibility: collapse;">
           <h2 class="dialog-title">Anfrage abschicken</h2>
           <div class="spacer"></div>
           <div class="dialog-body">
@@ -211,7 +211,14 @@
             <button type="button" class="close-btn">Abbrechen</button>
             <input type="submit" value="Senden" disabled>
           </div>
-        </form>
+        </div>
+      </form>
+      <div class="dialog center" id="loading-dialog" style="visibility: collapse;">
+        <h2 class="dialog-title">Bitte warten...</h2>
+        <div class="spacer"></div>
+        <div class="dialog-body" style="text-align: center;">
+          <div id="lds-ring"><div></div><div></div><div></div><div></div></div>
+        </div>
       </div>
     </div>
     <script src="./front.js" type="text/javascript"></script>
