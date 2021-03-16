@@ -3,6 +3,7 @@ package de.kettcards.web2print.storage;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.util.FileSystemUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -104,8 +105,12 @@ public final class FileStoragePool extends StoragePool {
      * @throws IOException if the resolved path is outside the given directory path
      */
     protected Path safeResolveContentName(Path path, String contentName) throws IOException {
-        Path contentPath = path.resolve(contentName).toAbsolutePath();
-        if (!contentPath.startsWith(path.toAbsolutePath()))
+        // if (!contentName.matches("^[\\w\\-. ]+$")) // we might want only a flat structure
+        //    throw new IOException("\"" + contentName + "\" exceeds bound for path:" + path.toAbsolutePath());
+        String baseDir = path.toAbsolutePath().normalize().toString().replace(File.separator, "/");
+        Path contentPath = path.resolve(contentName).toAbsolutePath().normalize();
+        String target = contentPath.toString().replace(File.separator,"/");
+        if (!target.startsWith(baseDir))
             throw new IOException("\"" + contentName + "\" exceeds bound for path:" + path.toAbsolutePath());
         return contentPath;
     }
