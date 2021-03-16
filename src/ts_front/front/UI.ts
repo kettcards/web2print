@@ -9,18 +9,18 @@
 }
 
 class UI {
-  static $fileUpBtn = $<HTMLInputElement>('#fileUpload').change(ImageEl.hFileUploadChanged);
+  static $fileUpBtn = $<HTMLInputElement>('#file-upload').change(ImageEl.hFileUploadChanged);
 }
 
-$("#logoRotation").change(function(e){
+$("#logo-rotation").change(function(e){
   Editor.storage.$target.css('transform', 'rotate('+ $(this).val()+'deg)');
 }).mouseup(stopPropagation);
 
-$(".alignmentBtn").click(function(){
+$(".alignment-btn").click(function(){
   Editor.storage.$target.css('text-align', $(this).val() as string);
 }).mouseup(stopPropagation);
 
-$(".fontTypeButton").click(hChangeFontType).mouseup(stopPropagation);
+$(".font-type-btn").click(hChangeFontType).mouseup(stopPropagation);
 
 $('#save-btn').click(function() {
   if(saveSelect.value === 'bei Kettcards') {
@@ -86,7 +86,7 @@ $fontSelect.children('p').click(function(e) {
   Fonts.$options.css('visibility', 'visible');
 });
 
-const $fontSizeSelect = $<HTMLInputElement>('#fontSizeSelect')
+const $fontSizeSelect = $<HTMLInputElement>('#font-size-select')
   .mousedown(Editor.saveSelection)
   .mouseup(stopPropagation)
   .change(function(e) {

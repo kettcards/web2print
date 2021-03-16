@@ -34,8 +34,8 @@ const Fonts = {
   defaultFont: undefined,
   $options: $('#font-options'),
   $label: $('#font-label'),
-  $boldBtn: $('.fontTypeButton[value=b]'),
-  $italicBtn: $('.fontTypeButton[value=i]'),
+  $boldBtn: $('.font-type-btn[value=b]'),
+  $italicBtn: $('.font-type-btn[value=i]'),
   currentSelection: undefined,
   FontStyleValues: {
     b: 0b001,
