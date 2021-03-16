@@ -5,8 +5,8 @@ import de.kettcards.web2print.model.db.Card;
 import de.kettcards.web2print.model.projectons.CardOverview;
 import de.kettcards.web2print.service.CardService;
 import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 
 @RestController
 @RequestMapping("${web2print.links.api-path}")
@@ -26,7 +26,12 @@ public final class CardController {
 
     @GetMapping("/card/{orderId}")
     public Card getCard(@PathVariable String orderId) {
-        return cardService.findCard(orderId);
+        try {
+            return cardService.findCard(orderId);
+        } catch (HttpClientErrorException ignore) {
+            //we don't need to spam the console only because a user fails to write the correct orderId in the url
+            return null;
+        }
     }
 
 }
