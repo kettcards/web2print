@@ -109,11 +109,6 @@ public class MotiveImportService extends StorageContextAware implements WebConte
                 cardRepository.save(card);
             }
         }
-
-        //TODO remvoe
-        cardRepository.findAll().forEach(c -> {
-            System.out.println(c);
-        });
     }
 
     public void importDefaultMotive(Content content, int cardFormat) throws IOException {
