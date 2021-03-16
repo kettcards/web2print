@@ -1,16 +1,18 @@
-interface RenderStyle {
-  name: string;
-  condition(card : Card): boolean;
-  pageGen(card: Card): DocumentFragment | JQuery<DocumentFragment>;
+interface IRenderStyle {
+  name : string;
+  condition(card : Card) : boolean;
+  pageGen(card: Card) : DocumentFragment | JQuery<DocumentFragment>;
+  pageLabels : string[];
+  initialDotIndex : number;
+  hPageChanged(direction: -1|0|1) : void;
+  clear() : void;
+
   assocPage(side : 'front'|'back', bounds : JQuery.Coordinates) : JQuery<HTMLDivElement>;
   getOffsetForTarget() : number;
-  clear() : void;
-  pageLabels: string[];
-  initialDotIndex: number;
-  hPageChanged(direction: -1 | 0 | 1): void;
+  fitElement(target : JQuery, bounds : JQuery.Coordinates & { width : number, height : number }) : void;
 }
 
-const RenderStyles : RenderStyle[] = [{
+const RenderStyles : IRenderStyle[] = [{
   name: 'Druckbogen',
   condition(card){ return true; },
   BgStretchObjs: {
@@ -136,6 +138,56 @@ const RenderStyles : RenderStyle[] = [{
   assocPage(side, _) {
     return this.data.$bundle.children('.'+side);
   },
+  fitElement(_, bounds) {
+    const ar = bounds.width / bounds.height;
+    const cardFormat = Editor.storage.loadedCard.cardFormat;
+
+    //find which collider 'section' will house the element
+    const mmPos = {
+      x: bounds.left * MMPerPx.x,
+      y: bounds.top  * MMPerPx.y
+    };
+    const mmSect = {
+      l: 0,
+      r: cardFormat.width,
+      t: 0,
+      b: cardFormat.height
+    };
+
+    for(const fold of cardFormat.folds) {
+      if(fold.x1 === fold.x2) {
+        if(mmPos.x < fold.x1) {
+          if(fold.x1 < mmSect.r)
+            mmSect.r = fold.x1;
+        } else {
+          if(fold.x1 > mmSect.l)
+            mmSect.l = fold.x1;
+        }
+      } else if(fold.y1 === fold.y2) {
+        if(mmPos.y < fold.y1) {
+          if(fold.y1 < mmSect.b)
+            mmSect.b = fold.y1
+        } else {
+          if(fold.y1 > mmSect.t)
+            mmSect.t = fold.y1
+        }
+      } else {
+        console.warn('Ignoring angled folds for el fitting.')
+      }
+    }
+
+    const maxRight  = (mmSect.l + (mmSect.r - mmSect.l) * 0.95) / MMPerPx.x;
+    const maxBottom = (mmSect.t + (mmSect.b - mmSect.t) * 0.95) / MMPerPx.y;
+
+    if(bounds.left + bounds.width > maxRight) {
+      bounds.width  = maxRight - bounds.left;
+      bounds.height = bounds.width / ar;
+    }
+    if(bounds.top + bounds.height > maxBottom) {
+      bounds.height = maxBottom - bounds.top;
+      bounds.width  = bounds.height * ar;
+    }
+  },
   getOffsetForTarget() : number {
     return 0;
   },
@@ -152,7 +204,7 @@ const RenderStyles : RenderStyle[] = [{
     $bundle: undefined,
     rot: 0
   }
-} as RenderStyle, {
+} as IRenderStyle, {
   name: 'einzelne Seiten',
   condition(card){
     const folds = card.cardFormat.folds;
@@ -292,6 +344,21 @@ const RenderStyles : RenderStyle[] = [{
       return leftPage.children('.'+side);
     }
   },
+  fitElement($target, bounds) {
+    const ar = bounds.width / bounds.height;
+
+    const maxRight  = $target.width()  * 0.95;
+    const maxBottom = $target.height() * 0.95;
+
+    if(bounds.left + bounds.width > maxRight) {
+      bounds.width  = maxRight - bounds.left;
+      bounds.height = bounds.width / ar;
+    }
+    if(bounds.top + bounds.height > maxBottom) {
+      bounds.height = maxBottom - bounds.top;
+      bounds.width  = bounds.height * ar;
+    }
+  },
   getOffsetForTarget() : number {
     // (lucas) this assumes that you never select elements on paged not visible in the current state
     switch(this.data.state) {
@@ -340,4 +407,4 @@ const RenderStyles : RenderStyle[] = [{
     p1r: 0,
     p2r: 0
   }
-} as RenderStyle];
+} as IRenderStyle];

@@ -42,15 +42,16 @@ const loadCard = function(card : Card) : void {
 
 // spawning new elements
 // [called inline]
-const hElementsLayerClick = function(e : MouseEvent, target : Node) {
+const hElementsLayerClick = function(e : MouseEvent, target : HTMLElement) {
   if(!Editor.storage.addOnClick)
     return;
   e.stopPropagation();
 
+  const $target = $(target);
   const spawnerData = Editor.storage.addOnClick;
-  const el = spawnerData[0]({left: e.offsetX, top: e.offsetY}, true);
+  const el = spawnerData[0]($target, {left: e.offsetX, top: e.offsetY}, true);
   el[0].dataset.typeId = spawnerData[1];
-  $(target).append(el);
+  $target.append(el);
   Editor.storage.addOnClick = undefined;
 };
 
@@ -193,7 +194,7 @@ document.addEventListener('DOMMouseScroll', preventScroll, { passive: false });
 
 
 interface RenderStyleState {
-  style            : RenderStyle;
+  style            : IRenderStyle;
   currentDotIndex  : number;
   dots             : JQuery<Element>[];
   getActiveDot()   : JQuery;

@@ -1,35 +1,35 @@
-interface PrintData {
+type PrintData = {
   v        : '0.2';
   card     : string;
   outerEls : Box[];
   innerEls : Box[];
 }
 type Box = TextBox | ImageBox;
-interface TextBox extends BoundingBox {
+type TextBox = BoundingBox & {
   t  : "t";
   a  : 'l' | 'r' | 'c' | 'j';
   lh : number;
   r  : TextRun[];
-}
+};
 type TextRun = 'br' | ActualTextRun;
-interface ActualTextRun {
+type ActualTextRun = {
   f : string;
   s : number;
   a : number;
   t : string;
   c : string;
 }
-interface ImageBox extends BoundingBox {
-  r: number;
+type ImageBox = BoundingBox & {
+  r : number;
   t : "i";
   s : string;
-}
-interface BoundingBox {
+};
+type BoundingBox = {
   x : number;
   y : number;
   w : number;
   h : number;
-}
+};
 
 function submit(_export : boolean, additionalData ?: any) : void {
   const data = serialize();
@@ -153,17 +153,17 @@ function loadSide(side : 'front'|'back', boxes : Box[]) : void {
       top   : cardHeight - (box.y + box.h) / MMPerPx.y,
       height: box.h / MMPerPx.y
     };
-    const page = renderStyleState.style.assocPage(side, bounds);
+    const $elLayer = renderStyleState.style.assocPage(side, bounds).children('.elements-layer');
 
     const elType = ElementMap[box.t];
     if(!elType) {
       throw new Error(`Can't deserialize box of type '${box['t']}'.`);
     }
 
-    const $el = elType.spawn(bounds, false);
+    const $el = elType.spawn($elLayer, bounds, false);
     elType.restore($el, box);
     $el[0].dataset.typeId = box.t;
 
-    page.children('.elements-layer').append($el);
+    $elLayer.append($el);
   }
 }
