@@ -1,6 +1,8 @@
 package de.kettcards.web2print.security;
 
 import de.kettcards.web2print.config.ApplicationConfiguration;
+import de.kettcards.web2print.model.db.UserCredentials;
+import de.kettcards.web2print.repository.UserCredentialsRepository;
 import de.kettcards.web2print.service.DatabaseUserDetailsService;
 import de.kettcards.web2print.storage.WebContextAware;
 import lombok.extern.slf4j.Slf4j;
@@ -36,11 +38,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final DatabaseUserDetailsService databaseUserDetailsService;
 
-    public SecurityConfiguration(ApplicationConfiguration configuration,
-                                 @Autowired(required = false) List<WebContextAware> webContextAwareList, DatabaseUserDetailsService databaseUserDetailsService) {
+    private final UserCredentialsRepository userCredentialsRepository;
+
+    private final ApplicationConfiguration applicationConfiguration;
+
+    public SecurityConfiguration(ApplicationConfiguration configuration, @Autowired(required = false) List<WebContextAware> webContextAwareList, DatabaseUserDetailsService databaseUserDetailsService, UserCredentialsRepository userCredentialsRepository, ApplicationConfiguration applicationConfiguration) {
         this.configuration = configuration;
         this.webContextAwareList = webContextAwareList;
         this.databaseUserDetailsService = databaseUserDetailsService;
+        this.userCredentialsRepository = userCredentialsRepository;
+        this.applicationConfiguration = applicationConfiguration;
     }
 
     /**
@@ -91,7 +98,14 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      */
     @Bean
     public AuthenticationProvider daoAuthenticationProvider() {
-        log.error(passwordEncoder().encode("admin"));
+        //iff database is empty create a new user which gets his value from the config on start-up
+        if (userCredentialsRepository.count() == 0) {
+            var struct = applicationConfiguration.getStructEditor();
+            UserCredentials standardUser = new UserCredentials();
+            standardUser.setUsername(struct.getUsername());
+            standardUser.setPassword(passwordEncoder().encode(struct.getPassword()));
+            userCredentialsRepository.save(standardUser);
+        }
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(passwordEncoder());
         provider.setUserDetailsService(this.databaseUserDetailsService);
