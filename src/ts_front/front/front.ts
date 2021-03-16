@@ -48,7 +48,7 @@ const hElementsLayerClick = function(e : MouseEvent, target : Node) {
   e.stopPropagation();
 
   const spawnerData = Editor.storage.addOnClick;
-  const el = spawnerData[0]({left: e.offsetX, top: e.offsetY});
+  const el = spawnerData[0]({left: e.offsetX, top: e.offsetY}, true);
   el[0].dataset.typeId = spawnerData[1];
   $(target).append(el);
   Editor.storage.addOnClick = undefined;
