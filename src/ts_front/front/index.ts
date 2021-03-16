@@ -6,10 +6,10 @@
 $.get(`${web2print.links.apiUrl}card/${Parameters.card}`)
   .then(loadCard)
   .catch(function() {
-    alert(Parameters.card
+    alert((Parameters.card
       ? 'Die Karte "'+Parameters.card+'" konnte nicht geladen werden!'
-      : 'Es wurde keine Karte gefunden!');
-    location.href = web2print.links.basePath+'tileview/tileview.html';
+      : 'Es wurde keine Karte gefunden!') + '\nSie werden auf ' + web2print.links.redirectUrl + ' weitergeleitet.');
+    location.href = web2print.links.redirectUrl;
   });
 
 $.get(web2print.links.apiUrl+'fonts')
