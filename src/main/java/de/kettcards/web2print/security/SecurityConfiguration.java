@@ -1,12 +1,15 @@
 package de.kettcards.web2print.security;
 
 import de.kettcards.web2print.config.ApplicationConfiguration;
+import de.kettcards.web2print.service.DatabaseUserDetailsService;
 import de.kettcards.web2print.storage.WebContextAware;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -35,10 +38,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final List<WebContextAware> webContextAwareList;
 
+    private final DatabaseUserDetailsService databaseUserDetailsService;
+
     public SecurityConfiguration(ApplicationConfiguration configuration,
-                                 @Autowired(required = false) List<WebContextAware> webContextAwareList) {
+                                 @Autowired(required = false) List<WebContextAware> webContextAwareList, DatabaseUserDetailsService databaseUserDetailsService) {
         this.configuration = configuration;
         this.webContextAwareList = webContextAwareList;
+        this.databaseUserDetailsService = databaseUserDetailsService;
     }
 
     /**
@@ -83,14 +89,17 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .httpBasic();
     }
 
+    /*
     /**
      * https://docs.spring.io/spring-security/site/docs/5.4.2/reference/html5/#servlet-authentication-jdbc-bean
      *
      * @return the active user detail service
      */
+    /*
     @Bean
     @Override
     protected UserDetailsService userDetailsService() {
+        log.error(passwordEncoder().encode("admin"));
         var struct = configuration.getStructEditor();
         //TODO remove user when jdbc user management is implemented
         UserDetails admin = User.builder()
@@ -99,6 +108,16 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .roles(ADMIN.name()).build();
         //TODO switch to JdbcUserDetailsManager.class
         return new InMemoryUserDetailsManager(admin);
+    }
+    */
+
+    @Bean
+    public AuthenticationProvider daoAuthenticationProvider() {
+        log.error(passwordEncoder().encode("admin"));
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(passwordEncoder());
+        provider.setUserDetailsService(this.databaseUserDetailsService);
+        return provider;
     }
 
     /**
