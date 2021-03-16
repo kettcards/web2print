@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -95,6 +96,13 @@ public abstract class StoragePool {
                 return context;
         }
         return null;
+    }
+
+    /**
+     * @return a list of registered contexts
+     */
+    public List<StorageContext> getContexts() {
+        return new ArrayList<>(storageContextMap.keySet());
     }
 
     /**

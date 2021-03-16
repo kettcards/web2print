@@ -2,6 +2,7 @@ package de.kettcards.web2print.web;
 
 
 import de.kettcards.web2print.storage.*;
+import de.kettcards.web2print.storage.contraint.ExpirationTime;
 import de.kettcards.web2print.storage.contraint.MediaTypeFileExtensionFilter;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
@@ -9,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,6 +50,6 @@ public final class ContentController extends StorageContextAware {
 
     @Override
     public List<StorageConstraint> getStorageConstraints() {
-        return Collections.singletonList(MediaTypeFileExtensionFilter.IMAGE);
+        return Arrays.asList(MediaTypeFileExtensionFilter.IMAGE, new ExpirationTime(Duration.ofSeconds(20)));
     }
 }
