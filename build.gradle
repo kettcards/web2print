@@ -165,14 +165,3 @@ assemble() {
 bootRun() {
 	dependsOn buildTs
 }
-
-tasks.register("bootRunDebug") {
-	group = "application"
-	doFirst {
-		tasks.bootRun.configure {
-			systemProperty("spring.profiles.active", "debug")
-		}
-	}
-	finalizedBy("bootRun")
-}
-
