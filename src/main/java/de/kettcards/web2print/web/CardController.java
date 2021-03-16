@@ -4,13 +4,10 @@ package de.kettcards.web2print.web;
 import de.kettcards.web2print.model.db.Card;
 import de.kettcards.web2print.model.projectons.CardOverview;
 import de.kettcards.web2print.service.CardService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
-@Slf4j
 @RestController
 @RequestMapping("${web2print.links.api-path}")
 public final class CardController {
