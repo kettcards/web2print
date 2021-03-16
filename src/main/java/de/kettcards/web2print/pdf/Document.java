@@ -49,7 +49,7 @@ public final class Document extends PDDocument {
         }
         var font = fontPackageMap.get(fontStyle);
         if (font == null)
-            throw new FontException("Font " + fontName + " doesn't support Font Style: " + fontStyle);
+            throw new FontException("Font " + fontName + " does not support Font Style: " + fontStyle);
         return font;
     }
 

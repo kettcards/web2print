@@ -21,6 +21,11 @@ public final class MaterialSheetRow implements VirtualId {
 
     private String name;
 
+    /** todo pls doc
+     *
+     * @param materialSheet
+     * @return
+     */
     public static List<MaterialSheetRow> parseRows(XSSFSheet materialSheet) {
         var data = new ArrayList<MaterialSheetRow>();
         for (Row row : materialSheet) {

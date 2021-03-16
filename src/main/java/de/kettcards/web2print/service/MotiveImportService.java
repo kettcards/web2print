@@ -11,7 +11,7 @@ import de.kettcards.web2print.repository.MotiveRepository;
 import de.kettcards.web2print.storage.Content;
 import de.kettcards.web2print.storage.StorageContextAware;
 import de.kettcards.web2print.storage.WebContextAware;
-import de.kettcards.web2print.storage.contraint.MediaTypeFileExtension;
+import de.kettcards.web2print.storage.constraint.MediaTypeFileExtension;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;

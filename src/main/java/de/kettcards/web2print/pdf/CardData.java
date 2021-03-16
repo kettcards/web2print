@@ -15,7 +15,7 @@ public class CardData {
 
     private final List<BoxData> outerElements;
 
-    public static final float pageBorder = 28f; //ca. 10mm
+    public static final float PAGE_BORDER = 28f; //ca. 10mm
 
     /**
      * @param pageWidth     page width in pt
@@ -24,8 +24,8 @@ public class CardData {
      * @param outerElements outside nodes
      */
     public CardData(float pageWidth, float pageHeight, List<BoxData> innerElements, List<BoxData> outerElements) {
-        this.pageWidth = pageWidth + (2 * pageBorder);
-        this.pageHeight = pageHeight + (2 * pageBorder);
+        this.pageWidth = pageWidth + (2 * PAGE_BORDER);
+        this.pageHeight = pageHeight + (2 * PAGE_BORDER);
         this.innerElements = innerElements;
         this.outerElements = outerElements;
     }
@@ -43,29 +43,23 @@ public class CardData {
     public static void createPageWith(Document document, List<BoxData> boxDataList, float width, float height) throws IOException {
         document.newPage(width, height);
         drawCutLine(document.stream(), document.page().getMediaBox());
-        document.setBoxOffset(pageBorder,pageBorder);
+        document.setBoxOffset(PAGE_BORDER, PAGE_BORDER);
 
         for (var box : boxDataList) {
-            //drawOutline(box,document);
             box.apply(document);
         }
         document.closeCurrentPage();
     }
 
-    private static void drawOutline(BoxData box, Document document) throws IOException {
-        var content = document.stream();
-        content.setLineWidth(1);
-        content.moveTo(box.getX() + document.getXOffset(), box.getY() + document.getYOffset());
-        content.lineTo(box.width + box.getX() + document.getXOffset(), box.getY() + document.getYOffset());
-        content.lineTo(box.width + box.getX() + document.getXOffset(), box.getY() + document.getYOffset() + box.getHeight());
-        content.lineTo(box.getX() + document.getXOffset(), box.getY() + document.getYOffset() + box.getHeight());
-        content.lineTo(box.getX() + document.getXOffset(), box.getY() + document.getYOffset());
-        content.stroke();
-    }
-
+    /**
+     * this will draw on each corner a cutline mark according the wishes of KettCards. If you want a custom cutline or even no cutline, make sure to remove the call for this method
+     * @param content
+     * @param page
+     * @throws IOException
+     */
     private static void drawCutLine(PDPageContentStream content, PDRectangle page) throws IOException{
-        float xLL = page.getLowerLeftX() + CardData.pageBorder, yLL = page.getLowerLeftY() + CardData.pageBorder, xUL = xLL, yUL = page.getHeight() - CardData.pageBorder,
-                xLR = page.getWidth() - CardData.pageBorder,xUR = page.getUpperRightX() - CardData.pageBorder, yLR = yLL,yUR = page.getUpperRightY() - CardData.pageBorder;
+        float xLL = page.getLowerLeftX() + CardData.PAGE_BORDER, yLL = page.getLowerLeftY() + CardData.PAGE_BORDER, xUL = xLL, yUL = page.getHeight() - CardData.PAGE_BORDER,
+                xLR = page.getWidth() - CardData.PAGE_BORDER,xUR = page.getUpperRightX() - CardData.PAGE_BORDER, yLR = yLL,yUR = page.getUpperRightY() - CardData.PAGE_BORDER;
         content.setLineWidth(1);
         content.moveTo(xLL,0);
         content.lineTo(xLL,yLL - 5);

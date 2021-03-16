@@ -2,7 +2,7 @@ package de.kettcards.web2print.service;
 
 import de.kettcards.web2print.exceptions.content.ContentException;
 import de.kettcards.web2print.storage.StoragePool;
-import de.kettcards.web2print.storage.contraint.ExpirationTime;
+import de.kettcards.web2print.storage.constraint.ExpirationTime;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;

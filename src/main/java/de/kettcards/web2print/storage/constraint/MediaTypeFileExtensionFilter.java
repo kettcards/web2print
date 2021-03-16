@@ -1,4 +1,4 @@
-package de.kettcards.web2print.storage.contraint;
+package de.kettcards.web2print.storage.constraint;
 
 import de.kettcards.web2print.exceptions.content.ContentException;
 import de.kettcards.web2print.storage.Content;
@@ -7,7 +7,7 @@ import de.kettcards.web2print.storage.StorageContext;
 import lombok.NonNull;
 import lombok.Value;
 
-import static de.kettcards.web2print.storage.contraint.MediaTypeFileExtension.*;
+import static de.kettcards.web2print.storage.constraint.MediaTypeFileExtension.*;
 
 @Value
 public class MediaTypeFileExtensionFilter implements StorageConstraint {

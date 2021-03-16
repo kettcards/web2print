@@ -48,6 +48,12 @@ public class CardDataDeserializer extends JsonDeserializer<CardData> {
         return new CardData(mm2pt(cardFormat.getWidth()), mm2pt(cardFormat.getHeight()), innerElse, outerElse);
     }
 
+    /** todo doc
+     *
+     * @param textBoxArrayNode
+     * @return
+     * @throws IOException
+     */
     private List<BoxData> parsePage(JsonNode textBoxArrayNode) throws IOException {
         List<BoxData> ret = new ArrayList<>();
 

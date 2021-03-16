@@ -11,6 +11,13 @@ import java.io.IOException;
 @JsonComponent
 public class ConfigurationResourceSerializer extends JsonSerializer<ApplicationConfiguration> {
 
+    /**todo doc
+     *
+     * @param value
+     * @param gen
+     * @param serializers
+     * @throws IOException
+     */
     @Override
     public void serialize(ApplicationConfiguration value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         gen.writeStartObject();

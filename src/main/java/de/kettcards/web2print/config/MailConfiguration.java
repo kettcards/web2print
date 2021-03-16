@@ -30,10 +30,14 @@ public class MailConfiguration {
     @JsonView(Include.Internal.class)
     private String password;
 
+    /**
+     * direct configuration over properties only works with spring > 5
+     * @param configuration requires the config for mail credentials
+     * @return the mail sender instance
+     */
     @JsonIgnore
     @Bean
     @ConditionalOnMissingBean
-    // direct configuration over properties only works with spring > 5
     public JavaMailSender getJavaMailSender(ApplicationConfiguration configuration) {
         var sender = new JavaMailSenderImpl();
         var mailConfiguration = configuration.getMail();
