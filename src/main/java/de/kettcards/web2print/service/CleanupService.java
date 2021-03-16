@@ -17,7 +17,7 @@ public class CleanupService {
         this.storagePool = storagePool;
     }
 
-    @Scheduled(initialDelay = 5000, fixedRate = 1000)
+    @Scheduled(cron = "${web2print.storage.expired-check}")
     public void doCleanup() {
         log.debug("running cleanup");
         for (var context : storagePool.getContexts()) {
@@ -51,7 +51,5 @@ public class CleanupService {
             }
         }
     }
-
-
 
 }

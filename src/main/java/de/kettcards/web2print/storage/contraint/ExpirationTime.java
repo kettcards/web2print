@@ -13,7 +13,7 @@ import java.time.Instant;
 @Slf4j
 public class ExpirationTime implements StorageConstraint {
 
-    private Duration expirationTime;
+    private final Duration expirationTime;
 
     public ExpirationTime(Duration expirationTime) {
         this.expirationTime = expirationTime;
