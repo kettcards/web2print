@@ -34,7 +34,7 @@ const loadCard = function(card : Card) : void {
 
   if(Parameters.sId)
     $.get(`${web2print.links.apiUrl}load/${Parameters.sId}`)
-      .then(loadElementsCompressed.bind(null, false))
+      .then(Serializer.loadElementsCompressed.bind(null, false))
       .catch(function(e) {
         alert('Es gab einen Fehler beim laden der Elemente!\n'+JSON.stringify(e));
       });
@@ -97,7 +97,7 @@ const hChangeFontType = function() {
 $('body')
   .click(function() {
     Fonts.$options.css('visibility', 'collapse');
-    saveSelect.close();
+    UI.saveSelect.close();
   })
   .mousedown(function(e) {
     // (lucas 11.02.21) I know e.which is deprecated, but there is no suitable replacement as of now
@@ -215,9 +215,9 @@ const renderStyleState : RenderStyleState = {
 
 // [called inline]
 function hRenderStyleBtnClick(index : number) {
-  const data = serialize();
+  const data = Serializer.serialize();
   changeRenderStyle(index);
-  loadElements(data);
+  Serializer.loadElements(data);
 }
 
 function changeRenderStyle(newIndex : number) {

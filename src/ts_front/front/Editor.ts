@@ -1,9 +1,3 @@
-type EditorState = {
-  focusLvl       : number;
-  isDraggingEl   : boolean;
-  isDraggingSelf : boolean;
-  isResizingEl   : boolean;
-};
 type EditorStorage = {
   loadedCard : Card;
   x          : number;
@@ -196,6 +190,6 @@ class Editor {
   }
 
   static displayLineheight() : void {
-    $lhSpinner[0].value = Editor.storage.target.style.lineHeight;
+    UI.$lhSpinner[0].value = Editor.storage.target.style.lineHeight;
   }
 }

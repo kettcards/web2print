@@ -22,14 +22,14 @@ const Elements : IElement[] = [{
       .mousedown(TextEl.hMDown)
       .mouseup(TextEl.hMUp)
       .click(stopPropagation)
-      .on('paste', hTxtPaste)
-      .on('keydown', hTxtKeyDown)
-      .on('keyup', hTxtKeyUp)
+      .on('paste'  , TextEl.hPaste)
+      .on('keydown', TextEl.hKeyDown)
+      .on('keyup'  , TextEl.hKeyUp)
       // (lucas 09.01.21)
       // this is a quick fix to disable the glitchy behaviour when dragging selected text.
       // unfortunately this also produces quite the rough experience when a user actually wants do use drag n drop
       .on("dragstart", falsify)
-      .on("drop", falsify)
+      .on("drop"     , falsify)
       .css(Object.assign({
         'font-family': Fonts.defaultFont,
         'font-size': '16pt',
@@ -172,12 +172,12 @@ const Elements : IElement[] = [{
     img.dataset.aspectRatio = String(data.r);
   }
 }];
-function colorStringToRGB(string){
-  let rgb = string.slice(string.lastIndexOf("(")+1, string.lastIndexOf(")")).split(",");
+function colorStringToRGB(string : string) : string {
+  const rgb = string.slice(string.lastIndexOf("(")+1, string.lastIndexOf(")")).split(",");
   let hex = "#";
-  for(let channel of rgb){
+  for(let channel of rgb) {
     channel = parseInt(channel).toString(16);
-    if(channel.length < 2){
+    if(channel.length < 2) {
       channel = "0"+channel;
     }
     hex = hex + channel;

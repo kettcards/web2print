@@ -37,8 +37,16 @@ const RenderStyles : IRenderStyle[] = [{
       'background-image': 'url("'+web2print.links.textureUrl+card.texture.textureSlug+'")',
     }, this.BgStretchObjs[card.texture.tiling]));
 
-    for(let fold of card.cardFormat.folds) {
-      $bundle.find('.folds-layer' as JQuery.Selector).append(createFold(fold));
+
+    const $foldslayers = $bundle.find('.folds-layer' as JQuery.Selector);
+    for(const fold of card.cardFormat.folds) {
+      if (fold.x1 === fold.x2) {
+        $(make('div.v-fold')).css('left', fold.x1+'mm').appendTo($foldslayers);
+      } else if (fold.y1 === fold.y2) {
+        $(make('div.h-fold')).css('top', fold.y1 + 'mm').appendTo($foldslayers);
+      } else {
+        console.warn("can't display diagonal folds for now");
+      }
     }
 
     const $back  = $bundle.children('.back');

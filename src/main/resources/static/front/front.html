@@ -57,13 +57,6 @@
               </div>
             </div>
           </div>
-          <div class="toolbar-row" style="display: none;">
-            <span class="toolbar-label">Bild</span>
-            <div>
-              <label for="logo-rotation">Rotation</label>
-              <input type="number" id="logo-rotation" min="0" max="360" value="0">
-            </div>
-          </div>
           <div class="toolbar-row">
             <span class="toolbar-label">Sonstige Funktionen</span>
             <div class="toolbar-buttons">
@@ -129,7 +122,7 @@
         <div class="floater bottom no-select">
           <div class="lower-btn">
             <button id="upl-des-btn" onclick="$('#upl-des').trigger('click')">&Ouml;ffnen</button>
-            <input id="upl-des" class="lower-btn" type="file" accept=".des" onchange="hDesUpload(event);">
+            <input id="upl-des" class="lower-btn" type="file" accept=".des" onchange="UI.hDesUpload(event);">
             <button id="save-btn">Speichern</button>
             <div id="save-select-ex" class="select-ex">
               <p><span class="select-ex-label">mein Rechner</span><span class="select-ex-tick">V</span></p>
