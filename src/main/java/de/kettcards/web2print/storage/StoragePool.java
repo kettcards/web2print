@@ -157,7 +157,7 @@ public abstract class StoragePool {
      * @throws IOException if listing was unsuccessful
      */
     public List<String> list(StorageContext storageContext) throws IOException {
-        return list(storageContext, "/");
+        return list(storageContext, "");
     }
 
 
@@ -167,6 +167,14 @@ public abstract class StoragePool {
      * @throws IOException if listing was unsuccessful
      */
     public abstract List<String> list(StorageContext storageContext, String path) throws IOException;
+
+
+    /**
+     * @param storageContext current context
+     * @return list of content for the entire context
+     * @throws IOException if content can't be listed
+     */
+    public abstract List<Content> listContent(StorageContext storageContext) throws IOException;
 
     /**
      * deletes content form context by identifier,
