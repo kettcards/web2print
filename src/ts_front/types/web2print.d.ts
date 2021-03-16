@@ -8,7 +8,6 @@ declare interface Web2print {
          fontUrl : string;
           apiUrl : string;
      redirectUrl : string;
-
   };
   editorConfiguration: {
     maxFileSize : number;
