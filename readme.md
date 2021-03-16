@@ -15,23 +15,18 @@ The following build instructions were tested on Windows 10 and Debian 9.
 
 Download the project source code and navigate with a terminal into the project directory.
 
-Depending on your os use the following build commands:
+Depending on your os use the following build command:
 
 ### Windows
-1. run the **buildTS** Gradle task: `web2print/> gradlew buildTs`
-   this invokes the typescript compiler for the frontend.
-
-2. run the **build** Gradle task: `web2print/> gradlew bootJar`
-   this builds the backend as an executable JAR file.
+* run the **bootJar** Gradle task: `web2print/> gradlew bootJar` this builds the entire project as an executable jar file
 
 ### Linux
-For Linux follow as above but run the commands as:
 
-1. `> ./gradle buildTs`
+* `> ./gradlew bootJar`
 
-2. `> ./gradle bootJar`
+You can find the executable jar in ```build/libs/web2print-1.0.jar```.
 
-You can find the executable jar in ```build/libs/web2print-1.0.jar```
+**Note:** If you're running the build process for the first time it might take a while.
 
 # How to run the Application
 
