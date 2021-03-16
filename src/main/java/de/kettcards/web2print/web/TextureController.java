@@ -1,6 +1,5 @@
 package de.kettcards.web2print.web;
 
-import ch.qos.logback.core.spi.ContextAware;
 import de.kettcards.web2print.model.db.Texture;
 import de.kettcards.web2print.repository.TextureRepository;
 import de.kettcards.web2print.storage.Content;
