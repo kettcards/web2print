@@ -10,14 +10,3 @@ Vor dem Programmstart können folgende Einstellungen festgelegt werden:
 >> die maximale Dateigröße welche hochgeladen werden darf
 
 ##Datenbank
-
-
-
-
-##Struktur-Editor
-
-```web2print.struct-editor.username```
-> der Benutzername für den Login 
-
-```web2print.struct-editor.password```
-> das Passwort für den Login 
