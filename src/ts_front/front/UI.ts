@@ -77,7 +77,7 @@ UI.$colorPicker
   });
 
 $("#color-tick").mousedown(Editor.saveSelection)
-  .click(UI.$colorPicker.click.bind(undefined))
+  .click(function() { UI.$colorPicker.click(); });
 
 Fonts.$options
   .mousedown(stopPropagation)
