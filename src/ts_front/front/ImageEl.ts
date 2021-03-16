@@ -40,7 +40,7 @@ class ImageEl {
   }
   private static maybeShowDialog() {
     if(!ImageEl.uploadFinished)
-      Dialogs.loading.show();
+      Dialogs.progress.show();
   }
   private static mkXhr() {
     let xhr = jQuery.ajaxSettings.xhr();
@@ -49,7 +49,7 @@ class ImageEl {
   }
   private static reportProgress(e : ProgressEvent) : void {
     if(e.lengthComputable) {
-      Dialogs.loading.setVal(e.loaded / e.total);
+      Dialogs.progress.setVal(e.loaded / e.total);
     }
   }
 
@@ -59,7 +59,7 @@ class ImageEl {
     const img = new Image();
     img.onload = function() {
       ImageEl.imgAR = img.width / img.height;
-      Dialogs.loading.hide();
+      Dialogs.progress.hide();
     };
     img.src = `${web2print.links.apiUrl}content/${ImageEl.contentId}`;
   }
@@ -69,7 +69,7 @@ class ImageEl {
     UI.$fileUpBtn.val(null); //emptys the Filelist, is needed if the same file is choosen again
 
     console.error('failed to fetch xhr', e);
-    Dialogs.loading.hide();
+    Dialogs.progress.hide();
     alert("Die ausgewählte Datei konnte nicht hochgeladen werden.\nBitte stellen Sie sicher, dass das Dateiformat: .jpg,.jpeg,.png,.svg ist \nund die Dateigröße nicht "+web2print.editorConfiguration.maxFileSize+"MB überschreitet.");
   }
 }
