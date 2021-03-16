@@ -1,6 +1,7 @@
 package de.kettcards.web2print.web;
 
-import de.kettcards.web2print.service.LayoutStorageService;
+import de.kettcards.web2print.service.OrderingService;
+import de.kettcards.web2print.service.UserLayoutService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
@@ -17,38 +18,37 @@ import java.util.List;
 public final class SaveController {
 
     @Autowired
-    private LayoutStorageService storageService;
+    private OrderingService orderingService;
+
+    @Autowired
+    private UserLayoutService userLayoutService;
 
     @PostMapping(value = {"/save/", "/save/{storageId}"})
     public String save(
-        @PathVariable(required = false) String storageId,
-        @RequestParam                   String export,
-        @RequestParam("data")           String cardData,
-        @RequestParam(required = false) String form
+            @PathVariable(required = false) String storageId,
+            @RequestParam String export,
+            @RequestParam("data") String cardData,
+            @RequestParam(required = false) String form
     ) throws IOException, ParseException, MessagingException {
-        storageId = storageService.storeCard(storageId, cardData);
+        storageId = userLayoutService.storeCard(storageId, cardData);
         if (export.equals("true"))
-            storageService.exportCard(cardData, form);
+            orderingService.exportCard(cardData, form);
         return storageId;
     }
 
     @GetMapping(value = {"/load/{storageId}"}, produces = "application/octet-stream")
     public String load(@PathVariable String storageId) throws IOException {
-        return storageService.loadCard(storageId);
+        return userLayoutService.loadCard(storageId);
     }
 
     @GetMapping(value = {"/pdfs"})
     public List<String> list() throws IOException, ParseException {
-        return storageService.list();
+        return orderingService.list();
     }
 
     @GetMapping(value = {"/pdfs/{storageId}"}, produces = "application/pdf")
     public Resource show(@PathVariable(required = false) String storageId) throws IOException {
-        return storageService.load(storageId);
+        return orderingService.load(storageId);
     }
 
-    @PostMapping("/order")
-    public void order(String storageId) {
-
-    }
 }
