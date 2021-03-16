@@ -13,8 +13,11 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 
     private final UserCredentialsRepository userCredentialsRepository;
 
-    public DatabaseUserDetailsService(UserCredentialsRepository userCredentialsRepository) {
+    private final UserDetailsMapper userDetailsMapper;
+
+    public DatabaseUserDetailsService(UserCredentialsRepository userCredentialsRepository, UserDetailsMapper userDetailsMapper) {
         this.userCredentialsRepository = userCredentialsRepository;
+        this.userDetailsMapper = userDetailsMapper;
     }
 
     @Override
@@ -27,11 +30,7 @@ public class DatabaseUserDetailsService implements UserDetailsService {
 
         UserCredentials userCredentials = userCredentialsRepository.findByUsername(username)
                 .orElse(fakeUser);
-        return User.withUsername(userCredentials.getUsername())
-                .password(userCredentials.getPassword())
-                //TODO: use role system with database and not just assume role admin for every user
-                .roles(Roles.ADMIN.name())
-                .build();
+        return userDetailsMapper.toUserDetails(userCredentials);
     }
 
 }

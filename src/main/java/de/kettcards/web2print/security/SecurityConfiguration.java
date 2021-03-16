@@ -3,6 +3,7 @@ package de.kettcards.web2print.security;
 import de.kettcards.web2print.config.ApplicationConfiguration;
 import de.kettcards.web2print.model.db.UserCredentials;
 import de.kettcards.web2print.repository.UserCredentialsRepository;
+import de.kettcards.web2print.service.DatabaseUserDetailPasswordService;
 import de.kettcards.web2print.service.DatabaseUserDetailsService;
 import de.kettcards.web2print.storage.WebContextAware;
 import lombok.extern.slf4j.Slf4j;
@@ -42,12 +43,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final ApplicationConfiguration applicationConfiguration;
 
-    public SecurityConfiguration(ApplicationConfiguration configuration, @Autowired(required = false) List<WebContextAware> webContextAwareList, DatabaseUserDetailsService databaseUserDetailsService, UserCredentialsRepository userCredentialsRepository, ApplicationConfiguration applicationConfiguration) {
+    private final DatabaseUserDetailPasswordService databaseUserDetailPasswordService;
+
+    public SecurityConfiguration(ApplicationConfiguration configuration, @Autowired(required = false) List<WebContextAware> webContextAwareList, DatabaseUserDetailsService databaseUserDetailsService, UserCredentialsRepository userCredentialsRepository, ApplicationConfiguration applicationConfiguration, DatabaseUserDetailPasswordService databaseUserDetailPasswordService) {
         this.configuration = configuration;
         this.webContextAwareList = webContextAwareList;
         this.databaseUserDetailsService = databaseUserDetailsService;
         this.userCredentialsRepository = userCredentialsRepository;
         this.applicationConfiguration = applicationConfiguration;
+        this.databaseUserDetailPasswordService = databaseUserDetailPasswordService;
     }
 
     /**
@@ -110,6 +114,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(passwordEncoder());
         provider.setUserDetailsService(this.databaseUserDetailsService);
+        provider.setUserDetailsPasswordService(this.databaseUserDetailPasswordService);
         return provider;
     }
 
