@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -98,6 +99,13 @@ public abstract class StoragePool {
     }
 
     /**
+     * @return a list of registered contexts
+     */
+    public List<StorageContext> getContexts() {
+        return new ArrayList<>(storageContextMap.keySet());
+    }
+
+    /**
      * @return a map of the exposed name and the resource path
      */
     public abstract Map<String, String> getNamespaceWebMatchingContext();
@@ -149,7 +157,7 @@ public abstract class StoragePool {
      * @throws IOException if listing was unsuccessful
      */
     public List<String> list(StorageContext storageContext) throws IOException {
-        return list(storageContext, "/");
+        return list(storageContext, "");
     }
 
 
@@ -159,6 +167,14 @@ public abstract class StoragePool {
      * @throws IOException if listing was unsuccessful
      */
     public abstract List<String> list(StorageContext storageContext, String path) throws IOException;
+
+
+    /**
+     * @param storageContext current context
+     * @return list of content for the entire context
+     * @throws IOException if content can't be listed
+     */
+    public abstract List<Content> getContents(StorageContext storageContext) throws IOException;
 
     /**
      * deletes content form context by identifier,
