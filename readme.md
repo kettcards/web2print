@@ -7,7 +7,7 @@ The following build instructions were tested on Windows 10 and Debian 9.
 
 ## Requirements:
 
-* JDK 11, we recommand [AdoptoJDK](https://adoptopenjdk.net/releases.html)
+* JDK 11, we recommand [AdoptOpenJDK](https://adoptopenjdk.net/releases.html)
 
 * JAVA_HOME - enviroment variable which contains a valid path to the JDK
 
