@@ -92,13 +92,13 @@ const Elements : IElement[] = [{
     if(align)
       $ownInstance.css('text-align', align);
 
-    $ownInstance.css('line-hight', data.lh);
+    $ownInstance.css('line-height', data.lh);
 
     let $currentP = $(make('p'));
     for(const run of data.r) {
       if(run === 'br') {
-        if($currentP.children().length < 1)
-          $currentP.append(make('span'));
+        if($currentP[0].childElementCount < 1 || $currentP.text().length < 1)
+          $currentP.append(make('span', make('br')));
         $ownInstance.append($currentP);
         $currentP = $(make('p'));
       } else {
