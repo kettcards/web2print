@@ -2,6 +2,7 @@
 /// <reference path="./front.ts" />
 /// <reference path="./Fonts.ts" />
 /// <reference path="./UI.ts" />
+/// <reference path="./Dialog.ts" />
 
 $.get(`${web2print.links.apiUrl}card/${Parameters.card}`)
   .then(loadCard)
@@ -15,5 +16,5 @@ $.get(`${web2print.links.apiUrl}card/${Parameters.card}`)
 $.get(web2print.links.apiUrl+'fonts')
   .then(Fonts.loadFonts)
   .catch(function(e) {
-    alert('[fatal] something went wrong loading fonts: '+JSON.stringify(e));
+    Dialogs.alert.showErrorHtml(`<p>Beim laden der Schriften ist ein fehler aufgetreten:</p><code>${JSON.stringify(e)}</code>`);
   });

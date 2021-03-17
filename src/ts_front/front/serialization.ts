@@ -48,11 +48,13 @@ function submit(_export : boolean, additionalData ?: any) : void {
       window.history.replaceState({}, Editor.storage.loadedCard.name+" - Web2Print", stringifyParameters());
       let txt = 'Daten erfolgreich gesendet!';
       if(!_export)
-        txt += ` Sie befinden sich nun auf \n${window.location}\n Besuchen Sie diese Addresse später erneut wird das gespeicherte Design automatisch geladen.`;
-      alert(txt);
+        txt += ` Sie befinden sich nun auf<br/><a href="${window.location}">${window.location}</a></br> Besuchen Sie diese Addresse später erneut wird das gespeicherte Design automatisch geladen.<br/>Die Addresse kann von jedem ge&ouml;ffnet werden, insofern er den link kennt!`;
+      Dialogs.loading.hide();
+      Dialogs.alert.showHtml("Erfolg!", txt);
     }).catch(function(e){
-      alert('Fehler beim Senden der Daten!\n'+JSON.stringify(e));
-    }).always(Dialogs.loading.hide);
+      Dialogs.loading.hide();
+      Dialogs.alert.showErrorHtml(`<p>Fehler beim Senden der Daten:</p><code>${JSON.stringify(e)}</code>`, "error while sending data: ", e);
+    });
 }
 
 function download() {
@@ -121,12 +123,7 @@ function hDesUpload(e : JQuery.ChangeEvent) {
 function loadElementsCompressed(fileSource : Boolean, b64data : string) : void {
   const data : PrintData = JSON.parse(atob(b64data));
   if(Parameters.card !== data.card) {
-    // (lucas) todo: allow loading of designs associated with a different card
-    // We could prompt here if the user just wants to change the card layout.
-    // The problem with this idea is that we cant easily store the data if we actually navigate to the different address
-    // and the loadCard method is not designed to be called multiple times, so we cant just call it again arnd replace the history.
-
-    alert(`Das Design kann nicht geladen werden, da es zu einer anderen Karte gehört (${data.card}).`);
+    Dialogs.alert.showHtml("Falsche Karte", `Das Design kann nicht geladen werden, da es zu einer anderen Karte gehört (${data.card}).<br/>Klicken Sie <a href="${window.location.href.split('?')[0]}?card=${data.card}">hier</a> um die aktuelle karte zu schlie&szlig;en und die Karte ${data.card} zu &ouml;ffnen.`);
     throw new Error('invalid card format');
   }
 
