@@ -90,6 +90,7 @@ export class ImportTextureComponent extends ImportMenu<CardMaterial> implements 
 
   submit(element: StatefulWrappedFileType<CardMaterial>): void {
     console.log('importing ', element);
+    if (element.type?.id)
     this.api.setTexture(element).subscribe(
       response => {
         element.state = FileState.SUCCESSFUL;
