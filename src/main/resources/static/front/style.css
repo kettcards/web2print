@@ -546,7 +546,7 @@ body {
 .font-type-btn[value=b]:hover {
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23B8B8B8" d="M0 0h26v26H0z"/><path fill="%23FFF" d="M7.823 4.753h10.713v3.25h-6.734v4.004h6.292v3.225h-6.292v7.047H7.823V4.753z"/></svg>');
 }
-.fontTypeButton[value=b]:disabled {
+.font-type-btn[value=b]:disabled {
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23a30505" d="M0 0h26v26H0z"/><path fill="%23FFF" d="M7.823 4.753h10.713v3.25h-6.734v4.004h6.292v3.225h-6.292v7.047H7.823V4.753z"/></svg>');
 }
 .font-type-btn[value=i] {
@@ -558,7 +558,7 @@ body {
 .font-type-btn[value=i]:hover {
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23B8B8B8" d="M0 0h26v26H0z"/><path fill="%23FFF" d="M10.336 4.753h2.158l-1.638 8.528.13-.026c.598-.728 1.196-1.352 1.716-1.949l6.162-6.553h2.704l-7.384 7.541 4.524 9.984h-2.366l-3.822-8.607-2.106 1.951-1.273 6.656H7.008l3.328-17.525z"/></svg>');
 }
-.fontTypeButton[value=i]:disabled {
+.font-type-btn[value=i]:disabled {
   background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><path fill="%23a30505" d="M0 0h26v26H0z"/><path fill="%23FFF" d="M10.336 4.753h2.158l-1.638 8.528.13-.026c.598-.728 1.196-1.352 1.716-1.949l6.162-6.553h2.704l-7.384 7.541 4.524 9.984h-2.366l-3.822-8.607-2.106 1.951-1.273 6.656H7.008l3.328-17.525z"/></svg>');
 }
 .alignment-btn[value=left] {
