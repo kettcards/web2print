@@ -80,6 +80,9 @@ export class ImportMotiveDefaultComponent implements OnInit {
       e => { //look based on number
         return e.id?.toString() === fileName;
       },
+      e => { //look based on number
+        return e.match(/\\d+/);
+      },
       e => {
         return e.name === fileName
       }
