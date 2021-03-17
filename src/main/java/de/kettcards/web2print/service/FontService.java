@@ -44,8 +44,7 @@ public final class FontService extends StorageContextAware implements WebContext
 
     @Override
     public void initialize(List<Content> contents) {
-        //if (contents.isEmpty()) {
-            //TODO unpack fonts
+        if (contents.isEmpty()) {
             try {
                 var resourceBaseUri = new DefaultResourceLoader().getResource("classpath:" + DEFAULT_FONTS).getURI();
                 System.out.println("baseUri: " + resourceBaseUri);
@@ -69,8 +68,12 @@ public final class FontService extends StorageContextAware implements WebContext
             } catch (Exception ex) {
                 log.error("unable to extract default fonts", ex);
             }
-            //}
-        // initFontStore(contents);
+        }
+        try {
+            initFontStore(getContents());
+        } catch (IOException ex) {
+            log.error("unable to list font files", ex);
+        }
     }
 
     public void initFontStore(List<Content> contents) {
@@ -95,11 +98,12 @@ public final class FontService extends StorageContextAware implements WebContext
      * if there already is a order stored in-memory and it wasn't changed by the admin just return the in-memory order
      * otherwise create a new order list from ordered.json. If the json file doesn't exist/can't be loaded it will just
      * load the fontStore keySet like before
+     *
      * @param newOrder boolean which is set to true when a new order is set
      * @return Fontnames in correct order
      */
     public List<String> listAvailableFonts(boolean newOrder) {
-        if(!order.isEmpty() && !newOrder)
+        if (!order.isEmpty() && !newOrder)
             return order;
 
         ArrayList<String> orderedFonts;
@@ -126,6 +130,7 @@ public final class FontService extends StorageContextAware implements WebContext
 
     /**
      * saves fonts in set order into orderedFonts.json located in data/fonts
+     *
      * @param fonts fonts in correct order
      * @throws IOException throws exception if either JSON parsing of parameter or saving of the json file fails
      */
