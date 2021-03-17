@@ -21,11 +21,11 @@ public class TextParagraph {
     }
 
     /**
-     *
+     * this method will determine the largest SpanDimension in next line
      * @param doc document to obtain the Fonts
      * @return the largest font size present in the given spans
      */
-    public SpanDimension getLargestFontSize(Document doc, float currentLineHeight) throws IOException {
+    public SpanDimension getLargestDimension(Document doc, float currentLineHeight) throws IOException {
         SpanDimension largestDim = SpanDimension.getZeroInstance();
         for (var textSpan : textSpans) {
             TrueTypeFont ttf = doc.getFont(textSpan.getFontName(),textSpan.getFontStyle()).getValue();

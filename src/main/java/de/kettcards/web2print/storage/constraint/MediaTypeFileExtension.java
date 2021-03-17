@@ -1,4 +1,4 @@
-package de.kettcards.web2print.storage.contraint;
+package de.kettcards.web2print.storage.constraint;
 
 import lombok.Value;
 

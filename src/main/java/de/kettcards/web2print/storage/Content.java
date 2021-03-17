@@ -1,8 +1,8 @@
 package de.kettcards.web2print.storage;
 
 import de.kettcards.web2print.exceptions.content.ContentException;
-import de.kettcards.web2print.storage.contraint.MediaTypeFileExtension;
-import de.kettcards.web2print.storage.contraint.MediaTypeFileExtensionFilter;
+import de.kettcards.web2print.storage.constraint.MediaTypeFileExtension;
+import de.kettcards.web2print.storage.constraint.MediaTypeFileExtensionFilter;
 import lombok.NonNull;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -15,8 +15,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * {@link Resource} wrapper with additional properties
