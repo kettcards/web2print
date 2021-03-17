@@ -26,6 +26,7 @@ public class ConfigurationResourceSerializer extends JsonSerializer<ApplicationC
         gen.writeStringField("thumbnailUrl", links.getThumbnailUrl());
         gen.writeStringField("fontUrl", links.getFontUrl());
         gen.writeStringField("motiveUrl", links.getMotiveUrl());
+        gen.writeStringField("redirectUrl", links.getRedirectUrl());
         gen.writeEndObject();
 
         gen.writeFieldName("editorConfiguration");

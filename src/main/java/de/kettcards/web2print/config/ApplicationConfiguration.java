@@ -7,6 +7,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.util.unit.DataSize;
 
+import java.time.Duration;
+
 @Data
 @ConfigurationProperties("web2print")
 public class ApplicationConfiguration {
@@ -28,7 +30,8 @@ public class ApplicationConfiguration {
     private EditorConfiguration editor;
 
     @JsonView(Include.Internal.class)
-    private String baseDir;
+    @NestedConfigurationProperty
+    private StorageConfiguration storage;
 
     @JsonView(Include.Internal.class)
     private StructConfiguration structEditor;
@@ -57,6 +60,9 @@ public class ApplicationConfiguration {
         @JsonView(Include.Public.class)
         private String motiveUrl;
 
+        @JsonView(Include.Public.class)
+        private String redirectUrl;
+
     }
 
     @Data
@@ -78,6 +84,20 @@ public class ApplicationConfiguration {
 
         @JsonView(Include.Public.class)
         private DataSize maxRequestSize;
+
+    }
+
+    @Data
+    public static class StorageConfiguration {
+
+        @JsonView(Include.Internal.class)
+        private String baseDir;
+
+        @JsonView(Include.Internal.class)
+        private String expiredCheck;
+
+        @JsonView(Include.Internal.class)
+        private Duration userContent;
 
     }
 

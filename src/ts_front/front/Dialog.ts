@@ -77,7 +77,7 @@ class Dialog {
   }
 
   hide : () => void;
-  private _hide() {
+  protected _hide() {
     if(!this.visible)
       return;
 
@@ -97,11 +97,11 @@ class Dialog {
   }
 }
 
-class LoadingDialog extends Dialog {
-  private $bar = $<HTMLProgressElement>('#loading-prog');
+class ProgressDialog extends Dialog {
+  private $bar = $<HTMLProgressElement>('#prog-bar');
 
   constructor() {
-    super($('#loading-dialog'));
+    super($('#progress-dialog'));
     this.show   = this._show.bind(this);
     this.setVal = this._setVal.bind(this);
   }
@@ -125,7 +125,7 @@ class OrderDialog extends Dialog {
   constructor() {
     super($('#order-dialog'));
     const $ctrls = this._attach();
-    this.$target.find('form').submit(OrderDialog._submit);
+    this.$target.parent().submit(this._submit.bind(this));
 
     this.$submitBtn = $ctrls.children('input[type="submit"]');
     this.$reqFields = this.$target.find<HTMLInputElement>('input[required]' as JQuery.Selector)
@@ -145,12 +145,12 @@ class OrderDialog extends Dialog {
     this.$submitBtn.prop('disabled', disabled);
   }
 
-  private static _submit(e : JQuery.SubmitEvent) : void {
+  private _submit(e : JQuery.SubmitEvent) : void {
     e.preventDefault();
 
     const form = e.target as HTMLFormElement;
     if(!form.checkValidity()) {
-      alert("Bitte tragen Sie gültige Datein ein!");
+      Dialogs.alert.showHtml("Ungültige Daten", "Bitte tragen Sie g&uuml;ltige Datein ein!");
       return;
     }
 
@@ -159,15 +159,56 @@ class OrderDialog extends Dialog {
     for(const entry of array) {
       data[entry.name] = entry.value;
     }
+    this._hide();
     submit(true, data);
   }
 }
 
+class AlertDialog extends Dialog {
+  $titleEl : JQuery;
+  $bodyEl  : JQuery;
+
+  constructor() {
+    super($('#alert-dialog'));
+    this._attach();
+
+    this.$titleEl = this.$target.children('.dialog-title');
+    this.$bodyEl  = this.$target.children('.dialog-body');
+
+    this.showHtml      = this._showHtml     .bind(this);
+    this.showError     = this._showError    .bind(this);
+    this.showErrorHtml = this._showErrorHtml.bind(this);
+  }
+
+  showHtml : (title : string, html : string) => void;
+  private _showHtml(title : string, html : string) : void {
+    this.$titleEl.text(title);
+    this.$bodyEl.html(html);
+    this._show();
+  }
+  showError : (text : string, obj ?: any) => void;
+  private _showError(text : string, obj ?: any) : void {
+    console.error(text, obj);
+    this.$titleEl.text('Error');
+    this.$bodyEl.text(text);
+    this._show();
+  }
+  showErrorHtml : (html : string, consoleErr ?: string, obj ?: any) => void;
+  private _showErrorHtml(html : string, consoleErr ?: string, obj ?: any) : void {
+    console.error(consoleErr || html, obj);
+    this.$titleEl.text('Error');
+    this.$bodyEl.html(html);
+    this._show();
+  }
+}
+
 class Dialogs {
+  static alert    = new AlertDialog();
   static tutorial = new Dialog('./tutorial.frag.html');
   static dsgvo    = new Dialog('./dsgvo.frag.html');
-  static loading  = new LoadingDialog();
+  static progress = new ProgressDialog();
   static order    = new OrderDialog();
+  static loading  = new Dialog($('#loading-dialog'));
 }
 
 if(Cookie.getValue('tutorial') !== 'no') {

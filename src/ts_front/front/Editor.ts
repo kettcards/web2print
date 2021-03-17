@@ -156,7 +156,7 @@ class Editor {
     document.body.style.cursor = cursor;
   }
   static displayZoom() : void {
-    Editor.$zoomLabel.text(Math.round(Editor.transform.scale * 100));
+    Editor.$zoomLabel.text(Math.floor(100 * Editor.transform.scale));
   }
   static enableTransition(enable) : void {
     this.$transformAnchor.css('transition', enable ? 'transform 1s' : '');
@@ -165,11 +165,11 @@ class Editor {
   static createRuler() : void {
     const $topRuler = $('.ruler.top');
     //sadly the stepping needs to be done in js because the cumulative error of stacking css is noticeable
-    for(let i = 0; i < Editor.storage.loadedCard.cardFormat.width; i += 5)
+    for(let i = 0; i <= Editor.storage.loadedCard.cardFormat.width; i += 5)
       $topRuler.append($(make('li')).css('left', i + 'mm').attr('data-val', i / 10));
 
     const $leftRuler = $('.ruler.left');
-    for(let i = 0; i < Editor.storage.loadedCard.cardFormat.height; i += 5)
+    for(let i = 0; i <= Editor.storage.loadedCard.cardFormat.height; i += 5)
       $leftRuler.append($(make('li')).css('top', i + 'mm').attr('data-val', i / 10));
   }
 

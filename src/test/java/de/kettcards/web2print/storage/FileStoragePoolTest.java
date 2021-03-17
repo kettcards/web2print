@@ -1,5 +1,6 @@
 package de.kettcards.web2print.storage;
 
+import de.kettcards.web2print.exceptions.content.ContentException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -88,6 +90,35 @@ public class FileStoragePoolTest {
 
         //get invalid
         assertThrows(IOException.class, () -> context.load("invalid"));
+
+    }
+
+    @Test
+    public void testMaliciousId() throws Exception {
+        String namespace = "test_namespace";
+        //create pool with one namespace
+        var context = new TestStorageContextAwareImpl(namespace);
+        FileStoragePool fileStoragePool = createPoolWith(context);
+        //namespace folder should be there
+        assertTrue(Files.isDirectory(testDirectory.resolve(namespace)));
+
+        String message = "this is a test and i want to be uploaded";
+        Content messageContent = stringToContent(message);
+
+        //assert fail on directory change
+        assertThrows(IOException.class, () -> {
+            context.save(messageContent, "../file.txt");
+        });
+
+        assertThrows(IOException.class, () -> {
+            context.save(messageContent, "/file.txt");
+        });
+
+        context.save(messageContent, "../test_namespace/file.txt");
+
+        assertThrows(IOException.class, () -> {
+            context.save(messageContent, "../test_namespace/../file.txt");
+        });
 
     }
 

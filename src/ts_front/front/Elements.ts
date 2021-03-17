@@ -1,10 +1,10 @@
-type Spawner = (p : JQuery.Coordinates | JQuery.PlainObject) => JQuery;
+type Spawner = (target : JQuery, p : JQuery.PlainObject & JQuery.Coordinates, restrictSize : boolean) => JQuery;
 type SpawnerData = [fn : Spawner, id : string];
 
 interface IElement {
   displayName    : string;
   getSpawner()   : Spawner;
-  spawn : (css : JQuery.PlainObject) => JQuery;
+  spawn          : Spawner;
   serializedType : 't' | 'i';
   serialize($instance : JQuery) : any;
   restore($ownInstance : JQuery, data : any) : void;
@@ -15,7 +15,7 @@ const Elements : IElement[] = [{
   getSpawner(): Spawner {
     return this.spawn;
   },
-  spawn(css) : JQuery<HTMLDivElement> {
+  spawn(__, css, _) : JQuery<HTMLDivElement> {
     if(Editor.storage.spawnBtn) Editor.storage.spawnBtn.toggleClass('active');
     Editor.storage.spawnBtn = undefined;
     return $<HTMLDivElement> ('<div class="text" contenteditable="true" style="line-height: 1.2;"><p><span>Ihr Text hier!</span></p></div>')
@@ -119,7 +119,7 @@ const Elements : IElement[] = [{
     UI.$fileUpBtn.click();
     return this.spawn;
   },
-  spawn(p: JQuery.Coordinates | JQuery.PlainObject) : JQuery<HTMLImageElement> {
+  spawn(target, p, restrictSize) : JQuery<HTMLImageElement> {
     if(Editor.storage.spawnBtn) Editor.storage.spawnBtn.toggleClass('active');
     Editor.storage.spawnBtn = undefined;
 
@@ -131,20 +131,15 @@ const Elements : IElement[] = [{
       const ar = img.width / img.height;
       img.dataset.aspectRatio = String(ar);
 
-      const maxRight  = Editor.storage.loadedCard.cardFormat.width  * 0.9 / MMPerPx.x;
-      const maxBottom = Editor.storage.loadedCard.cardFormat.height * 0.9 / MMPerPx.y;
-      const dims = {
+      let dims = {
         width : img.width,
         height: img.height,
       }
 
-      if(p.left + img.width > maxRight) {
-        dims.width  = maxRight - p.left;
-        dims.height = dims.width / ar;
-      }
-      if(p.top + dims.height > maxBottom) {
-        dims.height = maxBottom - p.top;
-        dims.width  = dims.height * ar;
+      if(restrictSize) {
+        Object.assign(dims, p);
+        // (lucas 15.03.21) 'back' is hardcoded for now
+        renderStyleState.style.fitElement(target, dims as (JQuery.Coordinates & { width : number, height : number }));
       }
 
       $(img).css(dims);
