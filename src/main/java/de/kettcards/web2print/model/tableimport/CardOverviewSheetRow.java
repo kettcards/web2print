@@ -31,11 +31,6 @@ public final class CardOverviewSheetRow implements VirtualId {
 
     private String thumbnailUrl;
 
-    /** todo doc
-     *
-     * @param cardOverviewSheet
-     * @return
-     */
     public static List<CardOverviewSheetRow> parseRows(XSSFSheet cardOverviewSheet) {
         var data = new ArrayList<CardOverviewSheetRow>();
         for (Row row : cardOverviewSheet) {
