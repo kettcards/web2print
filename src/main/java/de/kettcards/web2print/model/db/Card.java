@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.kettcards.web2print.model.db.rel.GeometryMap;
-import de.kettcards.web2print.model.db.rel.MotiveMap;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -50,10 +49,15 @@ public final class Card implements Serializable, VirtualId {
     @OneToMany(mappedBy = "card")
     private List<GeometryMap> geometryMaps;
 
-    @JsonProperty("motive")
-    @OneToMany(mappedBy = "card")
-    private List<MotiveMap> motiveMaps;
+    @JsonProperty("front")
+    @JoinColumn(name = "frontMotive")
+    private Motive frontMotive;
 
+    @JsonProperty("back")
+    @JoinColumn(name = "backMotive")
+    private Motive backMotive;
+
+    /*
     @JsonGetter
     public List<MotiveMap> getMotiveMaps() {
         if (motiveMaps == null || motiveMaps.isEmpty()) {
@@ -75,6 +79,16 @@ public final class Card implements Serializable, VirtualId {
             return list;
         }
         return motiveMaps;
+    }
+
+     */
+
+    public Motive getFrontMotive() {
+        return frontMotive;
+    }
+
+    public Motive getBackMotive() {
+        return backMotive;
     }
 
     @Override

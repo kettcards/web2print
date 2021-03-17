@@ -1,6 +1,5 @@
 package de.kettcards.web2print.model.db;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -11,7 +10,6 @@ import java.io.Serializable;
 @Table(name = "motive")
 public final class Motive implements Serializable, VirtualId {
 
-    @JsonIgnore
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
