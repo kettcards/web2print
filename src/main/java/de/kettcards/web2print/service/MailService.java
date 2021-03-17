@@ -75,7 +75,7 @@ public class MailService {
         mail.setText(text, true);
 
         if (content != null) {
-            var filename = contentName;
+            var filename = contentName != null ? contentName : "unknown.pdf";
             if (content.getFilename() != null)
                 filename = content.getFilename();
             mail.addAttachment(filename, content);
