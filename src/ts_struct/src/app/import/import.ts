@@ -61,7 +61,13 @@ export abstract class ImportMenu<T> {
   public abstract changeMapping(element: StatefulWrappedFileType<T>): void;
 
   public submitAll(): void {
-    this.elements.forEach(e => this.submit(e));
+    this.elements.forEach(e => {
+      try {
+      this.submit(e)
+      } catch (error) {
+        console.log('unable to submit', e);
+      }
+    });
   }
 
   public abstract submit(element: StatefulWrappedFileType<T>): void;
