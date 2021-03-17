@@ -33,7 +33,7 @@ this builds the entire project as an executable jar file which you can find in `
 
 ## How to run the Application
 
-The application will generate a memory based database.
+The application will generate a memory based database. This database will be lost after every server shutdown.
 
 If you want to use you own database you can do so by supplying your database configuration via `config/application.properies`. 
 
@@ -71,4 +71,33 @@ which will be generated with default values during the first run of the applicat
 
 If any of the configuration files are missing they will be restored with default values on next startup.
 
-  
+# Excel definition
+
+The Excel file must have the following sheets: "Kartenübersicht", "Textur", "Kartenformate", order is irrelevant.
+
+### general information
+- every column not mentioned doesn't get parsed and therefore the content of it is irrelevant
+- if a row doesn't fit the format it is skipped
+
+### Kartenübersicht
+
+The sheet consists of the following Columns:
+- orderId : String - id of card (1st column)
+- cardFormat : Integer - id of format (2nd column)
+- texture : Integer - id of texture (3rd column)
+- title : String - title of card (6th column)
+- pictureUrl : String - url to preview image of card (9th column)
+
+### Textur
+
+The sheet consists of the following Columns:
+- id : Integer - id of texture (1st column)
+- name : string - name of texture (2nd column)
+
+### Kartenformate
+
+- id : Integer - id of format (1st column)
+- height : Integer - height of format in mm (2nd column)
+- width : Integer - width of format in mm (3rd column)
+- foldType : Integer - kind of fold used (4th column) (we only support "links" and "oben" at the moment)
+- description : String - description of format (6th column)
