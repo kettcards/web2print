@@ -9,13 +9,15 @@ plugins {
 }
 
 group = 'de.kettcards'
-version = '0.0.1-SNAPSHOT'
+version = '1.0'
 sourceCompatibility = '11'
 
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
+	//we cant include this because of license issues
+	runtime.exclude group: 'org.aspectj'
 }
 
 repositories {
@@ -24,7 +26,6 @@ repositories {
 
 ext {
 	set('snippetsDir', file("build/generated-snippets"))
-	set('testcontainersVersion', "1.15.1")
 }
 
 dependencies {
@@ -38,8 +39,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-
-
 
 	//db
 	runtimeOnly 'org.hsqldb:hsqldb'
@@ -106,49 +105,75 @@ jacocoTestReport {
 	dependsOn test // tests are required to run before generating the report
 }
 
-dependencyManagement {
-	imports {
-		mavenBom "org.testcontainers:testcontainers-bom:${testcontainersVersion}"
-	}
-}
+/**
+ * Struct Editor Tasks
+ */
 
-task buildTs(type:Exec) {
-	task cleanJs(type: Delete) {
-		delete "./src/main/resources/static/front/front.js"
-	}
-	dependsOn tasks.cleanJs
-
-	commandLine 'tools/node/14.15.4/win64/node.exe', "./tools/ts/4.0.b/tsc.js",
-			'-p', './src/ts_front/front/tsconfig.json'
-
-	standardOutput = System.out
+task cleanTsStruct() {
+	group 'ts'
+	delete "${project.projectDir}/src/main/resources/static/struct"
 }
 
 task buildTsStructDep(type: NpmTask) {
-	description = "Build Struct-Editor Dep"
+	group 'ts'
 	workingDir = file("${project.projectDir}/src/ts_struct")
 	args = ['install']
 }
 
 task buildTsStruct(type: NpmTask) {
+	group 'ts'
+	dependsOn cleanTsStruct
 	dependsOn buildTsStructDep
-	description = "Build Struct-Editor"
 	workingDir = file("${project.projectDir}/src/ts_struct")
 	args = ['run', 'buildProd']
 }
 
+//you might want to configure proxy for authentication
+//by default webserver is available at localhost:4200
+task debugTsStruct(type: NpmTask) {
+	group 'ts'
+	dependsOn buildTsStructDep
+	workingDir = file("${project.projectDir}/src/ts_struct")
+	args = ['run', 'start']
+}
 
-build {
+/**
+ * Front Editor Tasks
+ */
+
+task cleanTsFront() {
+	group 'ts'
+	delete "${project.projectDir}/src/main/resources/static/front/front.js"
+}
+
+task buildTsFrontDep(type: NpmTask) {
+	group 'ts'
+	workingDir = file("${project.projectDir}/src/ts_front/front/")
+	args = ['install']
+}
+
+task buildTsFront(type: NpmTask) {
+	group 'ts'
+	dependsOn cleanTsFront
+	dependsOn buildTsFrontDep
+	workingDir = file("${project.projectDir}/src/ts_front/front/")
+	args = ['run', 'build']
+}
+
+// auto reload for front editor can be enabled in on framed change detection
+
+task cleanTs() {
+	group 'ts'
+	dependsOn cleanTsFront
+	dependsOn cleanTsStruct
+}
+
+task buildTs() {
+	group 'ts'
+	dependsOn buildTsFront
+	dependsOn buildTsStruct
+}
+
+processResources() {
 	dependsOn buildTs
 }
-
-tasks.register("bootRunDebug") {
-	group = "application"
-	doFirst {
-		tasks.bootRun.configure {
-			systemProperty("spring.profiles.active", "debug")
-		}
-	}
-	finalizedBy("bootRun")
-}
-
