@@ -92,6 +92,8 @@ const Elements : IElement[] = [{
     if(align)
       $ownInstance.css('text-align', align);
 
+    $ownInstance.css('line-hight', data.lh);
+
     let $currentP = $(make('p'));
     for(const run of data.r) {
       if(run === 'br') {
