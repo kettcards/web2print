@@ -1,23 +1,25 @@
 package de.kettcards.web2print.security;
 
 import de.kettcards.web2print.config.ApplicationConfiguration;
+import de.kettcards.web2print.model.db.UserCredentials;
+import de.kettcards.web2print.repository.UserCredentialsRepository;
+import de.kettcards.web2print.service.DatabaseUserDetailPasswordService;
+import de.kettcards.web2print.service.DatabaseUserDetailsService;
 import de.kettcards.web2print.storage.WebContextAware;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 import java.util.List;
 
@@ -35,10 +37,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private final List<WebContextAware> webContextAwareList;
 
-    public SecurityConfiguration(ApplicationConfiguration configuration,
-                                 @Autowired(required = false) List<WebContextAware> webContextAwareList) {
+    private final DatabaseUserDetailsService databaseUserDetailsService;
+
+    private final UserCredentialsRepository userCredentialsRepository;
+
+    private final ApplicationConfiguration applicationConfiguration;
+
+    private final DatabaseUserDetailPasswordService databaseUserDetailPasswordService;
+
+    public SecurityConfiguration(ApplicationConfiguration configuration, @Autowired(required = false) List<WebContextAware> webContextAwareList, DatabaseUserDetailsService databaseUserDetailsService, UserCredentialsRepository userCredentialsRepository, ApplicationConfiguration applicationConfiguration, DatabaseUserDetailPasswordService databaseUserDetailPasswordService) {
         this.configuration = configuration;
         this.webContextAwareList = webContextAwareList;
+        this.databaseUserDetailsService = databaseUserDetailsService;
+        this.userCredentialsRepository = userCredentialsRepository;
+        this.applicationConfiguration = applicationConfiguration;
+        this.databaseUserDetailPasswordService = databaseUserDetailPasswordService;
     }
 
     /**
@@ -49,6 +62,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        //TODO USE HTTPS
         String apiPath = configuration.getLinks().getApiPath();
         ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry = http
                 //TODO enable csrf, unlikely that its necessary,
@@ -84,21 +98,24 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     /**
-     * https://docs.spring.io/spring-security/site/docs/5.4.2/reference/html5/#servlet-authentication-jdbc-bean
-     *
-     * @return the active user detail service
+     * authenticates users using the database
+     * https://reflectoring.io/spring-security-password-handling/
      */
     @Bean
-    @Override
-    protected UserDetailsService userDetailsService() {
-        var struct = configuration.getStructEditor();
-        //TODO remove user when jdbc user management is implemented
-        UserDetails admin = User.builder()
-                .username(struct.getUsername())
-                .password(passwordEncoder().encode(struct.getPassword()))
-                .roles(ADMIN.name()).build();
-        //TODO switch to JdbcUserDetailsManager.class
-        return new InMemoryUserDetailsManager(admin);
+    public AuthenticationProvider daoAuthenticationProvider() {
+        //iff database is empty create a new user which gets his value from the config on start-up
+        if (userCredentialsRepository.count() == 0) {
+            var struct = applicationConfiguration.getStructEditor();
+            UserCredentials standardUser = new UserCredentials();
+            standardUser.setUsername(struct.getUsername());
+            standardUser.setPassword(passwordEncoder().encode(struct.getPassword()));
+            userCredentialsRepository.save(standardUser);
+        }
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(passwordEncoder());
+        provider.setUserDetailsService(this.databaseUserDetailsService);
+        provider.setUserDetailsPasswordService(this.databaseUserDetailPasswordService);
+        return provider;
     }
 
     /**
@@ -108,7 +125,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(12);
     }
 
     /*
