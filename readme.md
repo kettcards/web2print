@@ -51,7 +51,7 @@ For production use the executable jar, see [Build Instructions](readme.md#build-
 
 1. create an empty directory and copy the executable jar into it
 
-2. use `java -Xmx 1G -jar web2print-1.0.jar` to run the jar.
+2. use `java -Xmx1G -jar web2print-1.0.jar` to run the jar.
    Running the jar for the first time will generate default configuration files that can be adjusted from there on.
 
 The server will generate and store, for example fonts, ordered pdfs and more in `data/`.
