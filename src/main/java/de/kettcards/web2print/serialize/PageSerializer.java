@@ -13,13 +13,6 @@ import java.io.IOException;
 @JsonComponent
 public class PageSerializer extends JsonSerializer<PageImpl<?>> {
 
-    /** todo doc
-     *
-     * @param value
-     * @param gen
-     * @param serializers
-     * @throws IOException
-     */
     @Override
     public void serialize(PageImpl<?> value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         gen.writeStartObject();

@@ -18,13 +18,6 @@ import java.util.LinkedList;
 @JsonComponent
 public class FontPackageDeserializer extends JsonDeserializer<FontPackage> {
 
-    /** todo doc
-     *
-     * @param p
-     * @param ctxt
-     * @return
-     * @throws IOException
-     */
     @Override
     public FontPackage deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode jsonNode = p.getCodec().readTree(p);
