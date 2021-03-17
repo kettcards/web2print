@@ -83,7 +83,7 @@ The Excel file must have the following sheets: "Kartenübersicht", "Textur", "Ka
 
 The sheet consists of the following Columns:
 - orderId : String - id of card (1st column)
-- card_format : Integer - id of format (2nd column)
+- cardFormat : Integer - id of format (2nd column)
 - texture : Integer - id of texture (3rd column)
 - title : String - title of card (6th column)
 - pictureUrl : String - url to preview image of card (9th column)
