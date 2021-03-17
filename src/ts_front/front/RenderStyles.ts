@@ -44,12 +44,11 @@ const RenderStyles : IRenderStyle[] = [{
     const $back  = $bundle.children('.back');
     const $front = $bundle.children('.front');
 
-    for(const motive of card.motive) {
-      switch(motive.side) {
-        case 'FRONT': $front.children('.motive-layer')[0].src = web2print.links.motiveUrl+motive.textureSlug; break;
-        case 'BACK' : $back .children('.motive-layer')[0].src = web2print.links.motiveUrl+motive.textureSlug; break;
-        default: throw new Error("unknown motive side '"+motive.side+"'");
-      }
+    if (card.motives && card.motives.front) {
+      $front.children('.motive-layer')[0].src = web2print.links.motiveUrl+card.motives.front;
+    }
+    if (card.motives && card.motives.back) {
+      $back.children('.motive-layer')[0].src = web2print.links.motiveUrl+card.motives.back;
     }
 
     //snaplines for all axis aligned folds
@@ -245,14 +244,7 @@ const RenderStyles : IRenderStyle[] = [{
       'background-image': 'url("'+web2print.links.textureUrl+card.texture.textureSlug+'")'
     }, this.BgStretchObjs[card.texture.tiling]));
 
-    let mFront, mBack;
-    for(const motive of card.motive) {
-      switch(motive.side) {
-        case 'FRONT': mFront = motive.textureSlug; break;
-        case  'BACK': mBack  = motive.textureSlug; break;
-        default: throw new Error("unknown motive side '"+motive.side+"'");
-      }
-    }
+    let mFront = card.motives.front, mBack = card.motives.back;
 
     if(mFront) {
       $page1.find<HTMLImageElement>('.front>.motive-layer' as JQuery.Selector).css({ left:           0, width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mFront;
