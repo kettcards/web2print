@@ -51,8 +51,13 @@ For production use the executable jar, see [Build Instructions](readme.md#build-
 
 1. create an empty directory and copy the executable jar into it
 
-2. use `java -jar web2print-1.0.jar` to run the jar.
+2. use `java -Xmx 1G -jar web2print-1.0.jar` to run the jar.
    Running the jar for the first time will generate default configuration files that can be adjusted from there on.
+
+The server will generate and store, for example fonts, ordered pdfs and more in `data/`.
+
+**However, extracting default fonts from the classpath currently does not work under unix.**
+If you want to have the default fonts under unix you have to manually copy the fonts from `src/main/resources/data/fonts/` to `data/fonts/`.
 
 ## How to use
 
