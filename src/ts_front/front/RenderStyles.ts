@@ -38,12 +38,12 @@ const RenderStyles : IRenderStyle[] = [{
     }, this.BgStretchObjs[card.texture.tiling]));
 
 
-    const $foldslayers = $bundle.find('.folds-layer' as JQuery.Selector);
+    const $foldsLayers = $bundle.find('.folds-layer' as JQuery.Selector);
     for(const fold of card.cardFormat.folds) {
       if (fold.x1 === fold.x2) {
-        $(make('div.v-fold')).css('left', fold.x1+'mm').appendTo($foldslayers);
+        $(make('div.v-fold')).css('left', fold.x1+'mm').appendTo($foldsLayers);
       } else if (fold.y1 === fold.y2) {
-        $(make('div.h-fold')).css('top', fold.y1 + 'mm').appendTo($foldslayers);
+        $(make('div.h-fold')).css('top', fold.y1 + 'mm').appendTo($foldsLayers);
       } else {
         console.warn("can't display diagonal folds for now");
       }
