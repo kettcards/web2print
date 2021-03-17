@@ -1,11 +1,11 @@
-declare interface Fold {
+type Fold = {
   x1 : number;
   x2 : number;
   y1 : number;
   y2 : number;
-}
+};
 
-declare interface Card {
+type Card = {
   name       : string;
   thumbSlug  : string;
   cardFormat : {
@@ -21,4 +21,4 @@ declare interface Card {
     side : 'BACK' | 'FRONT';
     textureSlug : string;
   }[];
-}
+};

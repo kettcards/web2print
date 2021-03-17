@@ -86,7 +86,7 @@ class Serializer {
       innerEls: []
     };
 
-    const $bundles = $cardContainer.children();
+    const $bundles = UI.$cardContainer.children();
     for(let i = 0; i < $bundles.length; i++) {
       const $b = $bundles.eq(i);
       const offs = +$b[0].dataset.xOffset;
@@ -123,7 +123,7 @@ class Serializer {
     }
 
     if(fileSource) {
-      renderStyleState.style.clear();
+      RenderStyleState.style.clear();
       delete Parameters.sId;
     }
 
@@ -148,7 +148,7 @@ class Serializer {
         top   : cardHeight - (box.y + box.h) / MMPerPx.y,
         height: box.h / MMPerPx.y
       };
-      const $elLayer = renderStyleState.style.assocPage(side, bounds).children('.elements-layer');
+      const $elLayer = RenderStyleState.style.assocPage(side, bounds).children('.elements-layer');
 
       const elType = ElementMap[box.t];
       if(!elType) {

@@ -1,10 +1,9 @@
 /// <reference path="../parameters.ts" />
-/// <reference path="./front.ts" />
 /// <reference path="./Fonts.ts" />
 /// <reference path="./UI.ts" />
 
 $.get(`${web2print.links.apiUrl}card/${Parameters.card}`)
-  .then(loadCard)
+  .then(Editor.loadCard)
   .catch(function() {
     alert((Parameters.card
       ? 'Die Karte "'+Parameters.card+'" konnte nicht geladen werden!'

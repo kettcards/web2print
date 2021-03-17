@@ -139,7 +139,7 @@ const Elements : IElement[] = [{
       if(restrictSize) {
         Object.assign(dims, p);
         // (lucas 15.03.21) 'back' is hardcoded for now
-        renderStyleState.style.fitElement(target, dims as (JQuery.Coordinates & { width : number, height : number }));
+        RenderStyleState.style.fitElement(target, dims as (JQuery.Coordinates & { width : number, height : number }));
       }
 
       $(img).css(dims);

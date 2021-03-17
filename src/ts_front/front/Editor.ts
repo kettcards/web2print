@@ -48,6 +48,41 @@ class Editor {
     spawnBtn   : undefined
   };
 
+  // [call once]
+  static loadCard(card : Card) : void {
+    if(!card)
+      throw new Error("Keine Karte ausgewählt.");
+
+    console.log('loading', card);
+    window.history.replaceState({}, card.name+" - Web2Print", stringifyParameters());
+
+    document.querySelector<HTMLInputElement>('#preview-container>img').src
+      = web2print.links.thumbnailUrl+card.thumbSlug;
+
+    for(let i = 0; i < RenderStyles.length; i++) {
+      const renderStyle = RenderStyles[i];
+      if(!renderStyle.condition(card))
+        continue;
+      const frag = make('button.render-select');
+      $(frag).text(renderStyle.name).attr('onclick', 'hRenderStyleBtnClick('+i+');');
+      get('render-styles-container').appendChild(frag);
+    }
+
+    Editor.storage.loadedCard = card;
+    Editor.fitToContainer();
+    Editor.createRuler();
+    Editor.enableTransition(true);
+
+    RenderStyleState.changeRenderStyle(0);
+
+    if(Parameters.sId)
+      $.get(`${web2print.links.apiUrl}load/${Parameters.sId}`)
+        .then(Serializer.loadElementsCompressed.bind(null, false))
+        .catch(function(e) {
+          alert('Es gab einen Fehler beim laden der Elemente!\n'+JSON.stringify(e));
+        });
+  }
+
   static setTarget(t : HTMLElement) : void {
     Editor.storage.target  = t;
     Editor.storage.$target = $(t);

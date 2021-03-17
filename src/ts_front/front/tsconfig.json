@@ -1,8 +1,8 @@
 {
   "files": [
     "../types/web2print.d.ts",
-    "../types/card.d.ts",
-    "../types/cookie.d.ts",
+    "../types/Card.d.ts",
+    "../types/Cookie.d.ts",
 
     "../macros.ts",
     "../parameters.ts",
@@ -22,7 +22,6 @@
     "./Serializer.ts",
     "./RenderStyles.ts",
     "./UI.ts",
-    "./front.ts",
     "./index.ts"
   ],
   "compilerOptions": {
