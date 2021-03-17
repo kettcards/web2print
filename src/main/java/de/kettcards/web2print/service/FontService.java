@@ -52,9 +52,7 @@ public final class FontService extends StorageContextAware implements WebContext
                 for (Resource resource : resources) {
                     try {
                         var resourceUri = resource.getURI().getRawSchemeSpecificPart();
-                        System.out.println(resourceUri);
                         var relativePath = resourceUri.replace(resourceBaseUri.getRawSchemeSpecificPart(), "");
-                        System.out.println(relativePath);
                         if (!relativePath.endsWith("/")) {
                             if (relativePath.startsWith("/")) {
                                 relativePath = relativePath.substring(1);
@@ -65,14 +63,16 @@ public final class FontService extends StorageContextAware implements WebContext
                         log.error("unable to extract font resource: " + resource);
                     }
                 }
+                try {
+                    initFontStore(getContents());
+                } catch (IOException ex) {
+                    log.error("unable to list font files", ex);
+                }
             } catch (Exception ex) {
                 log.error("unable to extract default fonts", ex);
             }
-        }
-        try {
-            initFontStore(getContents());
-        } catch (IOException ex) {
-            log.error("unable to list font files", ex);
+        } else  {
+            initFontStore(contents);
         }
     }
 
