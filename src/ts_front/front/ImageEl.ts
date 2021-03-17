@@ -68,8 +68,7 @@ class ImageEl {
     Editor.storage.addOnClick = undefined;
     UI.$fileUpBtn.val(null); //emptys the Filelist, is needed if the same file is choosen again
 
-    console.error('failed to fetch xhr', e);
     Dialogs.progress.hide();
-    alert("Die ausgewählte Datei konnte nicht hochgeladen werden.\nBitte stellen Sie sicher, dass das Dateiformat: .jpg,.jpeg,.png,.svg ist \nund die Dateigröße nicht "+web2print.editorConfiguration.maxFileSize+"MB überschreitet.");
+    Dialogs.alert.showErrorHtml("Die ausgewählte Datei konnte nicht hochgeladen werden.<br/>Bitte stellen Sie sicher, dass das Dateiformat: .jpg,.jpeg,.png,.svg ist <br/>und die Dateigröße nicht <b>"+web2print.editorConfiguration.maxFileSize+"</b>MB überschreitet.", "upload failed: ",e);
   }
 }

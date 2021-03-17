@@ -44,7 +44,7 @@ class Fonts {
     return $.get(web2print.links.apiUrl+'font/'+name)
       .then(Fonts.loadFont)
       .catch(function(e) {
-        alert('[error] could not load font: '+JSON.stringify(e));
+        Dialogs.alert.showErrorHtml(`<p>Schriftart konnte nicht geladen werden:</p><code>${JSON.stringify(e)}</code>`, "error loading fonts", e);
       });
   };
   // (lucas 04.01.21)
@@ -65,7 +65,7 @@ class Fonts {
           attribs[face.v] = face.fw;
         })
         .catch(function(e) {
-          alert('[error] could not load font: '+JSON.stringify(e));
+          Dialogs.alert.showError('Schriftart konnte nicht geladen werden: '+JSON.stringify(e), e);
         });
     }
     return Promise.allSettled(promises).then(function() {

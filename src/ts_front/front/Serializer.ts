@@ -50,10 +50,12 @@ class Serializer {
         let txt = 'Daten erfolgreich gesendet!';
         if(!_export)
           txt += ` Sie befinden sich nun auf \n${window.location}\n Besuchen Sie diese Addresse später erneut wird das gespeicherte Design automatisch geladen.`;
-        alert(txt);
-      }).catch(function(e){
-      alert('Fehler beim Senden der Daten!\n'+JSON.stringify(e));
-    }).always(Dialogs.loading.hide);
+        Dialogs.loading.hide();
+        Dialogs.alert.showHtml("Erfolg!", txt);
+      }).catch(function(e) {
+        Dialogs.loading.hide();
+        Dialogs.alert.showErrorHtml(`<p>Fehler beim Senden der Daten:</p><code>${JSON.stringify(e)}</code>`, "error while sending data: ", e);
+      });
   }
 
   static download() : void {
@@ -118,7 +120,7 @@ class Serializer {
       // The problem with this idea is that we cant easily store the data if we actually navigate to the different address
       // and the loadCard method is not designed to be called multiple times, so we cant just call it again arnd replace the history.
 
-      alert(`Das Design kann nicht geladen werden, da es zu einer anderen Karte gehört (${data.card}).`);
+      Dialogs.alert.showHtml("Falsche Karte", `Das Design kann nicht geladen werden, da es zu einer anderen Karte gehört (${data.card}).<br/>Klicken Sie <a href="${window.location.href.split('?')[0]}?card=${data.card}">hier</a> um die aktuelle karte zu schlie&szlig;en und die Karte ${data.card} zu &ouml;ffnen.`);
       throw new Error('invalid card format');
     }
 

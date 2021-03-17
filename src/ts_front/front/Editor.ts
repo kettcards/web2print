@@ -79,7 +79,7 @@ class Editor {
       $.get(`${web2print.links.apiUrl}load/${Parameters.sId}`)
         .then(Serializer.loadElementsCompressed.bind(null, false))
         .catch(function(e) {
-          alert('Es gab einen Fehler beim laden der Elemente!\n'+JSON.stringify(e));
+          Dialogs.alert.showErrorHtml(`<p>Fehler beim laden der Elemente:</p><code>${JSON.stringify(e)}</code>`, "error loading fonts: ", e);
         });
   }
 

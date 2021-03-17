@@ -150,7 +150,7 @@ class OrderDialog extends Dialog {
 
     const form = e.target as HTMLFormElement;
     if(!form.checkValidity()) {
-      alert("Bitte tragen Sie gültige Datein ein!");
+      Dialogs.alert.showHtml("Ungültige Daten", "Bitte tragen Sie g&uuml;ltige Datein ein!");
       return;
     }
 
@@ -164,7 +164,46 @@ class OrderDialog extends Dialog {
   }
 }
 
+class AlertDialog extends Dialog {
+  $titleEl : JQuery;
+  $bodyEl  : JQuery;
+
+  constructor() {
+    super($('#alert-dialog'));
+    this._attach();
+
+    this.$titleEl = this.$target.children('.dialog-title');
+    this.$bodyEl  = this.$target.children('.dialog-body');
+
+    this.showHtml      = this._showHtml     .bind(this);
+    this.showError     = this._showError    .bind(this);
+    this.showErrorHtml = this._showErrorHtml.bind(this);
+  }
+
+  showHtml : (title : string, html : string) => void;
+  private _showHtml(title : string, html : string) : void {
+    this.$titleEl.text(title);
+    this.$bodyEl.html(html);
+    this._show();
+  }
+  showError : (text : string, obj ?: any) => void;
+  private _showError(text : string, obj ?: any) : void {
+    console.error(text, obj);
+    this.$titleEl.text('Error');
+    this.$bodyEl.text(text);
+    this._show();
+  }
+  showErrorHtml : (html : string, consoleErr ?: string, obj ?: any) => void;
+  private _showErrorHtml(html : string, consoleErr ?: string, obj ?: any) : void {
+    console.error(consoleErr || html, obj);
+    this.$titleEl.text('Error');
+    this.$bodyEl.html(html);
+    this._show();
+  }
+}
+
 class Dialogs {
+  static alert    = new AlertDialog();
   static tutorial = new Dialog('./tutorial.frag.html');
   static dsgvo    = new Dialog('./dsgvo.frag.html');
   static progress = new ProgressDialog();
