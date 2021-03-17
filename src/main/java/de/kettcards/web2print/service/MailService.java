@@ -3,12 +3,14 @@ package de.kettcards.web2print.service;
 import de.kettcards.web2print.config.ApplicationConfiguration;
 import de.kettcards.web2print.config.MailConfiguration;
 import de.kettcards.web2print.model.OrderFormData;
+import de.kettcards.web2print.storage.Content;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import javax.mail.Address;
@@ -25,8 +27,9 @@ import java.util.Objects;
 public class MailService {
     @Autowired
     private JavaMailSender mailer;
-    private final Address  senderAddr = new InternetAddress("noreply@kettcards.de", "Kettcards Automailer");
-    private final InternetAddress internalReceiverAddr;
+
+    private final String fromMail = "noreply@kettcards.de";
+    private final String personalMail = "Kettcards Automailer";
 
     private final String internalTemplate;
     private final String     userTemplate;
@@ -44,46 +47,53 @@ public class MailService {
         try (var s = getClass().getClassLoader().getResourceAsStream("UserTemplate.html")) {
             userTemplate = IOUtils.toString(s, String.valueOf(StandardCharsets.UTF_8));
         }
-        internalReceiverAddr = new InternetAddress(config.getMail().getRecipient());
     }
 
-    public void sendInternalMail(OrderFormData data, Resource pdf, String fileName) throws MessagingException {
-        var content = substituteTokens(internalTemplate, data)
+    public void sendInternalMail(OrderFormData data, Resource pdf, String fileName) throws MessagingException, IOException {
+        var text = substituteTokens(internalTemplate, data)
             .replace("${filename}", fileName);
 
-        var mail = prepareMail(internalReceiverAddr, "Neue Anfrage", content);
-
-        // (lucas 14.03.21) todo: find out why this does not work
-        //var helper = new MimeMessageHelper(mail, true);
-        //helper.addAttachment(fileName, pdf, "application/pdf");
+        var mail = prepareMail(config.getMail().getRecipient(), "Neue Anfrage", text, pdf, fileName);
 
         mailer.send(mail);
     }
-    public void sendUserMail(OrderFormData data) throws MessagingException {
-        var content = substituteTokens(userTemplate, data);
+    public void sendUserMail(OrderFormData data) throws MessagingException, IOException {
+        var text = substituteTokens(userTemplate, data);
 
-        var mail = prepareMail(new InternetAddress(data.getEmail()), "Bestätigung der Anfrage", content);
+        var mail = prepareMail(data.getEmail(), "Bestätigung der Anfrage", text, null, null);
 
         mailer.send(mail);
     }
 
-    private MimeMessage prepareMail(Address to, String subject, String content) throws MessagingException {
-        var mail = mailer.createMimeMessage();
-        mail.setFrom(senderAddr);
-        mail.setRecipient(Message.RecipientType.TO, to);
+    private MimeMessage prepareMail(String to, String subject, String text, Resource content, String contentName)
+            throws MessagingException, IOException {
+        var mimeMail = mailer.createMimeMessage();
+        var mail = new MimeMessageHelper(mimeMail, true);
+        mail.setFrom(fromMail, personalMail);
+        mail.setTo(to);
         mail.setSubject(subject);
-        mail.setContent(content, "text/html; charset=UTF-8");
+        mail.setText(text, true);
 
-        return mail;
+        if (content != null) {
+            var filename = contentName != null ? contentName : "unknown.pdf";
+            if (content.getFilename() != null)
+                filename = content.getFilename();
+            mail.addAttachment(filename, content);
+        }
+
+        return mimeMail;
     }
 
-    @SneakyThrows(IllegalAccessException.class)
     private String substituteTokens(String template, OrderFormData data) {
         var ret = template;
-        for(var field : OrderFormData.class.getDeclaredFields()) {
-            field.setAccessible(true);
+        try {
+            for (var field : OrderFormData.class.getDeclaredFields()) {
+                field.setAccessible(true);
 
-            ret = ret.replace("${"+field.getName()+"}", Objects.toString(field.get(data), ""));
+                ret = ret.replace("${" + field.getName() + "}", Objects.toString(field.get(data), ""));
+            }
+        } catch (Exception ex) {
+            log.error("unable to substitute form: " + template);
         }
 
         return ret;
