@@ -8,7 +8,9 @@ import de.kettcards.web2print.storage.Content;
 import de.kettcards.web2print.storage.StorageContextAware;
 import de.kettcards.web2print.storage.WebContextAware;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.lang.NonNull;
 import org.springframework.security.util.InMemoryResource;
 import org.springframework.stereotype.Service;
@@ -32,12 +34,49 @@ public final class FontService extends StorageContextAware implements WebContext
 
     private final ArrayList<String> order = new ArrayList<>();
 
+    private final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+
+    private final String DEFAULT_FONTS = "data/fonts";
+
     public FontService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
     @Override
     public void initialize(List<Content> contents) {
+        if (contents.isEmpty()) {
+            try {
+                var resourceBaseUri = new DefaultResourceLoader().getResource("classpath:" + DEFAULT_FONTS).getURI();
+                System.out.println("baseUri: " + resourceBaseUri);
+                Resource[] resources = resolver.getResources("classpath*:" + DEFAULT_FONTS + "/**");
+                for (Resource resource : resources) {
+                    try {
+                        var resourceUri = resource.getURI().getRawSchemeSpecificPart();
+                        System.out.println(resourceUri);
+                        var relativePath = resourceUri.replace(resourceBaseUri.getRawSchemeSpecificPart(), "");
+                        System.out.println(relativePath);
+                        if (!relativePath.endsWith("/")) {
+                            if (relativePath.startsWith("/")) {
+                                relativePath = relativePath.substring(1);
+                            }
+                            save(new Content(resource), relativePath);
+                        }
+                    } catch (Exception ex) {
+                        log.error("unable to extract font resource: " + resource);
+                    }
+                }
+            } catch (Exception ex) {
+                log.error("unable to extract default fonts", ex);
+            }
+        }
+        try {
+            initFontStore(getContents());
+        } catch (IOException ex) {
+            log.error("unable to list font files", ex);
+        }
+    }
+
+    public void initFontStore(List<Content> contents) {
         var fonts = contents.stream().filter(e ->
                 e.getOriginalFilename().equals("font.json")).collect(Collectors.toList());
         for (var font : fonts) {
@@ -59,11 +98,12 @@ public final class FontService extends StorageContextAware implements WebContext
      * if there already is a order stored in-memory and it wasn't changed by the admin just return the in-memory order
      * otherwise create a new order list from ordered.json. If the json file doesn't exist/can't be loaded it will just
      * load the fontStore keySet like before
+     *
      * @param newOrder boolean which is set to true when a new order is set
      * @return Fontnames in correct order
      */
     public List<String> listAvailableFonts(boolean newOrder) {
-        if(!order.isEmpty() && !newOrder)
+        if (!order.isEmpty() && !newOrder)
             return order;
 
         ArrayList<String> orderedFonts;
@@ -90,6 +130,7 @@ public final class FontService extends StorageContextAware implements WebContext
 
     /**
      * saves fonts in set order into orderedFonts.json located in data/fonts
+     *
      * @param fonts fonts in correct order
      * @throws IOException throws exception if either JSON parsing of parameter or saving of the json file fails
      */
