@@ -96,20 +96,9 @@ export class ImportMotiveComponent extends ImportMenu<CardMotive> implements OnI
   }
 
   submit(element: StatefulWrappedFileType<CardMotive>): void {
-    if (element.type?.side == undefined) {
-    this.api.importMotive(element)?.subscribe(
-      next => {
-        console.log('ret', next);
-        element.state = FileState.SUCCESSFUL;
-        this.hasSuccessfulFiles = true;
-      },
-        error => {
-        element.state = FileState.FAILED;
-      }
-    );
-    } else {
-      if (element.type?.side == Side.FRONT) { //TODO really bad fix it
-        this.api.importFrontMotive(element)?.subscribe(
+    if (element.additionalAttributes?.length != 0) {
+      if (element.type?.side == undefined) {
+        this.api.importMotive(element)?.subscribe(
           next => {
             console.log('ret', next);
             element.state = FileState.SUCCESSFUL;
@@ -119,18 +108,31 @@ export class ImportMotiveComponent extends ImportMenu<CardMotive> implements OnI
             element.state = FileState.FAILED;
           }
         );
-      }
-      if (element.type?.side == Side.BACK) {
-        this.api.importBackMotive(element)?.subscribe(
-          next => {
-            console.log('ret', next);
-            element.state = FileState.SUCCESSFUL;
-            this.hasSuccessfulFiles = true;
-          },
-          error => {
-            element.state = FileState.FAILED;
-          }
-        );
+      } else {
+        if (element.type?.side == Side.FRONT) {
+          this.api.importFrontMotive(element)?.subscribe(
+            next => {
+              console.log('ret', next);
+              element.state = FileState.SUCCESSFUL;
+              this.hasSuccessfulFiles = true;
+            },
+            error => {
+              element.state = FileState.FAILED;
+            }
+          );
+        }
+        if (element.type?.side == Side.BACK) {
+          this.api.importBackMotive(element)?.subscribe(
+            next => {
+              console.log('ret', next);
+              element.state = FileState.SUCCESSFUL;
+              this.hasSuccessfulFiles = true;
+            },
+            error => {
+              element.state = FileState.FAILED;
+            }
+          );
+        }
       }
     }
   }

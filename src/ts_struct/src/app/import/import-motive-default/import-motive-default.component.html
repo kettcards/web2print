@@ -4,41 +4,41 @@
     (fileAdded)="onFileAdded($event)">
   </app-drop-zone>
   <app-drop-controls
-    [list]="queuedDefaultFormatResources"
-    [showClearSuccessful]="hasSuccessfulUploadedInQueue"
-    (deleteAll)="deleteAllTextureEntry()"
-    (submitAll)="importAllTextures()"
-    (clearSuccessful)="clearSubmittedTextures()">
+    [list]="elements"
+    [showClearSuccessful]="hasSuccessfulFiles"
+    (deleteAll)="deleteAll()"
+    (submitAll)="submitAll()"
+    (clearSuccessful)="clearSubmitted()">
   </app-drop-controls>
   <!-- item list -->
-  <mat-list *ngFor="let texture of queuedDefaultFormatResources" class="import-list">
+  <mat-list *ngFor="let defaultMotive of elements" class="import-list">
     <mat-divider></mat-divider>
     <div class="import-list-item">
       <!-- import state indicator -->
-      <mat-icon *ngIf="texture.state == FileState.SUCCESSFUL" color="primary">
+      <mat-icon *ngIf="defaultMotive.state == FileState.SUCCESSFUL" color="primary">
         done
       </mat-icon>
-      <mat-icon *ngIf="texture.state == FileState.FAILED" color="warn">
+      <mat-icon *ngIf="defaultMotive.state == FileState.FAILED" color="warn">
         cancel
       </mat-icon>
       <div class="import-list-item-content">
-        <span>{{texture.file.name}}</span>
-        <button mat-mini-fab color="primary" (click)="changeMapping(texture)">
+        <span>{{defaultMotive.file.name}}</span>
+        <button mat-mini-fab color="primary" (click)="changeMapping(defaultMotive)">
           <mat-icon>chevron_right</mat-icon>
         </button>
       </div>
       <div class="import-list-item-action">
-        <span *ngIf="texture.type!=undefined">für Format ID: {{texture.type.id}}</span>
-        <button *ngIf="texture.state == FileState.FAILED" [disabled]="texture.type == undefined || texture.type.id == undefined"
-                mat-raised-button color="warn" (click)="importTexture(texture)">
+        <span *ngIf="defaultMotive.type!=undefined">für Format ID: {{defaultMotive.type.id}}</span>
+        <button *ngIf="defaultMotive.state == FileState.FAILED" [disabled]="defaultMotive.type == undefined || defaultMotive.type.id == undefined"
+                mat-raised-button color="warn" (click)="submit(defaultMotive)">
           <mat-icon>replay</mat-icon>
         </button>
-        <button *ngIf="texture.state == FileState.AWAIT" [disabled]="texture.type == undefined || texture.type.id == undefined"
-                mat-raised-button color="primary" (click)="importTexture(texture)">
+        <button *ngIf="defaultMotive.state == FileState.AWAIT" [disabled]="defaultMotive.type == undefined || defaultMotive.type.id == undefined"
+                mat-raised-button color="primary" (click)="submit(defaultMotive)">
           <mat-icon>publish</mat-icon>
         </button>
         <button mat-raised-button color="warn"
-                (click)="deleteTextureEntry(texture)">
+                (click)="delete(defaultMotive)">
           <mat-icon>delete</mat-icon>
         </button>
       </div>
