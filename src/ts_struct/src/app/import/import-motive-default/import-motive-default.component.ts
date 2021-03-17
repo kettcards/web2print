@@ -6,6 +6,7 @@ import {MatDialog} from "@angular/material/dialog";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {ErrorDialogComponent, FileError} from "../../lib/error-dialog/error-dialog.component";
 import {MappingDialogComponent} from "../import-texture/mapping-dialog/mapping-dialog.component";
+import {ImportMenu} from "../import";
 
 @Component({
   selector: 'app-import-motive-default',
@@ -13,21 +14,16 @@ import {MappingDialogComponent} from "../import-texture/mapping-dialog/mapping-d
   styleUrls: ['./import-motive-default.component.scss'],
   providers: [Api]
 })
-export class ImportMotiveDefaultComponent implements OnInit {
-
-  FileState: typeof FileState = FileState;
+export class ImportMotiveDefaultComponent extends ImportMenu<CardFormat> implements OnInit {
 
   availableFormats: CardFormat[] | null = null;
 
-  hasSuccessfulUploadedInQueue = false;
-
-  queuedDefaultFormatResources: StatefulWrappedFileType<CardFormat>[] = [];
-
-  filters = [ContentTypeFilter.PDF, new UniqueEntryFilter(this.queuedDefaultFormatResources)];
+  filters = [ContentTypeFilter.PDF, new UniqueEntryFilter(this.elements)];
 
   errorLoadMsg: string | null = null;
 
-  constructor(private dialog: MatDialog, private api: Api, private snackbar: MatSnackBar) {
+  constructor(dialog: MatDialog, private api: Api, private snackbar: MatSnackBar) {
+    super(dialog);
   }
 
   ngOnInit(): void {
@@ -48,83 +44,52 @@ export class ImportMotiveDefaultComponent implements OnInit {
     );
   }
 
-  onFileAdded(files: File[]): void {
-    const invalidFiles: FileError[] = [];
-    files.forEach(file => {
-      const failedReason = this.filter(file);
-      if (failedReason === null) {
-        let texture = this.findTextureName(file);
-        console.log('selecting texture', texture);
-        this.queuedDefaultFormatResources.push({
-          file: file,
-          state: FileState.AWAIT,
-          type: texture
-        });
-      } else {
-        invalidFiles.push(new FileError(file, failedReason))
-      }
-    });
-    if (invalidFiles.length > 0) { // show error dialog
-      this.dialog.open(ErrorDialogComponent, {
-        data: {
-          title: '<h1>Folgende Dateien konnten nicht hinzugefügt werden:</h1>',
-          entries: invalidFiles
-        }
-      });
+  public addMappedFiles(file: File, elements: (CardFormat | undefined)[]): void {
+    let type = undefined;
+    if (elements.length > 0) {
+      type = elements[0];
     }
+    this.elements.push({
+      file: file,
+      state: FileState.AWAIT,
+      type: type
+    });
   }
 
-  findTextureName(file: File): CardFormat | undefined {
+  public findName(file: File): any[] {
+    return [this.findDefaultMotiveName(file)];
+  }
+
+  public submit(element: StatefulWrappedFileType<CardFormat>): void {
+    console.log('importing ', element);
+    // @ts-ignore TODO non null pls
+    this.api.importDefaultMotive(element).subscribe(
+      response => {
+        element.state = FileState.SUCCESSFUL;
+        this.hasSuccessfulFiles = true;
+      },
+      error => {
+        element.state = FileState.FAILED;
+      }
+    );
+  }
+
+  findDefaultMotiveName(file: File): CardFormat | undefined {
     const fileName = Utils.fileNameFor(file.name);
     return Utils.predChain([
-      e => { //look based on number
-        return e.id?.toString() === fileName;
+      e => { //look based on first occurring number
+        let match = fileName.match(/\d+/);
+        console.log(fileName, 'filename', match);
+        if (match != undefined) {
+          console.log('numeric match', fileName, match);
+          return match?.[0] == e.id;
+        }
+        return false;
       },
-      e => {
+      e => { //lookup filename
         return e.name === fileName
       }
     ], this.availableFormats);
-  }
-
-  filter(file: File): string | null {
-    for (let i = 0; i < this.filters.length; i++) {
-      let e = this.filters[i];
-      const filter = e.filter(file);
-      console.log('filter result:', file, filter);
-      if (filter != null) {
-        return filter;
-      }
-    }
-    return null;
-  }
-
-  deleteAllTextureEntry(): void {
-    this.queuedDefaultFormatResources.length = 0;
-  }
-
-  deleteTextureEntry(entry: StatefulWrappedFileType<CardFormat>): void {
-    Utils.remove(this.queuedDefaultFormatResources, entry);
-  }
-
-  importAllTextures(): void {
-    console.log('starting bulk import');
-    this.queuedDefaultFormatResources.forEach((entry) => {
-      this.importTexture(entry);
-    });
-  }
-
-  importTexture(texture: StatefulWrappedFileType<CardFormat>): void {
-    console.log('importing ', texture);
-    // @ts-ignore TODO non null pls
-    this.api.importDefaultMotive(texture).subscribe(
-      response => {
-        texture.state = FileState.SUCCESSFUL;
-        this.hasSuccessfulUploadedInQueue = true;
-      },
-      error => {
-        texture.state = FileState.FAILED;
-      }
-    );
   }
 
   changeMapping(texture: StatefulWrappedFileType<CardFormat>): void {
@@ -138,15 +103,6 @@ export class ImportMotiveDefaultComponent implements OnInit {
       console.log('setting result:', result);
       texture.type = result;
     });
-  }
-
-  clearSubmittedTextures() {
-    this.queuedDefaultFormatResources.forEach((texture, index) => {
-      if (texture.state == FileState.SUCCESSFUL) {
-        this.queuedDefaultFormatResources.splice(index, 1);
-      }
-    });
-    this.hasSuccessfulUploadedInQueue = false;
   }
 
 }
