@@ -11,6 +11,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.security.util.InMemoryResource;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.mail.MessagingException;
@@ -25,50 +26,28 @@ import java.util.function.Supplier;
 @Slf4j
 @Service
 // (lucas 16.02.21) by design of StorageContextAware we might want to split this into two separate services for storing / exporting
-public final class LayoutStorageService extends StorageContextAware {
+public final class OrderingService extends StorageContextAware {
 
-    @Autowired
-    private ObjectMapper jsonMapper;
+    private final ObjectMapper jsonMapper;
 
-    @Autowired
-    private PDFGenerator generator;
+    private final PDFGenerator generator;
 
-    @Autowired
-    private MailService mailService;
+    private final MailService mailService;
 
-    public LayoutStorageService() {
-
-    }
-
-    /**
-     * @param storageId storage id to override, may be null for new layouts
-     * @param cardData  base64 encoded json card data string
-     * @return a storage id for retrieving this data
-     */
-    public String storeCard(String storageId, String cardData) throws IOException {
-        var constraints = new LinkedList<StorageConstraint>();
-        //constraints.add(new MaxAgeConstraint(Period.ofMonths(1))); // (lucas 15.02.21) todo: implement maxAgeConstraint
-        var content = new Content(new InMemoryResource(cardData), "application/octet-stream", null);
-        if(storageId == null) {
-            return save(content);
-        } else {
-            save(content, storageId);
-            return storageId;
-        }
-    }
-
-    public String loadCard(String storageId) throws IOException {
-        try(var stream = load(storageId).getInputStream()) {
-            return IOUtils.toString(stream);
-        }
+    public OrderingService(MailService mailService,
+                           ObjectMapper jsonMapper,
+                           PDFGenerator generator) {
+        this.mailService = mailService;
+        this.jsonMapper = jsonMapper;
+        this.generator = generator;
     }
 
     /**
      * @param rawData base64 encoded json card data string
-     * @throws IOException    if pdf creation was unsuccessful
+     * @throws IOException if pdf creation was unsuccessful
      */
     public void exportCard(String rawData, String rawAdditionalData) throws IOException, MessagingException {
-        var cardData       = jsonMapper.readValue(decode(rawData)          ,      CardData.class);
+        var cardData = jsonMapper.readValue(decode(rawData), CardData.class);
         var additionalData = jsonMapper.readValue(decode(rawAdditionalData), OrderFormData.class);
 
         byte[] inMemPdf;
@@ -91,7 +70,7 @@ public final class LayoutStorageService extends StorageContextAware {
 
         var ogLen = (rawData.length() / 4) * 3; // (lucas) might be slightly above above the og len since b64 is padded, but that should be fine
         var bufferSize = (ogLen / BLOCK_SIZE + 1) * BLOCK_SIZE;
-        if(decodingBuffer == null || decodingBuffer.length < bufferSize) {
+        if (decodingBuffer == null || decodingBuffer.length < bufferSize) {
             decodingBuffer = new byte[bufferSize];
         }
         // (lucas 16.02.21) todo: get around the array allocation on string.getBytes while also being able to specify the encoding

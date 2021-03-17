@@ -1,4 +1,4 @@
-declare interface Web2print {
+type Web2print = {
   links: {
         basePath : string;
 
@@ -7,11 +7,12 @@ declare interface Web2print {
        motiveUrl : string;
          fontUrl : string;
           apiUrl : string;
+     redirectUrl : string;
   };
   editorConfiguration: {
     maxFileSize : number;
     maxRequestSize : number;
   };
-}
+};
 
-declare const web2print: Web2print;
+declare const web2print : Web2print;

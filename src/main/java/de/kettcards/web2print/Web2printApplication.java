@@ -4,6 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.IOException;
@@ -12,11 +13,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Configuration
+@EnableScheduling
 @ConfigurationPropertiesScan
 @SpringBootApplication
 public class Web2printApplication {
 
-    private static PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+    private static final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
     public static void main(String[] args) throws Exception {
         var pwd = Paths.get(".");

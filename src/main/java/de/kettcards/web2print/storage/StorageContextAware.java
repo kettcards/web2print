@@ -91,4 +91,9 @@ public abstract class StorageContextAware implements StorageContext {
             throw new UnsupportedOperationException("storage pool already initialized");
     }
 
+    @Override
+    public String toString() {
+        return getNamespace();
+    }
+
 }

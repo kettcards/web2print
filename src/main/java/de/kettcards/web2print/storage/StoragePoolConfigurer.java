@@ -14,7 +14,7 @@ public class StoragePoolConfigurer {
     @Bean
     @ConditionalOnClass(FileStoragePool.class)
     public FileStoragePoolConfiguration getPoolConfiguration(ApplicationConfiguration configuration) throws IOException {
-        return new FileStoragePoolConfiguration(configuration.getBaseDir());
+        return new FileStoragePoolConfiguration(configuration.getStorage().getBaseDir());
     }
 
     @Bean

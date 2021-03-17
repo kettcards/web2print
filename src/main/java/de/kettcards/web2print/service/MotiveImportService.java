@@ -3,15 +3,13 @@ package de.kettcards.web2print.service;
 import de.kettcards.web2print.model.db.Card;
 import de.kettcards.web2print.model.db.CardFormat;
 import de.kettcards.web2print.model.db.Motive;
-import de.kettcards.web2print.model.db.rel.MotiveMap;
 import de.kettcards.web2print.repository.CardFormatRepository;
 import de.kettcards.web2print.repository.CardRepository;
-import de.kettcards.web2print.repository.MotiveMapRepository;
 import de.kettcards.web2print.repository.MotiveRepository;
 import de.kettcards.web2print.storage.Content;
 import de.kettcards.web2print.storage.StorageContextAware;
 import de.kettcards.web2print.storage.WebContextAware;
-import de.kettcards.web2print.storage.contraint.MediaTypeFileExtension;
+import de.kettcards.web2print.storage.constraint.MediaTypeFileExtension;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -37,18 +35,14 @@ public class MotiveImportService extends StorageContextAware implements WebConte
 
     private final MotiveRepository motiveRepository;
 
-    private final MotiveMapRepository motiveMapRepository;
-
     private final CardRepository cardRepository;
 
     private final CardFormatRepository cardFormatRepository;
 
     public MotiveImportService(MotiveRepository motiveRepository,
-                               MotiveMapRepository motiveMapRepository,
                                CardRepository cardRepository,
                                CardFormatRepository cardFormatRepository) {
         this.motiveRepository = motiveRepository;
-        this.motiveMapRepository = motiveMapRepository;
         this.cardRepository = cardRepository;
         this.cardFormatRepository = cardFormatRepository;
     }
@@ -107,22 +101,12 @@ public class MotiveImportService extends StorageContextAware implements WebConte
         motive.setTextureSlug(filename);
         motive = motiveRepository.save(motive);
         for (Card card : cards) {
-            List<MotiveMap> motiveMaps = card.getMotiveMaps();
-            var existing = motiveMaps.stream().filter(e -> e.getSide().equals(side)).findFirst();
-            if (existing.isPresent()) { // update current motive assignment
-                var motiveMap = existing.get();
-                motiveMap.setMotive(motive);
-                motiveMapRepository.save(motiveMap);
-            } else { // card hasn't had an existing motive
-                MotiveMap motiveMap = new MotiveMap();
-                var motiveMapId = new MotiveMap.MotiveMapId();
-                motiveMapId.setCard(card.getId());
-                motiveMapId.setMotive(motive.getId());
-                motiveMap.setMotiveMapId(motiveMapId);
-                motiveMap.setCard(card);
-                motiveMap.setMotive(motive);
-                motiveMap.setSide(side);
-                motiveMapRepository.save(motiveMap);
+            if (side.equals("FRONT")) {
+                card.setFrontMotive(motive);
+                cardRepository.save(card);
+            } else if (side.equals("BACK")) {
+                card.setBackMotive(motive);
+                cardRepository.save(card);
             }
         }
     }

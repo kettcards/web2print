@@ -1,9 +1,3 @@
-type EditorState = {
-  focusLvl       : number;
-  isDraggingEl   : boolean;
-  isDraggingSelf : boolean;
-  isResizingEl   : boolean;
-};
 type EditorStorage = {
   loadedCard : Card;
   x          : number;
@@ -53,6 +47,41 @@ class Editor {
     currentColor : "#000000",
     spawnBtn   : undefined
   };
+
+  // [call once]
+  static loadCard(card : Card) : void {
+    if(!card)
+      throw new Error("Keine Karte ausgewählt.");
+
+    console.log('loading', card);
+    window.history.replaceState({}, card.name+" - Web2Print", stringifyParameters());
+
+    document.querySelector<HTMLInputElement>('#preview-container>img').src
+      = web2print.links.thumbnailUrl+card.thumbSlug;
+
+    for(let i = 0; i < RenderStyles.length; i++) {
+      const renderStyle = RenderStyles[i];
+      if(!renderStyle.condition(card))
+        continue;
+      const frag = make('button.render-select');
+      $(frag).text(renderStyle.name).attr('onclick', `UI.hRenderStyleBtnClick(${i});`);
+      get('render-styles-container').appendChild(frag);
+    }
+
+    Editor.storage.loadedCard = card;
+    Editor.fitToContainer();
+    Editor.createRuler();
+    Editor.enableTransition(true);
+
+    RenderStyleState.changeRenderStyle(0);
+
+    if(Parameters.sId)
+      $.get(`${web2print.links.apiUrl}load/${Parameters.sId}`)
+        .then(Serializer.loadElementsCompressed.bind(null, false))
+        .catch(function(e) {
+          Dialogs.alert.showErrorHtml(`<p>Fehler beim laden der Elemente:</p><code>${JSON.stringify(e)}</code>`, "error loading fonts: ", e);
+        });
+  }
 
   static setTarget(t : HTMLElement) : void {
     Editor.storage.target  = t;
@@ -156,7 +185,7 @@ class Editor {
     document.body.style.cursor = cursor;
   }
   static displayZoom() : void {
-    Editor.$zoomLabel.text(Math.round(Editor.transform.scale * 100));
+    Editor.$zoomLabel.text(Math.floor(100 * Editor.transform.scale));
   }
   static enableTransition(enable) : void {
     this.$transformAnchor.css('transition', enable ? 'transform 1s' : '');
@@ -196,6 +225,6 @@ class Editor {
   }
 
   static displayLineheight() : void {
-    $lhSpinner[0].value = Editor.storage.target.style.lineHeight;
+    UI.$lhSpinner[0].value = Editor.storage.target.style.lineHeight;
   }
 }

@@ -1,16 +1,18 @@
-interface RenderStyle {
-  name: string;
-  condition(card : Card): boolean;
-  pageGen(card: Card): DocumentFragment | JQuery<DocumentFragment>;
+interface IRenderStyle {
+  name : string;
+  condition(card : Card) : boolean;
+  pageGen(card: Card) : DocumentFragment | JQuery<DocumentFragment>;
+  pageLabels : string[];
+  initialDotIndex : number;
+  hPageChanged(direction: -1|0|1) : void;
+  clear() : void;
+
   assocPage(side : 'front'|'back', bounds : JQuery.Coordinates) : JQuery<HTMLDivElement>;
   getOffsetForTarget() : number;
-  clear() : void;
-  pageLabels: string[];
-  initialDotIndex: number;
-  hPageChanged(direction: -1 | 0 | 1): void;
+  fitElement(target : JQuery, bounds : JQuery.Coordinates & { width : number, height : number }) : void;
 }
 
-const RenderStyles : RenderStyle[] = [{
+const RenderStyles : IRenderStyle[] = [{
   name: 'Druckbogen',
   condition(card){ return true; },
   BgStretchObjs: {
@@ -35,19 +37,26 @@ const RenderStyles : RenderStyle[] = [{
       'background-image': 'url("'+web2print.links.textureUrl+card.texture.textureSlug+'")',
     }, this.BgStretchObjs[card.texture.tiling]));
 
-    for(let fold of card.cardFormat.folds) {
-      $bundle.find('.folds-layer' as JQuery.Selector).append(createFold(fold));
+
+    const $foldsLayers = $bundle.find('.folds-layer' as JQuery.Selector);
+    for(const fold of card.cardFormat.folds) {
+      if (fold.x1 === fold.x2) {
+        $(make('div.v-fold')).css('left', fold.x1+'mm').appendTo($foldsLayers);
+      } else if (fold.y1 === fold.y2) {
+        $(make('div.h-fold')).css('top', fold.y1 + 'mm').appendTo($foldsLayers);
+      } else {
+        console.warn("can't display diagonal folds for now");
+      }
     }
 
     const $back  = $bundle.children('.back');
     const $front = $bundle.children('.front');
 
-    for(const motive of card.motive) {
-      switch(motive.side) {
-        case 'FRONT': $front.children('.motive-layer')[0].src = web2print.links.motiveUrl+motive.textureSlug; break;
-        case 'BACK' : $back .children('.motive-layer')[0].src = web2print.links.motiveUrl+motive.textureSlug; break;
-        default: throw new Error("unknown motive side '"+motive.side+"'");
-      }
+    if (card.motives && card.motives.front) {
+      $front.children('.motive-layer')[0].src = web2print.links.motiveUrl+card.motives.front;
+    }
+    if (card.motives && card.motives.back) {
+      $back.children('.motive-layer')[0].src = web2print.links.motiveUrl+card.motives.back;
     }
 
     //snaplines for all axis aligned folds
@@ -85,7 +94,7 @@ const RenderStyles : RenderStyle[] = [{
     ];
 
     //intrinsic colliders
-    $bundle.find('.colliders-layer' as JQuery.Selector)
+    const $collLayer = $bundle.find('.colliders-layer' as JQuery.Selector)
       .append(
         make('div.intrinsic.top'),
         make('div.intrinsic.right'),
@@ -95,23 +104,25 @@ const RenderStyles : RenderStyle[] = [{
 
     // (lucas) this only exists because you can't move move elements across pages in the foldable view
     // and should be removed if the issue is ever resolved
-    // (markus) this only works if there is exactly one vertical or horizontal fold
-    if(lineDefs[0].dir === 'v')
-      $bundle.find('.colliders-layer' as JQuery.Selector).
-        append($(make('div')).css({
-          left  : "calc(50% - 5mm)",
+    for(const fold of card.cardFormat.folds) {
+      if(fold.x1 === fold.x2) {
+        $collLayer.append($(make('div')).css({
+          left  : (fold.x1 - 5)+"mm",
           width : "10mm",
           top   : "-50mm",
           height: "calc(100% + 100mm)",
         }));
-    else if(lineDefs[0].dir === 'h')
-      $bundle.find('.colliders-layer' as JQuery.Selector).
-      append($(make('div')).css({
-        left  : "-50mm",
-        width : "calc(100% + 100mm)",
-        top   : "calc(50% - 5mm)",
-        height: "10mm",
-      }));
+      } else if(fold.y1 === fold.y2) {
+        $collLayer.append($(make('div')).css({
+          left  : "-50mm",
+          width : "calc(100% + 100mm)",
+          top   : (fold.y1 - 5)+"mm",
+          height: "10mm",
+        }));
+      } else {
+        console.warn("Can't create collider for angled folds.");
+      }
+    }
 
     // (lucas 12.03.21) todo: this should be generated from geometry data from the server
     $bundle.find('.front>.colliders-layer' as JQuery.Selector)
@@ -134,6 +145,56 @@ const RenderStyles : RenderStyle[] = [{
   assocPage(side, _) {
     return this.data.$bundle.children('.'+side);
   },
+  fitElement(_, bounds) {
+    const ar = bounds.width / bounds.height;
+    const cardFormat = Editor.storage.loadedCard.cardFormat;
+
+    //find which collider 'section' will house the element
+    const mmPos = {
+      x: bounds.left * MMPerPx.x,
+      y: bounds.top  * MMPerPx.y
+    };
+    const mmSect = {
+      l: 0,
+      r: cardFormat.width,
+      t: 0,
+      b: cardFormat.height
+    };
+
+    for(const fold of cardFormat.folds) {
+      if(fold.x1 === fold.x2) {
+        if(mmPos.x < fold.x1) {
+          if(fold.x1 < mmSect.r)
+            mmSect.r = fold.x1;
+        } else {
+          if(fold.x1 > mmSect.l)
+            mmSect.l = fold.x1;
+        }
+      } else if(fold.y1 === fold.y2) {
+        if(mmPos.y < fold.y1) {
+          if(fold.y1 < mmSect.b)
+            mmSect.b = fold.y1
+        } else {
+          if(fold.y1 > mmSect.t)
+            mmSect.t = fold.y1
+        }
+      } else {
+        console.warn('Ignoring angled folds for el fitting.')
+      }
+    }
+
+    const maxRight  = (mmSect.l + (mmSect.r - mmSect.l) * 0.95) / MMPerPx.x;
+    const maxBottom = (mmSect.t + (mmSect.b - mmSect.t) * 0.95) / MMPerPx.y;
+
+    if(bounds.left + bounds.width > maxRight) {
+      bounds.width  = maxRight - bounds.left;
+      bounds.height = bounds.width / ar;
+    }
+    if(bounds.top + bounds.height > maxBottom) {
+      bounds.height = maxBottom - bounds.top;
+      bounds.width  = bounds.height * ar;
+    }
+  },
   getOffsetForTarget() : number {
     return 0;
   },
@@ -150,7 +211,7 @@ const RenderStyles : RenderStyle[] = [{
     $bundle: undefined,
     rot: 0
   }
-} as RenderStyle, {
+} as IRenderStyle, {
   name: 'einzelne Seiten',
   condition(card){
     const folds = card.cardFormat.folds;
@@ -191,14 +252,7 @@ const RenderStyles : RenderStyle[] = [{
       'background-image': 'url("'+web2print.links.textureUrl+card.texture.textureSlug+'")'
     }, this.BgStretchObjs[card.texture.tiling]));
 
-    let mFront, mBack;
-    for(const motive of card.motive) {
-      switch(motive.side) {
-        case 'FRONT': mFront = motive.textureSlug; break;
-        case  'BACK': mBack  = motive.textureSlug; break;
-        default: throw new Error("unknown motive side '"+motive.side+"'");
-      }
-    }
+    let mFront = card.motives.front, mBack = card.motives.back;
 
     if(mFront) {
       $page1.find<HTMLImageElement>('.front>.motive-layer' as JQuery.Selector).css({ left:           0, width: cardWidth+'mm' })[0].src = web2print.links.motiveUrl+mFront;
@@ -290,6 +344,21 @@ const RenderStyles : RenderStyle[] = [{
       return leftPage.children('.'+side);
     }
   },
+  fitElement($target, bounds) {
+    const ar = bounds.width / bounds.height;
+
+    const maxRight  = $target.width()  * 0.95;
+    const maxBottom = $target.height() * 0.95;
+
+    if(bounds.left + bounds.width > maxRight) {
+      bounds.width  = maxRight - bounds.left;
+      bounds.height = bounds.width / ar;
+    }
+    if(bounds.top + bounds.height > maxBottom) {
+      bounds.height = maxBottom - bounds.top;
+      bounds.width  = bounds.height * ar;
+    }
+  },
   getOffsetForTarget() : number {
     // (lucas) this assumes that you never select elements on paged not visible in the current state
     switch(this.data.state) {
@@ -338,4 +407,49 @@ const RenderStyles : RenderStyle[] = [{
     p1r: 0,
     p2r: 0
   }
-} as RenderStyle];
+} as IRenderStyle];
+
+class RenderStyleState {
+  static style            : IRenderStyle;
+  static currentDotIndex  : number;
+  static dots             : JQuery[];
+  static getActiveDot() : JQuery {
+    return RenderStyleState.dots[RenderStyleState.currentDotIndex];
+  }
+  static getActiveLabel() : string {
+    return RenderStyleState.style.pageLabels[RenderStyleState.currentDotIndex];
+  }
+
+  static hPageSwitch(direction : -1|0|1) : void {
+    RenderStyleState.style.hPageChanged(direction);
+    RenderStyleState.getActiveDot().removeClass('active');
+    RenderStyleState.currentDotIndex = mod(RenderStyleState.currentDotIndex + direction, RenderStyleState.dots.length);
+    RenderStyleState.getActiveDot().addClass('active');
+    UI.$pageLabel.text(RenderStyleState.getActiveLabel());
+  }
+  static changeRenderStyle(newIndex : number) : void {
+    RenderStyleState.style = RenderStyles[newIndex];
+    RenderStyleState.currentDotIndex = RenderStyleState.style.initialDotIndex;
+    RenderStyleState.dots = new Array(RenderStyleState.style.pageLabels.length);
+
+    const range = makeR();
+    range.selectNodeContents(UI.$navDotsUl[0]);
+    range.deleteContents();
+    for(let i = 0; i < RenderStyleState.dots.length; i++) {
+      const $el = $(make('li'));
+      if(i === RenderStyleState.currentDotIndex) {
+        $el.addClass('active');
+        UI.$pageLabel.text(RenderStyleState.getActiveLabel());
+      }
+      RenderStyleState.dots[i] = $el;
+      UI.$navDotsUl.append($el);
+    }
+
+    range.selectNodeContents(UI.$cardContainer[0]);
+    range.deleteContents();
+    UI.$cardContainer.append(RenderStyleState.style.pageGen(Editor.storage.loadedCard));
+
+    //(lucas 02.03.21) todo: could cache these per renderstyle or even let them cache it internally
+    Colliders.colliders = [];
+  }
+}
