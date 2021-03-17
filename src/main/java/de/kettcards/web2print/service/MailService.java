@@ -53,19 +53,19 @@ public class MailService {
         var text = substituteTokens(internalTemplate, data)
             .replace("${filename}", fileName);
 
-        var mail = prepareMail(config.getMail().getRecipient(), "Neue Anfrage", text, pdf);
+        var mail = prepareMail(config.getMail().getRecipient(), "Neue Anfrage", text, pdf, fileName);
 
         mailer.send(mail);
     }
     public void sendUserMail(OrderFormData data) throws MessagingException, IOException {
         var text = substituteTokens(userTemplate, data);
 
-        var mail = prepareMail(data.getEmail(), "Bestätigung der Anfrage", text, null);
+        var mail = prepareMail(data.getEmail(), "Bestätigung der Anfrage", text, null, null);
 
         mailer.send(mail);
     }
 
-    private MimeMessage prepareMail(String to, String subject, String text, Resource content)
+    private MimeMessage prepareMail(String to, String subject, String text, Resource content, String contentName)
             throws MessagingException, IOException {
         var mimeMail = mailer.createMimeMessage();
         var mail = new MimeMessageHelper(mimeMail, true);
@@ -75,7 +75,7 @@ public class MailService {
         mail.setText(text, true);
 
         if (content != null) {
-            var filename = "unknown.pdf";
+            var filename = contentName;
             if (content.getFilename() != null)
                 filename = content.getFilename();
             mail.addAttachment(filename, content);
