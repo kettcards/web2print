@@ -117,7 +117,6 @@ src/main/resources/application-*Dev.properties
 /test_output/*
 /pdf_output/*
 /data/**
-!/data/fonts/**
 
 #front editor
 src/ts_front/front/node_modules
