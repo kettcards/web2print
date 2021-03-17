@@ -1,4 +1,4 @@
-# web2print
+# Web2Print
 
 
 ## Build Instructions
