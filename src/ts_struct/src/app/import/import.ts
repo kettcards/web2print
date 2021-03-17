@@ -1,7 +1,6 @@
-import {ContentTypeFilter, FileState, Filter, StatefulWrappedFileType, Utils} from "../lib/utils";
+import {FileState, Filter, StatefulWrappedFileType, Utils} from "../lib/utils";
 import {ErrorDialogComponent, FileError} from "../lib/error-dialog/error-dialog.component";
 import {MatDialog} from "@angular/material/dialog";
-import {CardMotive} from "../lib/card";
 
 export abstract class ImportMenu<T> {
 
@@ -13,7 +12,8 @@ export abstract class ImportMenu<T> {
 
   public abstract filters: Filter<File>[];
 
-  protected constructor(protected dialog: MatDialog) {}
+  protected constructor(protected dialog: MatDialog) {
+  }
 
   public onFileAdded(files: File[]): void {
     const invalidFiles: FileError[] = [];
@@ -52,31 +52,53 @@ export abstract class ImportMenu<T> {
     return null;
   }
 
-  //find data for given
-  public abstract findName(file: File): (any| undefined)[];
+  /**
+   * tries to guess the the associated element
+   * @param file file to check
+   */
+  public abstract findName(file: File): (any | undefined)[];
 
   public abstract changeMapping(element: StatefulWrappedFileType<T>): void;
 
   public submitAll(): void {
-    this.elements.forEach(e => this.submit(e));
+    this.elements.forEach(e => {
+      try {
+      this.submit(e)
+      } catch (error) {
+        console.log('unable to submit', e);
+      }
+    });
   }
 
   public abstract submit(element: StatefulWrappedFileType<T>): void;
 
+  /**
+   * removes all files
+   */
   public deleteAll(): void {
     this.elements.length = 0;
   }
 
+  /**
+   * @param element delete the given element
+   */
   public delete(element: StatefulWrappedFileType<T>): void {
     Utils.remove(this.elements, element);
   }
 
+  /**
+   * clear all successfully uploaded files
+   */
   public clearSubmitted(): void {
-    this.elements.forEach((e, index) => {
+    for (var index = this.elements.length; index--;) {
+      const e = this.elements[index];
+      console.log('checking file ', e);
       if (e.state === FileState.SUCCESSFUL) {
+        console.log('removeing');
         this.elements.splice(index, 1);
       }
-    });
+    }
+    this.hasSuccessfulFiles = false;
   }
 
 }
