@@ -160,7 +160,7 @@ class OrderDialog extends Dialog {
       data[entry.name] = entry.value;
     }
     this._hide();
-    submit(true, data);
+    Serializer.submit(true, data);
   }
 }
 

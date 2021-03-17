@@ -37,7 +37,7 @@ class ResizeBars {
     eStorage.dx = 0;
     eStorage.dy = 0;
     ResizeBars.storage.bounds = {
-      transform: `translateX(${renderStyleState.style.getOffsetForTarget()}px)`,
+      transform: `translateX(${RenderStyleState.style.getOffsetForTarget()}px)`,
       left  : eStorage.x,
       width : $target.width(),
       top   : eStorage.y,
