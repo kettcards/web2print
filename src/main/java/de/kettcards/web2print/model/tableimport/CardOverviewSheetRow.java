@@ -38,14 +38,8 @@ public final class CardOverviewSheetRow implements VirtualId {
                 String artikelNr = row.getCell(0).getStringCellValue();
                 int kartenformat = (int) row.getCell(1).getNumericCellValue();
                 int textur = (int) row.getCell(2).getNumericCellValue();
-                int druckart = (int) row.getCell(3).getNumericCellValue();
-                String anmerkungen = row.getCell(4).getStringCellValue();
                 String titel = row.getCell(5).getStringCellValue();
-                String urlBeiKettcards = row.getCell(6).getStringCellValue();
-                String titelVariante = row.getCell(7).getStringCellValue();
                 String bildLink = row.getCell(8).getStringCellValue();
-                String shopMetaDescription = row.getCell(9).getStringCellValue();
-                String shopMetaTitle = row.getCell(10).getStringCellValue();
                 data.add(new CardOverviewSheetRow(artikelNr, kartenformat, textur, null, titel, bildLink));
             } catch (IllegalStateException | NullPointerException e) {
                 log.error("Row of sheet " + cardOverviewSheet.getSheetName() + " with following cells wasn't imported:");
