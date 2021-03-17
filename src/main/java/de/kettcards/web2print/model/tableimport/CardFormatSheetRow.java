@@ -25,11 +25,6 @@ public final class CardFormatSheetRow implements VirtualId {
 
     private String foldType;
 
-    /** todo pls doc
-     *
-     * @param cardFormatSheet
-     * @return
-     */
     public static List<CardFormatSheetRow> parseRows(XSSFSheet cardFormatSheet) {
         var data = new ArrayList<CardFormatSheetRow>();
         for (Row row : cardFormatSheet) {
