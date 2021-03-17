@@ -28,34 +28,18 @@ public class Web2printApplication {
 
     private static void checkConfig(Path path) {
         var configPath = path.resolve("config");
+        var appProperties = configPath.resolve("application.properties");
         try { //config dir
             if (Files.exists(configPath)) {
                 if (Files.isDirectory(configPath)) {
-                    try { //default application properties
-                        var appProperties = configPath.resolve("application.properties");
-                        if (Files.exists(appProperties)) {
-                            if (!Files.isRegularFile(appProperties) || !Files.isReadable(appProperties))
-                                throw new IOException("unable to read configuration file: " + appProperties);
-                        } else { //copy from classpath
-                            try {
-                                var resource = resolver.getResource("classpath:/application.properties");
-                                Files.copy(resource.getInputStream(), appProperties);
-                                System.out.println("default property file extracted to " + appProperties);
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                                System.err.println("unable to extract default property configuration");
-                            }
-                        }
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                        System.err.println("unable initialize default property file: " + configPath);
-                    }
+                    saveProperties(appProperties);
                 } else {
                     System.err.println("configuration directory already exists as file, please remove it");
                 }
             } else {
                 Files.createDirectory(configPath);
                 System.out.println("configuration directory created in: " + configPath.toAbsolutePath());
+                saveProperties(appProperties);
             }
 
         } catch (IOException ex) {
@@ -63,6 +47,27 @@ public class Web2printApplication {
             System.err.println("unable initialize configuration directory:" + configPath);
         }
 
+    }
+
+    private static void saveProperties(Path appProperties) {
+        try { //default application properties
+            if (Files.exists(appProperties)) {
+                if (!Files.isRegularFile(appProperties) || !Files.isReadable(appProperties))
+                    throw new IOException("unable to read configuration file: " + appProperties);
+            } else { //copy from classpath
+                try {
+                    var resource = resolver.getResource("classpath:/application.properties");
+                    Files.copy(resource.getInputStream(), appProperties);
+                    System.out.println("default property file extracted to " + appProperties);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                    System.err.println("unable to extract default property configuration");
+                }
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            System.err.println("unable initialize default property file: " + appProperties);
+        }
     }
 
 }
