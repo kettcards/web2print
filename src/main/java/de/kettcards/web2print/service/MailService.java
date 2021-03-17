@@ -1,5 +1,7 @@
 package de.kettcards.web2print.service;
 
+import de.kettcards.web2print.config.ApplicationConfiguration;
+import de.kettcards.web2print.config.MailConfiguration;
 import de.kettcards.web2print.model.OrderFormData;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -29,9 +31,12 @@ public class MailService {
     private final String internalTemplate;
     private final String     userTemplate;
 
+    private final ApplicationConfiguration config;
+
 
     @SneakyThrows(UnsupportedEncodingException.class)
-    public MailService() throws IOException, AddressException {
+    public MailService(ApplicationConfiguration config) throws IOException, AddressException {
+        this.config = config;
         // (lucas 14.03.21) todo: load from external folder
         try (var s = getClass().getClassLoader().getResourceAsStream("InternalTemplate.html")) {
             internalTemplate = IOUtils.toString(s, String.valueOf(StandardCharsets.UTF_8));
@@ -39,8 +44,7 @@ public class MailService {
         try (var s = getClass().getClassLoader().getResourceAsStream("UserTemplate.html")) {
             userTemplate = IOUtils.toString(s, String.valueOf(StandardCharsets.UTF_8));
         }
-        // (lucas 14.03.21) todo: load from config file
-        internalReceiverAddr = new InternetAddress("web4printtest@gmail.com");
+        internalReceiverAddr = new InternetAddress(config.getMail().getRecipient());
     }
 
     public void sendInternalMail(OrderFormData data, Resource pdf, String fileName) throws MessagingException {

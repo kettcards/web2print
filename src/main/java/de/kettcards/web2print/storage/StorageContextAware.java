@@ -72,6 +72,15 @@ public abstract class StorageContextAware implements StorageContext {
     }
 
     /**
+     * @return lists all files as content object
+     * @throws IOException if listing was unsuccessful
+     */
+    public List<Content> getContents() throws IOException {
+        validatePool();
+        return storagePool.getContents(this);
+    }
+
+    /**
      * deletes content form context by identifier,
      * when the requested content doesn't exists, the method returns 'true' without throwing an exception
      *

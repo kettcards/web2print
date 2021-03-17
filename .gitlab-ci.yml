@@ -58,6 +58,9 @@ javadoc:
 bootJar:
   stage: deploy
   script: gradle bootJar
+  only:
+    refs:
+      - master
   artifacts:
     expire_in: 5 mins
     paths:

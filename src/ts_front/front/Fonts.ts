@@ -1,49 +1,31 @@
-type FontAttribs = { [key: number]: number; }
-interface FontsObj {
-  defaultFont : string;
-  FontNames   : string[];
-  $options    : JQuery;
-  $label      : JQuery;
-  $boldBtn    : JQuery;
-  $italicBtn  : JQuery;
-  currentSelection  : string;
-  loadFonts(fontNames : string[]);
-  FontStyleValues  : { [p: string]: number; };
-  FontAttributeMap : { [key: string]: FontAttribs; };
+type FontAttribs = { [key: number]: number; };
 
-  beginLoadFont(name: string) : void;
-  loadFont(font : Font) : void;
-
-  displaySelected() : void;
-  checkFontTypes() : void;
-}
-
-interface IFontFace {
+type TFontFace = {
   s  : string;
   fs : 'normal' | 'italic';
   fw : number | 'bold';
   v  : number;
-}
-interface Font {
+};
+type Font = {
   name  : string;
-  faces : IFontFace[];
-}
+  faces : TFontFace[];
+};
 
-const Fonts = {
-  FontNames: undefined,
-  defaultFont: undefined,
-  $options: $('#font-options'),
-  $label: $('#font-label'),
-  $boldBtn: $('.fontTypeButton[value=b]'),
-  $italicBtn: $('.fontTypeButton[value=i]'),
-  currentSelection: undefined,
-  FontStyleValues: {
+class Fonts {
+  static FontNames   : string[];
+  static defaultFont : string;
+  static $options =  $('#font-options');
+  static $label   = $('#font-label');
+  static $boldBtn   = $('.font-type-btn[value=b]');
+  static $italicBtn = $('.font-type-btn[value=i]');
+  static currentSelection : string;
+  static FontStyleValues = {
     b: 0b001,
     i: 0b010,
     u: 0b100
-  },
-  FontAttributeMap: {},
-  loadFonts(fontNames) {
+  };
+  static FontAttributeMap : { [key: string]: FontAttribs; } = {};
+  static loadFonts(fontNames : string[]) : void {
     Fonts.FontNames = fontNames;
     for(let i = 0; i < fontNames.length; i++) {
       const fName = fontNames[i];
@@ -57,17 +39,17 @@ const Fonts = {
     fontOptions.style.width = document.getElementById("font-select").offsetWidth + "px";
     //(lucas 18.01.21) todo: be more elegant about this, mbe explicitly spec it ?
     Fonts.defaultFont = fontNames[0];
-  },
-  beginLoadFont: function(name : string) {
+  };
+  private static beginLoadFont(name : string) {
     return $.get(web2print.links.apiUrl+'font/'+name)
       .then(Fonts.loadFont)
       .catch(function(e) {
         Dialogs.alert.showErrorHtml(`<p>Schriftart konnte nicht geladen werden:</p><code>${JSON.stringify(e)}</code>`, "error loading fonts", e);
       });
-  },
+  };
   // (lucas 04.01.21)
   // compat: this might need to use another api, coverage is 93% but that has to mean nothing
-  loadFont: function(font : Font) {
+  static loadFont(font : Font) : Promise<void | any[]> {
     let attribs = {};
     let promises = new Array(font.faces.length);
     for(let i = 0; i < font.faces.length; i++) {
@@ -89,13 +71,13 @@ const Fonts = {
     return Promise.allSettled(promises).then(function() {
       Fonts.FontAttributeMap[font.name] = attribs;
     });
-  },
-  displaySelected() {
+  };
+  static displaySelected() : void {
     const fName = Fonts.currentSelection;
 
     Fonts.$label.text(fName).css('font-family', fName);
-  },
-  checkFontTypes() {
+  };
+  static checkFontTypes() : void {
     if(!Fonts.FontAttributeMap[Fonts.currentSelection][Fonts.FontStyleValues.b]) {
       Fonts.$boldBtn.prop('disabled', true);
     } else {
@@ -107,4 +89,4 @@ const Fonts = {
       Fonts.$italicBtn.prop('disabled', false);
     }
   }
-} as FontsObj;
+}

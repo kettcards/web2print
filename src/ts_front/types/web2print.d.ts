@@ -1,4 +1,4 @@
-declare interface Web2print {
+type Web2print = {
   links: {
         basePath : string;
 
@@ -13,6 +13,6 @@ declare interface Web2print {
     maxFileSize : number;
     maxRequestSize : number;
   };
-}
+};
 
-declare const web2print: Web2print;
+declare const web2print : Web2print;
