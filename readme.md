@@ -30,6 +30,9 @@ You can find the executable jar in ```build/libs/web2print-1.0.jar```.
 
 ## How to run the Application
 
+Before you can run the application you need a SQL database with the tables defined in ``structure.sql``.
+For most databases you can import the structure.sql directly to generate the required scheme.
+
 ### Running directly from source
 
 * If you want to test the application you can use the gradle task **bootRun** to run directly from the project directory.
@@ -50,4 +53,4 @@ The Editor is available at ```http://localhost:8080/web2print/front/front.html``
 The admin interface is available at ```http://localhost:8080/web2print/struct/index.html```.
 By default, you can sign in with user ```admin``` with password ```admin``` .
 
-If you want to change the configuration have a look at the available [Properties](properties.md)
+In case you want to access the server somewhere else than localhost you need to configure the ``config/application.properties`` which is genereted after the first time you launch the application.
