@@ -8,7 +8,9 @@ import de.kettcards.web2print.storage.Content;
 import de.kettcards.web2print.storage.StorageContextAware;
 import de.kettcards.web2print.storage.WebContextAware;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.lang.NonNull;
 import org.springframework.security.util.InMemoryResource;
 import org.springframework.stereotype.Service;
@@ -32,12 +34,46 @@ public final class FontService extends StorageContextAware implements WebContext
 
     private final ArrayList<String> order = new ArrayList<>();
 
+    private final PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+
+    private final String DEFAULT_FONTS = "data/fonts";
+
     public FontService(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
     @Override
     public void initialize(List<Content> contents) {
+        //if (contents.isEmpty()) {
+            //TODO unpack fonts
+            try {
+                var resourceBaseUri = new DefaultResourceLoader().getResource("classpath:" + DEFAULT_FONTS).getURI();
+                System.out.println("baseUri: " + resourceBaseUri);
+                Resource[] resources = resolver.getResources("classpath*:" + DEFAULT_FONTS + "/**");
+                for (Resource resource : resources) {
+                    try {
+                        var resourceUri = resource.getURI().getRawSchemeSpecificPart();
+                        System.out.println(resourceUri);
+                        var relativePath = resourceUri.replace(resourceBaseUri.getRawSchemeSpecificPart(), "");
+                        System.out.println(relativePath);
+                        if (!relativePath.endsWith("/")) {
+                            if (relativePath.startsWith("/")) {
+                                relativePath = relativePath.substring(1);
+                            }
+                            save(new Content(resource), relativePath);
+                        }
+                    } catch (Exception ex) {
+                        log.error("unable to extract font resource: " + resource);
+                    }
+                }
+            } catch (Exception ex) {
+                log.error("unable to extract default fonts", ex);
+            }
+            //}
+        // initFontStore(contents);
+    }
+
+    public void initFontStore(List<Content> contents) {
         var fonts = contents.stream().filter(e ->
                 e.getOriginalFilename().equals("font.json")).collect(Collectors.toList());
         for (var font : fonts) {
