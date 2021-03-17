@@ -17,8 +17,8 @@ declare interface Card {
     textureSlug : string;
     tiling      : 'STRETCH';
   };
-  motive     : {
-    side : 'BACK' | 'FRONT';
-    textureSlug : string;
-  }[];
+  motives     : {
+    front : string | undefined;
+    back  : string | undefined;
+  };
 }

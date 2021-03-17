@@ -1,7 +1,6 @@
 package de.kettcards.web2print.service;
 
 import de.kettcards.web2print.model.db.*;
-import de.kettcards.web2print.model.db.rel.MotiveMap;
 import de.kettcards.web2print.model.projectons.CardOverview;
 import de.kettcards.web2print.model.tableimport.CardFormatSheetRow;
 import de.kettcards.web2print.model.tableimport.CardOverviewSheetRow;
@@ -39,9 +38,6 @@ public final class XlsxImportService {
 
     @Autowired
     private FoldRepository foldRepository;
-
-    @Autowired
-    private MotiveMapRepository motiveMapRepository;
 
     @Autowired
     private MotiveRepository motiveRepository;
@@ -111,6 +107,7 @@ public final class XlsxImportService {
                 log.debug("saving card: " + targetCard);
                 Card saveCard = cardRepository.save(targetCard);
 
+                /*
                 String frontSlug = targetCard.getOrderId() + "-front.png";
                 if (motiveRepository.existsMotiveByTextureSlug(frontSlug)) {
                     Motive motive = motiveRepository.findByTextureSlug(frontSlug);
@@ -138,6 +135,7 @@ public final class XlsxImportService {
                     map.setMotiveMapId(mapId);
                     motiveMapRepository.save(map);
                 }
+                 */
             } catch (IllegalArgumentException ex) {
                 log.warn(ex.getMessage());
             }
