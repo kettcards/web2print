@@ -41,18 +41,18 @@ public class CardDataDeserializer extends JsonDeserializer<CardData> {
         CardFormat cardFormat = cardService.findCardFormat(cardId);
 
         var innerNode = root.get("innerEls");
-        List<BoxData> innerElse = parsePage(innerNode);
+        List<BoxData> innerElse = parseBoxes(innerNode);
         var outerNode = root.get("outerEls");
-        List<BoxData> outerElse = parsePage(outerNode);
-
+        List<BoxData> outerElse = parseBoxes(outerNode);
         return new CardData(mm2pt(cardFormat.getWidth()), mm2pt(cardFormat.getHeight()), innerElse, outerElse);
     }
 
-    /** todo doc
-     * parses a single page with given elements as a Json node
-     *
+    /**
+     * Parses json array nodes into {@link BoxData} objects
+     * @return list of BoxData objects which might be {@link LeftAlignedTextBoxData}, {@link CenterAlignedTextBoxData}, {@link RightAlignedTextBoxData} or {@link ImageBoxData}
+     * @throws IOException if a box type is neither 't' nor 'i', if a text box alignement is neither 'l', 'c' nor 'r' or if a text box's text data contains textual node that is not 'br'
      */
-    private List<BoxData> parsePage(JsonNode textBoxArrayNode) throws IOException {
+    private List<BoxData> parseBoxes(JsonNode textBoxArrayNode) throws IOException {
         List<BoxData> ret = new ArrayList<>();
 
         for (var textBoxNode : textBoxArrayNode) {
