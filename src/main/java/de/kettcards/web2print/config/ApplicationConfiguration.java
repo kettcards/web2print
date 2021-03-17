@@ -17,10 +17,6 @@ public class ApplicationConfiguration {
     @NestedConfigurationProperty
     private Link links;
 
-    @JsonView(Include.Api.class)
-    @NestedConfigurationProperty
-    private Page page;
-
     @JsonView(Include.Internal.class)
     @NestedConfigurationProperty
     private MailConfiguration mail;
@@ -98,13 +94,6 @@ public class ApplicationConfiguration {
 
         @JsonView(Include.Internal.class)
         private Duration userContent;
-
-    }
-
-    @Data
-    public static class Page {
-
-        private Integer maxPageSize, defaultPageSize;
 
     }
 

@@ -74,6 +74,13 @@ public class ImageBoxData extends BoxData {
         }
     }
 
+    /**
+     * draws svg files natively to the PDF thanks to svgSalamander
+     * @param doc
+     * @param diagram
+     * @param m
+     * @throws IOException
+     */
     private void drawSVG(Document doc, SVGDiagram diagram, Matrix m) throws IOException {
 
         PdfBoxGraphics2D graphics = new PdfBoxGraphics2D(doc, svgOriginalWidth, svgOriginalHeight);
