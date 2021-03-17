@@ -49,7 +49,7 @@ class Serializer {
         window.history.replaceState({}, Editor.storage.loadedCard.name+" - Web2Print", stringifyParameters());
         let txt = 'Daten erfolgreich gesendet!';
         if(!_export)
-          txt += ` Sie befinden sich nun auf \n${window.location}\n Besuchen Sie diese Addresse später erneut wird das gespeicherte Design automatisch geladen.`;
+          txt += ` Sie befinden sich nun auf<br/><a href="${window.location}">${window.location}</a></br> Besuchen Sie diese Addresse später erneut wird das gespeicherte Design automatisch geladen.<br/>Die Addresse kann von jedem ge&ouml;ffnet werden, insofern er den link kennt!`;
         Dialogs.loading.hide();
         Dialogs.alert.showHtml("Erfolg!", txt);
       }).catch(function(e) {
