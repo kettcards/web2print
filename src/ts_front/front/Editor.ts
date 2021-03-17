@@ -64,7 +64,7 @@ class Editor {
       if(!renderStyle.condition(card))
         continue;
       const frag = make('button.render-select');
-      $(frag).text(renderStyle.name).attr('onclick', 'hRenderStyleBtnClick('+i+');');
+      $(frag).text(renderStyle.name).attr('onclick', `UI.hRenderStyleBtnClick(${i});`);
       get('render-styles-container').appendChild(frag);
     }
 
