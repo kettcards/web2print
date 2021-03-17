@@ -72,7 +72,7 @@ public abstract class TextBoxData extends BoxData {
      * @throws IOException if writing to doc is not possible
      */
     public SpanDimension writeParagraph(Document doc, TextParagraph paragraph, SpanDimension lastLineDim) throws IOException {
-        SpanDimension largestDim = paragraph.getLargestFontSize(doc, this.lineHeight);
+        SpanDimension largestDim = paragraph.getLargestDimension(doc, this.lineHeight);
         float leading;
         if(lastLineDim == null) {
             leading = largestDim.getFirstLineBaseline(this.lineHeight);

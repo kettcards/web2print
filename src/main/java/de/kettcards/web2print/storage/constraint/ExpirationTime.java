@@ -1,4 +1,4 @@
-package de.kettcards.web2print.storage.contraint;
+package de.kettcards.web2print.storage.constraint;
 
 import de.kettcards.web2print.exceptions.content.ContentException;
 import de.kettcards.web2print.storage.Content;
