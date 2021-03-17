@@ -37,8 +37,16 @@ const RenderStyles : IRenderStyle[] = [{
       'background-image': 'url("'+web2print.links.textureUrl+card.texture.textureSlug+'")',
     }, this.BgStretchObjs[card.texture.tiling]));
 
-    for(let fold of card.cardFormat.folds) {
-      $bundle.find('.folds-layer' as JQuery.Selector).append(createFold(fold));
+
+    const $foldsLayers = $bundle.find('.folds-layer' as JQuery.Selector);
+    for(const fold of card.cardFormat.folds) {
+      if (fold.x1 === fold.x2) {
+        $(make('div.v-fold')).css('left', fold.x1+'mm').appendTo($foldsLayers);
+      } else if (fold.y1 === fold.y2) {
+        $(make('div.h-fold')).css('top', fold.y1 + 'mm').appendTo($foldsLayers);
+      } else {
+        console.warn("can't display diagonal folds for now");
+      }
     }
 
     const $back  = $bundle.children('.back');
@@ -400,3 +408,48 @@ const RenderStyles : IRenderStyle[] = [{
     p2r: 0
   }
 } as IRenderStyle];
+
+class RenderStyleState {
+  static style            : IRenderStyle;
+  static currentDotIndex  : number;
+  static dots             : JQuery[];
+  static getActiveDot() : JQuery {
+    return RenderStyleState.dots[RenderStyleState.currentDotIndex];
+  }
+  static getActiveLabel() : string {
+    return RenderStyleState.style.pageLabels[RenderStyleState.currentDotIndex];
+  }
+
+  static hPageSwitch(direction : -1|0|1) : void {
+    RenderStyleState.style.hPageChanged(direction);
+    RenderStyleState.getActiveDot().removeClass('active');
+    RenderStyleState.currentDotIndex = mod(RenderStyleState.currentDotIndex + direction, RenderStyleState.dots.length);
+    RenderStyleState.getActiveDot().addClass('active');
+    UI.$pageLabel.text(RenderStyleState.getActiveLabel());
+  }
+  static changeRenderStyle(newIndex : number) : void {
+    RenderStyleState.style = RenderStyles[newIndex];
+    RenderStyleState.currentDotIndex = RenderStyleState.style.initialDotIndex;
+    RenderStyleState.dots = new Array(RenderStyleState.style.pageLabels.length);
+
+    const range = makeR();
+    range.selectNodeContents(UI.$navDotsUl[0]);
+    range.deleteContents();
+    for(let i = 0; i < RenderStyleState.dots.length; i++) {
+      const $el = $(make('li'));
+      if(i === RenderStyleState.currentDotIndex) {
+        $el.addClass('active');
+        UI.$pageLabel.text(RenderStyleState.getActiveLabel());
+      }
+      RenderStyleState.dots[i] = $el;
+      UI.$navDotsUl.append($el);
+    }
+
+    range.selectNodeContents(UI.$cardContainer[0]);
+    range.deleteContents();
+    UI.$cardContainer.append(RenderStyleState.style.pageGen(Editor.storage.loadedCard));
+
+    //(lucas 02.03.21) todo: could cache these per renderstyle or even let them cache it internally
+    Colliders.colliders = [];
+  }
+}
