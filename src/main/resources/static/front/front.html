@@ -171,8 +171,12 @@
                   button.append(form);
                   form.submit();
                 }).catch(function (res) {
+                  var error = res;
+                  if (error.hasOwnProperty('responseText')) {
+                    error = error.responseText;
+                  }
                   Dialogs.loading.hide();
-                  Dialogs.alert.showError(JSON.stringify(res));
+                  Dialogs.alert.showError(JSON.stringify(error));
                 });
 
               }).fail(function (res) {
