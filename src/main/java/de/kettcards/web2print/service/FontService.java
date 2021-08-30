@@ -19,6 +19,8 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -85,7 +87,10 @@ public final class FontService extends StorageContextAware implements WebContext
                 for (var fontFace : fontPackage.getFontFaces()) {
                     var source = fontFace.getSource();
                     //var context = font.getRelativePath(source); //TODO only works with newer pool, set the path over the name
-                    fontFace.load(load(fontPackage.getName().toLowerCase() + "/" + source).getInputStream());
+                    //fontFace.load(load(fontPackage.getName().toLowerCase() + "/" + source).getInputStream());
+                    //TODO what?
+                    fontFace.load(Files.newInputStream(Paths.get("data/fonts/" + fontPackage.getName().toLowerCase() + "/" + source)));
+
                 }
                 fontStore.put(fontPackage.getName(), fontPackage);
             } catch (Exception ex) {

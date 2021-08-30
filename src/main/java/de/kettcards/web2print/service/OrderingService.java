@@ -63,9 +63,22 @@ public final class OrderingService extends StorageContextAware {
         mailService.sendUserMail(additionalData);
     }
 
-    private byte[] decodingBuffer = null;
+    public String exportCardToPdf(String cardId) throws IOException {
+        var cardData = jsonMapper.readValue(decode(cardId), CardData.class);
+        return exportCardToPdf(cardData);
+    }
+
+    public String exportCardToPdf(CardData cardData) throws IOException {
+
+        try (PDDocument generate = generator.generate(cardData)) {
+            var stream = new ByteArrayOutputStream();
+            generate.save(stream);
+            return save(new Content(new ByteArrayResource(stream.toByteArray()), "application/pdf", "generated.pdf"));
+        }
+    }
 
     private byte[] decode(String rawData) {
+        byte[] decodingBuffer = null;
         final var BLOCK_SIZE = 4 * 1024;
 
         var ogLen = (rawData.length() / 4) * 3; // (lucas) might be slightly above above the og len since b64 is padded, but that should be fine

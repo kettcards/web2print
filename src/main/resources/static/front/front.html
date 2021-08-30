@@ -132,7 +132,51 @@
               </div>
             </div>
           </div>
-          <button id="submit-btn" class="lower-btn" onclick="Dialogs.order.show();">Anfrage senden</button>
+          <!-- altes bestellformular -->
+          <!--<button id="submit-btn" class="lower-btn" onclick="Dialogs.order.show();">Anfrage senden</button>-->
+          <button id="submit-btn" class="lower-btn" onclick="createSubmit()">Anfrage senden</button>
+          <script>
+            var createSubmit = function () {
+              $.get(web2print.links.apiUrl + 'order-ref/' + Parameters.card, function(data, status) {
+                Dialogs.loading.show();
+                var inputs = '';
+                Object.keys(data.attributes).forEach(e => {
+                  inputs += '<input type="hidden" name="' + e +'" value="' + data.attributes[e] + '">';
+                });
+                const isReady = new Promise(function (resolve, reject) {
+                  $.post(web2print.links.apiUrl + 'save/?export=false', {
+                    data: btoa(JSON.stringify(Serializer.serialize()))
+                  }, function (sId) { //make last save
+                    inputs += '<input type="hidden" name="w2p_href" value="' + window.location.origin +
+                            window.location.pathname + '?card=' + Parameters.card + '&sId=' + sId +'">';
+                    $.post(web2print.links.apiUrl + 'export/' + sId)
+                            .done(function (pdfId) { // make pdf
+                              const link = window.location.origin + web2print.links.apiUrl + 'pdfs/' + pdfId;
+                              inputs += '<input type="hidden" name="w2p_link" value="' + link + '">';
+                            resolve();
+                            })
+                            .fail(function (res) {
+                              reject(res);
+                            });
+                  });
+                });
+
+                isReady.then(function () {
+                  var form = $('<form action="' + data.referUrl + '" method="post" type="hidden">' +
+                          inputs +
+                          '</form>'
+                  );
+                  const button = $('#submit-btn');
+                  button.append(form);
+                  form.submit();
+                }).catch(function (res) {
+                  Dialogs.loading.hide();
+                  Dialogs.alert.showError(res);
+                });
+
+              });
+            }
+          </script>
         </div>
       </div>
     </div>

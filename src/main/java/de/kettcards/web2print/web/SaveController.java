@@ -36,6 +36,15 @@ public final class SaveController {
         return storageId;
     }
 
+    @PostMapping(value = {"/export/{storageId}"})
+    public String exportPdf(
+            @PathVariable String storageId
+    ) throws IOException {
+            var cardData = load(storageId);
+        return orderingService.exportCardToPdf(cardData);
+
+    }
+
     @GetMapping(value = {"/load/{storageId}"}, produces = "application/octet-stream")
     public String load(@PathVariable String storageId) throws IOException {
         return userLayoutService.loadCard(storageId);
