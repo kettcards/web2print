@@ -68,11 +68,12 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             }
         }
 
-        registry.antMatchers(HttpMethod.GET, "/" + apiPath + "**").permitAll()
+        registry.antMatchers(HttpMethod.POST, "/" + apiPath + "pdf/**").hasRole(ADMIN.name())
+                .antMatchers(HttpMethod.GET, "/" + apiPath + "**").permitAll()
                 .antMatchers(HttpMethod.POST, "/" + apiPath + "content/**").permitAll()
-                .antMatchers(HttpMethod.POST, "/" + apiPath + "pdf/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/" + apiPath + "save/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/" + apiPath + "backend/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/" + apiPath + "export/**").permitAll()
                 //explicitly define protected resources, allows refined access control
                 .antMatchers("/api/**").hasRole(ADMIN.name())
                 //everything else also needs authentication

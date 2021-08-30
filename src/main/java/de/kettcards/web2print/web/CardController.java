@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
+@CrossOrigin("*")
 @RestController
 @RequestMapping("${web2print.links.api-path}")
 public final class CardController {

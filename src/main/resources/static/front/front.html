@@ -137,15 +137,16 @@
           <button id="submit-btn" class="lower-btn" onclick="createSubmit()">Anfrage senden</button>
           <script>
             var createSubmit = function () {
-              $.get(web2print.links.apiUrl + 'order-ref/' + Parameters.card, function(data, status) {
+              $.get(web2print.links.apiUrl + 'order-ref/' + Parameters.card).done(function(data, status) {
                 Dialogs.loading.show();
                 var inputs = '';
                 Object.keys(data.attributes).forEach(e => {
                   inputs += '<input type="hidden" name="' + e +'" value="' + data.attributes[e] + '">';
                 });
+                const serializedData = Serializer.serialize();
                 const isReady = new Promise(function (resolve, reject) {
                   $.post(web2print.links.apiUrl + 'save/?export=false', {
-                    data: btoa(JSON.stringify(Serializer.serialize()))
+                    data: btoa(JSON.stringify(serializedData))
                   }, function (sId) { //make last save
                     inputs += '<input type="hidden" name="w2p_href" value="' + window.location.origin +
                             window.location.pathname + '?card=' + Parameters.card + '&sId=' + sId +'">';
@@ -171,9 +172,12 @@
                   form.submit();
                 }).catch(function (res) {
                   Dialogs.loading.hide();
-                  Dialogs.alert.showError(res);
+                  Dialogs.alert.showError(JSON.stringify(res));
                 });
 
+              }).fail(function (res) {
+                Dialogs.loading.hide();
+                Dialogs.alert.showError('Karte ist derzeit nicht bestellbar.');
               });
             }
           </script>

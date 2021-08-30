@@ -6,6 +6,7 @@ import de.kettcards.web2print.model.OrderRefer;
 import de.kettcards.web2print.service.CardService;
 import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
@@ -28,12 +29,15 @@ public class PriceController {
     @Autowired
     private ApplicationConfiguration configuration;
 
+    @Value("${web2print.links.order-ref}")
+    private String orderRef;
+
 
     @GetMapping("/order-ref/{orderId}")
     public OrderRefer getRefForOrder(@PathVariable String orderId) {
         //var card = cardService.findCard(orderId); //TODO change back to db check
         var link = "https://kettcards.de/page/" + orderId + ".php"; //TODO replace with shop link
-        return getOrderRef("https://kettcards.de/php/info1.php", link); //TODO replace ref link
+        return getOrderRef(orderRef, link); //TODO replace ref link
     }
 
     //TODO better way to get the prices
