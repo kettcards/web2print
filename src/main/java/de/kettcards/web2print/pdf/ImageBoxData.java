@@ -11,7 +11,6 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.util.Matrix;
 
 import javax.imageio.ImageIO;
-import java.awt.geom.AffineTransform;
 import java.io.IOException;
 
 /**
@@ -20,7 +19,6 @@ import java.io.IOException;
 public class ImageBoxData extends BoxData {
 
     private final String contentId;
-    private float svgOriginalWidth, svgOriginalHeight;
 
     public ImageBoxData(float x, float y, float width, float height, String contentId) {
         super(x, y, width, height);
@@ -38,17 +36,11 @@ public class ImageBoxData extends BoxData {
         if (content == null)
             throw new IOException("unable to resolve referenced content:" + contentId);
         PDImageXObject img = embedImage(doc, content);
-        Matrix m = new Matrix(this.width, 0, 0, this.height, doc.getXOffset() + this.x, doc.getYOffset() + this.y);
         if (img != null) {
+            Matrix m = new Matrix(this.width, 0, 0, this.height, doc.getXOffset() + this.x, doc.getYOffset() + this.y);
             doc.stream().drawImage(img, m);
         } else {
-            SVGUniverse svgUniverse = new SVGUniverse();
-            SVGDiagram diagram = svgUniverse.getDiagram(svgUniverse.loadSVG(content.getFile().toURL()));
-            //diagram.getRoot().calcBoundingBox();
-            svgOriginalWidth = diagram.getWidth();
-            svgOriginalHeight = diagram.getHeight();
-            m = calcNewMatrix(m);
-            drawSVG(doc, diagram, m);
+            drawSVG(doc, content.getFile().toURL());
         }
     }
 
@@ -78,13 +70,19 @@ public class ImageBoxData extends BoxData {
     /**
      * draws svg files natively to the PDF thanks to svgSalamander
      * @param doc
-     * @param diagram
-     * @param m
+     * @param file_url
      * @throws IOException
      */
-    private void drawSVG(Document doc, SVGDiagram diagram, Matrix m) throws IOException {
+    private void drawSVG(Document doc, java.net.URL file_url) throws IOException {
+        SVGUniverse svgUniverse = new SVGUniverse();
+        SVGDiagram diagram = svgUniverse.getDiagram(svgUniverse.loadSVG(file_url));
 
-        PdfBoxGraphics2D graphics = new PdfBoxGraphics2D(doc, svgOriginalWidth, svgOriginalHeight);
+        var adjusted_matrix = Matrix.concatenate(
+            Matrix.getTranslateInstance(doc.getXOffset() + this.x, doc.getYOffset() + this.y),
+            Matrix.getScaleInstance(this.width / diagram.getWidth(), this.height / diagram.getHeight())
+        );
+
+        PdfBoxGraphics2D graphics = new PdfBoxGraphics2D(doc, diagram.getWidth(), diagram.getHeight());
 
         try {
             diagram.render(graphics);
@@ -95,16 +93,16 @@ public class ImageBoxData extends BoxData {
         }
 
         var form = graphics.getXFormObject();
-
-        AffineTransform transform = m.createAffineTransform();
-        form.setMatrix(transform);
+        form.setMatrix(adjusted_matrix.createAffineTransform());
         doc.stream().drawForm(form);
 
-    }
-
-    private Matrix calcNewMatrix(Matrix m){
-        float newScaleX = m.getScaleX() / svgOriginalWidth;
-        float newScaleY = m.getScaleY() / svgOriginalHeight;
-        return new Matrix(newScaleX,0,0,newScaleY,m.getTranslateX(),m.getTranslateY());
+        //todo(Rennorb): @debug
+        doc.stream().setLineWidth(1);
+        doc.stream().moveTo(adjusted_matrix.getTranslateX(), adjusted_matrix.getTranslateY());
+        doc.stream().lineTo(adjusted_matrix.getTranslateX() + diagram.getWidth(), adjusted_matrix.getTranslateY());
+        doc.stream().lineTo(adjusted_matrix.getTranslateX() + diagram.getWidth(), adjusted_matrix.getTranslateY() + diagram.getHeight());
+        doc.stream().lineTo(adjusted_matrix.getTranslateX(), adjusted_matrix.getTranslateY() + diagram.getHeight());
+        doc.stream().closePath();
+        doc.stream().stroke();
     }
 }

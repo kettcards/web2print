@@ -78,14 +78,12 @@ public final class OrderingService extends StorageContextAware {
     }
 
     private byte[] decode(String rawData) {
-        byte[] decodingBuffer = null;
+
         final var BLOCK_SIZE = 4 * 1024;
 
         var ogLen = (rawData.length() / 4) * 3; // (lucas) might be slightly above above the og len since b64 is padded, but that should be fine
         var bufferSize = (ogLen / BLOCK_SIZE + 1) * BLOCK_SIZE;
-        if (decodingBuffer == null || decodingBuffer.length < bufferSize) {
-            decodingBuffer = new byte[bufferSize];
-        }
+        byte[] decodingBuffer = new byte[bufferSize];
         // (lucas 16.02.21) todo: get around the array allocation on string.getBytes while also being able to specify the encoding
         var decodedLen = Base64.getDecoder().decode(rawData.getBytes(), decodingBuffer);
         return new String(decodingBuffer, 0, decodedLen, StandardCharsets.ISO_8859_1).getBytes(StandardCharsets.UTF_8);
