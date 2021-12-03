@@ -44,6 +44,7 @@ public class ImageBoxData extends BoxData {
         } else {
             SVGUniverse svgUniverse = new SVGUniverse();
             SVGDiagram diagram = svgUniverse.getDiagram(svgUniverse.loadSVG(content.getFile().toURL()));
+            //diagram.getRoot().calcBoundingBox();
             svgOriginalWidth = diagram.getWidth();
             svgOriginalHeight = diagram.getHeight();
             m = calcNewMatrix(m);
@@ -106,5 +107,4 @@ public class ImageBoxData extends BoxData {
         float newScaleY = m.getScaleY() / svgOriginalHeight;
         return new Matrix(newScaleX,0,0,newScaleY,m.getTranslateX(),m.getTranslateY());
     }
-
 }
