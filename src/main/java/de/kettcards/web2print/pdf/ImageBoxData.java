@@ -129,7 +129,7 @@ public class ImageBoxData extends BoxData {
         var scale_render_y = this.height / height_render;
         var translate_matrix = Matrix.getTranslateInstance( this.x + doc.getXOffset(), this.y + doc.getYOffset()
                 //NOTE(Rennorb): this is just for correcting the scale origin
-                + (height_render - this.height) * scale_render_y
+                + (height_render - diagram.getHeight()) * scale_render_y
         );
         var scale_matrix = Matrix.getScaleInstance(this.width / width_render, scale_render_y);
         var matrix = Matrix.concatenate(translate_matrix, scale_matrix);
