@@ -3,8 +3,10 @@ package de.kettcards.web2print.pdf;
 import com.kitfox.svg.SVGDiagram;
 import com.kitfox.svg.SVGException;
 import com.kitfox.svg.SVGUniverse;
+import com.kitfox.svg.xml.NumberWithUnits;
 import de.kettcards.web2print.storage.Content;
 import de.rototor.pdfbox.graphics2d.PdfBoxGraphics2D;
+import lombok.extern.slf4j.*;
 import org.apache.pdfbox.pdmodel.graphics.image.JPEGFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
@@ -16,6 +18,7 @@ import java.io.IOException;
 /**
  * image node representation
  */
+@Slf4j
 public class ImageBoxData extends BoxData {
 
     private final String contentId;
@@ -67,22 +70,35 @@ public class ImageBoxData extends BoxData {
         }
     }
 
+    float convert_number(NumberWithUnits input, float ppi)
+    {
+        float value = input.getValue();
+        switch(input.getUnits())
+        {
+            case NumberWithUnits.UT_PX      : break;
+            case NumberWithUnits.UT_UNITLESS: break;
+
+            case NumberWithUnits.UT_PC      : value *= 12;
+            case NumberWithUnits.UT_PT      : value /= 72;
+            case NumberWithUnits.UT_IN      : value *= ppi; break;
+
+            case NumberWithUnits.UT_MM      : value /= 10;
+            case NumberWithUnits.UT_CM      : value = value / 2.54f * ppi; break;
+
+            case NumberWithUnits.UT_EM      :
+            case NumberWithUnits.UT_EX      :
+            case NumberWithUnits.UT_PERCENT : log.warn("cant handle NumberWithUnits unit {}", input.getUnits()); break;
+        }
+        return value;
+    }
+
     /**
      * draws svg files natively to the PDF thanks to svgSalamander
-     * @param doc
-     * @param file_url
-     * @throws IOException
      */
     private void drawSVG(Document doc, java.net.URL file_url) throws IOException {
-        SVGUniverse svgUniverse = new SVGUniverse();
-        SVGDiagram diagram = svgUniverse.getDiagram(svgUniverse.loadSVG(file_url));
-
-        var adjusted_matrix = Matrix.concatenate(
-            Matrix.getTranslateInstance(doc.getXOffset() + this.x, doc.getYOffset() + this.y),
-            Matrix.getScaleInstance(this.width / diagram.getWidth(), this.height / diagram.getHeight())
-        );
-
-        PdfBoxGraphics2D graphics = new PdfBoxGraphics2D(doc, diagram.getWidth(), diagram.getHeight());
+        SVGUniverse      svgUniverse = new SVGUniverse();
+        SVGDiagram       diagram     = svgUniverse.getDiagram(svgUniverse.loadSVG(file_url));
+        PdfBoxGraphics2D graphics    = new PdfBoxGraphics2D(doc, diagram.getWidth(), diagram.getHeight());
 
         try {
             diagram.render(graphics);
@@ -92,17 +108,34 @@ public class ImageBoxData extends BoxData {
             graphics.dispose();
         }
 
-        var form = graphics.getXFormObject();
-        form.setMatrix(adjusted_matrix.createAffineTransform());
-        doc.stream().drawForm(form);
+        float width_render, height_render;
+        try {
+            var root = diagram.getRoot();
+            var field_width  = root.getClass().getDeclaredField("width");
+            var field_height = root.getClass().getDeclaredField("height");
+            field_width .setAccessible(true);
+            field_height.setAccessible(true);
+            var number_width  = (NumberWithUnits)field_width .get(root);
+            var number_height = (NumberWithUnits)field_height.get(root);
+            // TODO(Rennorb): dont hardcode ppi
+            width_render  = convert_number(number_width , 96);
+            height_render = convert_number(number_height, 96);
+        } catch (Throwable ignore) {
+            log.warn("failed to get fields from svg root");
+            width_render  = this.width;
+            height_render = this.height;
+        }
 
-        //todo(Rennorb): @debug
-        doc.stream().setLineWidth(1);
-        doc.stream().moveTo(adjusted_matrix.getTranslateX(), adjusted_matrix.getTranslateY());
-        doc.stream().lineTo(adjusted_matrix.getTranslateX() + diagram.getWidth(), adjusted_matrix.getTranslateY());
-        doc.stream().lineTo(adjusted_matrix.getTranslateX() + diagram.getWidth(), adjusted_matrix.getTranslateY() + diagram.getHeight());
-        doc.stream().lineTo(adjusted_matrix.getTranslateX(), adjusted_matrix.getTranslateY() + diagram.getHeight());
-        doc.stream().closePath();
-        doc.stream().stroke();
+        var scale_render_y = this.height / height_render;
+        var translate_matrix = Matrix.getTranslateInstance( this.x + doc.getXOffset(), this.y + doc.getYOffset()
+                //NOTE(Rennorb): this is just for correcting the scale origin
+                + (height_render - this.height) * scale_render_y
+        );
+        var scale_matrix = Matrix.getScaleInstance(this.width / width_render, scale_render_y);
+        var matrix = Matrix.concatenate(translate_matrix, scale_matrix);
+
+        var form = graphics.getXFormObject();
+        form.setMatrix(matrix.createAffineTransform());
+        doc.stream().drawForm(form);
     }
 }

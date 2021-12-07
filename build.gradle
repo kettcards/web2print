@@ -51,7 +51,8 @@ dependencies {
 	implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.24'
 	implementation 'org.apache.xmlgraphics:batik-transcoder:1.14'
 	implementation group: 'de.rototor.pdfbox', name: 'graphics2d', version: '0.31'
-	implementation 'com.weblookandfeel:svg-salamander:1.1.2.2'
+	//implementation 'com.weblookandfeel:svg-salamander:1.1.2.2'
+	implementation files('libs/svgSalamander/svgSalamander-1.1.3.jar')
 
 	//table import
 	implementation group: 'org.apache.poi', name: 'poi', version: '4.1.2'
