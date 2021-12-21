@@ -76,7 +76,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/" + apiPath + "order-ref/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/" + apiPath + "load/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/" + apiPath + "save/**").permitAll()
-                .antMatchers(HttpMethod.POST, "/" + apiPath + "export/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/" + apiPath + "texture/**").permitAll()
                 //explicitly define protected resources, allows refined access control
                 .antMatchers("/api/**").hasRole(ADMIN.name())

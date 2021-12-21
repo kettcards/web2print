@@ -132,59 +132,7 @@
               </div>
             </div>
           </div>
-          <!-- altes bestellformular -->
-          <!--<button id="submit-btn" class="lower-btn" onclick="Dialogs.order.show();">Anfrage senden</button>-->
-          <button id="submit-btn" class="lower-btn" onclick="createSubmit()">Anfrage senden</button>
-          <script>
-            var createSubmit = function () {
-              $.get(web2print.links.apiUrl + 'order-ref/' + Parameters.card).done(function(data, status) {
-                Dialogs.loading.show();
-                var inputs = '';
-                Object.keys(data.attributes).forEach(e => {
-                  inputs += '<input type="hidden" name="' + e +'" value="' + data.attributes[e] + '">';
-                });
-                const serializedData = Serializer.serialize();
-                const isReady = new Promise(function (resolve, reject) {
-                  $.post(web2print.links.apiUrl + 'save/?export=false', {
-                    data: btoa(JSON.stringify(serializedData))
-                  }, function (sId) { //make last save
-                    inputs += '<input type="hidden" name="w2p_href" value="' + window.location.origin +
-                            window.location.pathname + '?card=' + Parameters.card + '&sId=' + sId +'">';
-                    $.post(web2print.links.apiUrl + 'export/' + sId)
-                            .done(function (pdfId) { // make pdf
-                              const link = window.location.origin + web2print.links.apiUrl + 'pdfs/' + pdfId;
-                              inputs += '<input type="hidden" name="w2p_link" value="' + link + '">';
-                            resolve();
-                            })
-                            .fail(function (res) {
-                              reject(res);
-                            });
-                  });
-                });
-
-                isReady.then(function () {
-                  var form = $('<form action="' + data.referUrl + '" method="post" type="hidden">' +
-                          inputs +
-                          '</form>'
-                  );
-                  const button = $('#submit-btn');
-                  button.append(form);
-                  form.submit();
-                }).catch(function (res) {
-                  var error = res;
-                  if (error.hasOwnProperty('responseText')) {
-                    error = error.responseText;
-                  }
-                  Dialogs.loading.hide();
-                  Dialogs.alert.showError(JSON.stringify(error));
-                });
-
-              }).fail(function (res) {
-                Dialogs.loading.hide();
-                Dialogs.alert.showError('Karte ist derzeit nicht bestellbar.');
-              });
-            }
-          </script>
+          <button id="submit-btn" class="lower-btn" onclick="Dialogs.order.show();">Anfrage senden</button>
         </div>
       </div>
     </div>
@@ -214,12 +162,23 @@
           <div class="dialog-body">
             <fieldset id="order-dialog-p1">
               <span>Gerne machen wir Ihnen ein Angebot, daf&uuml;r brauchen wir noch einige Informationen:</span>
-              <h4>Anzahl<br /><span>&nbsp;an Karten</span></h4>
+              <h4>Sie sind...?</h4>
+              <table>
+                <tr>
+                  <td><input type="radio" name="kdtyp" value="p" id="radio_kdtype_p" checked="checked"><label for="radio_kdtype_p">Privatkunde</label></td>
+                  <td>(= Verbraucher)</td>
+                </tr>
+                <tr>
+                  <td><input type="radio" name="kdtyp" value="p" id="radio_kdtype_g"><label for="radio_kdtype_g">Gesch&auml;ftskunde</label></td>
+                  <td>(= Unternehmer)</td>
+                </tr>
+              </table>
+              <h4><span>Die gewünschte</span><br />Anzahl<br /><span>&nbsp;an Karten</span></h4>
               <input type="number" name="amount" min="1" value="1" autocomplete="off" />
             </fieldset>
             <div class="spacer"></div>
             <fieldset id="order-dialog-p2">
-              <h4><span>und</span><br />Ihre Anschrift</h4>
+              <h4><span>und</span><br />Ihre Lieferanschrift</h4>
               <table>
                 <tr>
                   <td><input type="text" name="fname" placeholder="Vorname" required autocomplete="given-name" /></td>
@@ -242,6 +201,31 @@
                   <td colspan="2"><input type="tel" name="phone" placeholder="Telefonnummer" autocomplete="tel" /></td>
                 </tr>
               </table>
+            </fieldset>
+            <fieldset id="order-dialog-bill">
+              <h4><span>unterscheidet sich diese von der</span><br />Rechnungsanschrift?</h4>
+              <input type="checkbox" id="check-billing-addr-differs" name="billing_differs" value="true"><label for="check-billing-addr-differs">andere Rechnungsanschrift</label>
+              <div id="billing-table-cover">
+                <table>
+                  <tr>
+                    <td><input type="text" name="b_fname" placeholder="Vorname" autocomplete="given-name" /></td>
+                    <td><input type="text" name="b_lname" placeholder="Nachname" autocomplete="family-name" /></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2"><input type="text" name="b_address" placeholder="Stra&szlig;e Hausnummer" autocomplete="street-address" /></td>
+                  </tr>
+                  <tr>
+                    <td><input type="text" name="b_postal" placeholder="PLZ" autocomplete="postal-code" /></td>
+                    <td><input type="text" name="b_region" placeholder="Ort" autocomplete="address-level2" /></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2"><input type="text" name="b_company" placeholder="Firma" /></td>
+                  </tr>
+                  <tr>
+                    <td colspan="2"><input type="tel" name="b_phone" placeholder="Telefonnummer" autocomplete="tel" /></td>
+                  </tr>
+                </table>
+              </div>
             </fieldset>
             <div class="spacer"></div>
             <fieldset id="order-dialog-p3">

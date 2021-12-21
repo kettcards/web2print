@@ -1,5 +1,6 @@
 package de.kettcards.web2print.web;
 
+import de.kettcards.web2print.config.ApplicationConfiguration;
 import de.kettcards.web2print.service.OrderingService;
 import de.kettcards.web2print.service.UserLayoutService;
 import lombok.extern.slf4j.Slf4j;
@@ -30,19 +31,14 @@ public final class SaveController {
             @RequestParam("data") String cardData,
             @RequestParam(required = false) String form
     ) throws IOException, ParseException, MessagingException {
-        storageId = userLayoutService.storeCard(storageId, cardData);
-        if (export.equals("true"))
-            orderingService.exportCard(cardData, form);
+        if (export.equals("true")) {
+            storageId = userLayoutService.storeCard(null, cardData);
+            var internal_storageId = userLayoutService.storeCard(null, cardData);
+            orderingService.exportCard(cardData, internal_storageId, form);
+        } else {
+            storageId = userLayoutService.storeCard(storageId, cardData);
+        }
         return storageId;
-    }
-
-    @PostMapping(value = {"/export/{storageId}"})
-    public String exportPdf(
-            @PathVariable String storageId
-    ) throws IOException {
-            var cardData = load(storageId);
-        return orderingService.exportCardToPdf(cardData);
-
     }
 
     @GetMapping(value = {"/load/{storageId}"}, produces = "application/octet-stream")

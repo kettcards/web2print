@@ -48,17 +48,16 @@ public class PriceController {
             var dom = Jsoup.parse(body);
             var ret = new OrderRefer(refUrl);
             //we just lookup the first form we found and use all valued attributes
-            dom.getElementsByTag("form").get(0).getAllElements().forEach(e -> {
+            dom.getElementsByTag("form").get(0).getElementsByTag("input").forEach(e -> {
                 var name = e.attr("name");
                 var value = e.attr("value");
                 if (!name.isEmpty() && !value.isEmpty()) {
-                    //System.out.println("name : " + name + ", value : " + value);
                     ret.getAttributes().put(name, value);
                 }
             });
             return ret;
         } catch (Exception ex) {
-            throw new HttpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE, "Bestellservice derzeit nicht verfügbar");
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Fehler im Bestellservice");
         }
     }
 }

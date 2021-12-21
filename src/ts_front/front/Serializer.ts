@@ -50,6 +50,8 @@ class Serializer {
         let txt = 'Daten erfolgreich gesendet!';
         if(!_export)
           txt += ` Sie befinden sich nun auf<br/><a href="${window.location}">${window.location}</a></br> Besuchen Sie diese Addresse später erneut wird das gespeicherte Design automatisch geladen.<br/>Die Addresse kann von jedem ge&ouml;ffnet werden, insofern er den link kennt!`;
+        else
+          txt += ' Sie können die Karte weiter bearbeiten, allerdings erhällt Kettcards Ihr Design in dem Zustand indem es war als Sie die Karte abgesendet haben.';
         Dialogs.loading.hide();
         Dialogs.alert.showHtml("Erfolg!", txt);
       }).catch(function(e) {

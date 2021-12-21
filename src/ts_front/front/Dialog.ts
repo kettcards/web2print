@@ -121,6 +121,7 @@ class ProgressDialog extends Dialog {
 class OrderDialog extends Dialog {
   $reqFields : JQuery<HTMLInputElement>;
   $submitBtn : JQuery;
+  $billingTableCover : JQuery;
 
   constructor() {
     super($('#order-dialog'));
@@ -130,7 +131,14 @@ class OrderDialog extends Dialog {
     this.$submitBtn = $ctrls.children('input[type="submit"]');
     this.$reqFields = this.$target.find<HTMLInputElement>('input[required]' as JQuery.Selector)
       .on('input', this._hFieldChanged.bind(this))
-      .after(make('span.req-marker', makeT('*')));
+      .after(make('span.req-marker', makeT('*')))
+    this._hFieldChanged(); // fixes autofill on startup not triggering validation
+    this.$billingTableCover = $('#billing-table-cover')
+    $<HTMLInputElement>('#check-billing-addr-differs')
+      .change(function(e) {
+        this.$billingTableCover.toggleClass('show', e.target.checked);
+      }.bind(this))
+      [0].checked = false;
   }
 
   private _hFieldChanged() : void {
@@ -143,6 +151,16 @@ class OrderDialog extends Dialog {
     }
 
     this.$submitBtn.prop('disabled', disabled);
+  }
+
+  protected _show() {
+    super._show();
+    if(web2print.ref_data) return;
+    $.get(`${web2print.links.apiUrl}order-ref/${Parameters.card}`)
+      .done(function(data) { web2print.ref_data = data; })
+      .fail(function(err) {
+        Dialogs.alert.showErrorHtml("Preisinformationen konnten nicht abgerufen werden.<br />Sie können diese Karte zur Zeit leider nicht bestellen.<br />Bitte versuchen Sie es zu einem späteren Zeitpunkt erneut oder kontaktieren Sie Kettcards.", "cant load price", err);
+      });
   }
 
   private _submit(e : JQuery.SubmitEvent) : void {
@@ -159,6 +177,12 @@ class OrderDialog extends Dialog {
     for(const entry of array) {
       data[entry.name] = entry.value;
     }
+    if(!web2print.ref_data) {
+      Dialogs.alert.showError("Preisdaten wurden noch nicht von Kettcards geladen, leider ist eine Anfrage noch nicht möglich.");
+      return;
+    }
+    Object.assign(data, web2print.ref_data.attributes);
+
     this._hide();
     Serializer.submit(true, data);
   }

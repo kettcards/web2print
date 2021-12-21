@@ -46,7 +46,7 @@ public final class OrderingService extends StorageContextAware {
      * @param rawData base64 encoded json card data string
      * @throws IOException if pdf creation was unsuccessful
      */
-    public void exportCard(String rawData, String rawAdditionalData) throws IOException, MessagingException {
+    public void exportCard(String rawData, String internal_storage_id, String rawAdditionalData) throws IOException, MessagingException {
         var cardData = jsonMapper.readValue(decode(rawData), CardData.class);
         var additionalData = jsonMapper.readValue(decode(rawAdditionalData), OrderFormData.class);
 
@@ -59,22 +59,9 @@ public final class OrderingService extends StorageContextAware {
             fileName = save(new Content(new ByteArrayResource(inMemPdf), "application/pdf", "generated.pdf"));
         }
 
-        mailService.sendInternalMail(additionalData, new ByteArrayResource(inMemPdf), fileName);
+
+        mailService.sendInternalMail(additionalData, new ByteArrayResource(inMemPdf), fileName, internal_storage_id);
         mailService.sendUserMail(additionalData);
-    }
-
-    public String exportCardToPdf(String cardId) throws IOException {
-        var cardData = jsonMapper.readValue(decode(cardId), CardData.class);
-        return exportCardToPdf(cardData);
-    }
-
-    public String exportCardToPdf(CardData cardData) throws IOException {
-
-        try (PDDocument generate = generator.generate(cardData)) {
-            var stream = new ByteArrayOutputStream();
-            generate.save(stream);
-            return save(new Content(new ByteArrayResource(stream.toByteArray()), "application/pdf", "generated.pdf"));
-        }
     }
 
     private byte[] decode(String rawData) {

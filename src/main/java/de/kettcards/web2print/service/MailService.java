@@ -49,9 +49,12 @@ public class MailService {
         }
     }
 
-    public void sendInternalMail(OrderFormData data, Resource pdf, String fileName) throws MessagingException, IOException {
+    public void sendInternalMail(OrderFormData data, Resource pdf, String fileName, String internal_storage_id) throws MessagingException, IOException {
+        String internal_link = config.getLinks().getBaseUrl()+config.getLinks().getBasePath()
+            +"front/front.html?card="+data.getNummer()+"&sId="+internal_storage_id;
         var text = substituteTokens(internalTemplate, data)
-            .replace("${filename}", fileName);
+            .replace("${filename}", fileName)
+            .replace("${internal_copy_link}", internal_link.replace("//","/"));
 
         var mail = prepareMail(config.getMail().getRecipient(), "Neue Anfrage", text, pdf, fileName);
 

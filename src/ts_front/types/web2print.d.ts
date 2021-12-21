@@ -13,6 +13,10 @@ type Web2print = {
     maxFileSize : number;
     maxRequestSize : number;
   };
+  ref_data : {
+    attributes : {};
+    referUrl   : string;
+  };
 };
 
 declare const web2print : Web2print;
