@@ -46,9 +46,9 @@ public final class OrderingService extends StorageContextAware {
      * @param rawData base64 encoded json card data string
      * @throws IOException if pdf creation was unsuccessful
      */
-    public void exportCard(String rawData, String internal_storage_id, String rawAdditionalData) throws IOException, MessagingException {
+    public String exportCard(String rawData, String internal_storage_id, String rawAdditionalData) throws IOException, MessagingException {
         var cardData = jsonMapper.readValue(decode(rawData), CardData.class);
-        var additionalData = jsonMapper.readValue(decode(rawAdditionalData), OrderFormData.class);
+        //var additionalData = jsonMapper.readValue(decode(rawAdditionalData), OrderFormData.class);
 
         byte[] inMemPdf;
         String fileName;
@@ -59,9 +59,10 @@ public final class OrderingService extends StorageContextAware {
             fileName = save(new Content(new ByteArrayResource(inMemPdf), "application/pdf", "generated.pdf"));
         }
 
-
-        mailService.sendInternalMail(additionalData, new ByteArrayResource(inMemPdf), fileName, internal_storage_id);
-        mailService.sendUserMail(additionalData);
+        // NOTE(Rennorb): as per kettcards request, this is handled by them
+        // mailService.sendInternalMail(additionalData, new ByteArrayResource(inMemPdf), fileName, internal_storage_id);
+        // mailService.sendUserMail(additionalData);
+        return fileName;
     }
 
     private byte[] decode(String rawData) {

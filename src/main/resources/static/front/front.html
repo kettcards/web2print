@@ -155,92 +155,18 @@
           <progress id="prog-bar" value="0" max="1">%</progress>
         </div>
       </div>
-      <form autocomplete="on">
-        <div class="dialog center" id="order-dialog" style="visibility: collapse;">
-          <h2 class="dialog-title">Anfrage abschicken</h2>
-          <div class="spacer"></div>
-          <div class="dialog-body">
-            <fieldset id="order-dialog-p1">
-              <span>Gerne machen wir Ihnen ein Angebot, daf&uuml;r brauchen wir noch einige Informationen:</span>
-              <h4>Sie sind...?</h4>
-              <table>
-                <tr>
-                  <td><input type="radio" name="kdtyp" value="p" id="radio_kdtype_p" checked="checked"><label for="radio_kdtype_p">Privatkunde</label></td>
-                  <td>(= Verbraucher)</td>
-                </tr>
-                <tr>
-                  <td><input type="radio" name="kdtyp" value="p" id="radio_kdtype_g"><label for="radio_kdtype_g">Gesch&auml;ftskunde</label></td>
-                  <td>(= Unternehmer)</td>
-                </tr>
-              </table>
-              <h4><span>Die gewünschte</span><br />Anzahl<br /><span>&nbsp;an Karten</span></h4>
-              <input type="number" name="amount" min="1" value="1" autocomplete="off" />
-            </fieldset>
-            <div class="spacer"></div>
-            <fieldset id="order-dialog-p2">
-              <h4><span>und</span><br />Ihre Lieferanschrift</h4>
-              <table>
-                <tr>
-                  <td><input type="text" name="fname" placeholder="Vorname" required autocomplete="given-name" /></td>
-                  <td><input type="text" name="lname" placeholder="Nachname" required autocomplete="family-name" /></td>
-                </tr>
-                <tr>
-                  <td colspan="2"><input type="email" name="email" placeholder="E-Mail" required autocomplete="email" /></td>
-                </tr>
-                <tr>
-                  <td colspan="2"><input type="text" name="address" placeholder="Stra&szlig;e Hausnummer" autocomplete="street-address" /></td>
-                </tr>
-                <tr>
-                  <td><input type="text" name="postal" placeholder="PLZ" autocomplete="postal-code" /></td>
-                  <td><input type="text" name="region" placeholder="Ort" autocomplete="address-level2" /></td>
-                </tr>
-                <tr>
-                  <td colspan="2"><input type="text" name="company" placeholder="Firma" /></td>
-                </tr>
-                <tr>
-                  <td colspan="2"><input type="tel" name="phone" placeholder="Telefonnummer" autocomplete="tel" /></td>
-                </tr>
-              </table>
-            </fieldset>
-            <fieldset id="order-dialog-bill">
-              <h4><span>unterscheidet sich diese von der</span><br />Rechnungsanschrift?</h4>
-              <input type="checkbox" id="check-billing-addr-differs" name="billing_differs" value="true"><label for="check-billing-addr-differs">andere Rechnungsanschrift</label>
-              <div id="billing-table-cover">
-                <table>
-                  <tr>
-                    <td><input type="text" name="b_fname" placeholder="Vorname" autocomplete="given-name" /></td>
-                    <td><input type="text" name="b_lname" placeholder="Nachname" autocomplete="family-name" /></td>
-                  </tr>
-                  <tr>
-                    <td colspan="2"><input type="text" name="b_address" placeholder="Stra&szlig;e Hausnummer" autocomplete="street-address" /></td>
-                  </tr>
-                  <tr>
-                    <td><input type="text" name="b_postal" placeholder="PLZ" autocomplete="postal-code" /></td>
-                    <td><input type="text" name="b_region" placeholder="Ort" autocomplete="address-level2" /></td>
-                  </tr>
-                  <tr>
-                    <td colspan="2"><input type="text" name="b_company" placeholder="Firma" /></td>
-                  </tr>
-                  <tr>
-                    <td colspan="2"><input type="tel" name="b_phone" placeholder="Telefonnummer" autocomplete="tel" /></td>
-                  </tr>
-                </table>
-              </div>
-            </fieldset>
-            <div class="spacer"></div>
-            <fieldset id="order-dialog-p3">
-              <span>Wenn Sie m&ouml;chten ist hier Platz f&uuml;r</span>
-              <h4 style="margin-top: 5px">zus&auml;tzliche Informationen</h4>
-              <textarea name="additional" autocomplete="off"></textarea>
-            </fieldset>
-          </div>
-          <div class="spacer"></div>
-          <div class="dialog-ctrls">
-            <button type="button" class="close-btn">Abbrechen</button>
-            <input type="submit" value="Senden" disabled>
-          </div>
+      <div class="dialog center" id="order-dialog" style="visibility: collapse;">
+        <h2 class="dialog-title">Anfrage abschicken</h2>
+        <div class="spacer"></div>
+        <div class="dialog-body">
+          <span>Gerne machen wir Ihnen ein Angebot, dafür werden Sie wieder zu Kettcards zurück geleitet.</span>
         </div>
-      </form>
+        <div class="spacer"></div>
+        <div class="dialog-ctrls">
+          <button type="button" id="order-btn-ok">Weiter</button>
+          <button type="button" class="close-btn">Abbrechen</button>
+        </div>
+      </div>
       <div class="dialog center" id="loading-dialog" style="visibility: collapse;">
         <h2 class="dialog-title">Bitte warten...</h2>
         <div class="spacer"></div>

@@ -8,14 +8,11 @@ type Web2print = {
          fontUrl : string;
           apiUrl : string;
      redirectUrl : string;
+        orderUrl : string;
   };
   editorConfiguration: {
     maxFileSize : number;
     maxRequestSize : number;
-  };
-  ref_data : {
-    attributes : {};
-    referUrl   : string;
   };
 };
 

@@ -31,8 +31,14 @@ type BoundingBox = {
   h : number;
 };
 
+type export_response = {
+  sId : string;
+  iId : string;
+  fp  : string;
+};
+
 class Serializer {
-  static submit(_export : boolean, additionalData ?: any) : void {
+  static submit(_export : boolean, additionalData ?: any) {
     Dialogs.loading.show();
     const data = Serializer.serialize();
 
@@ -43,10 +49,14 @@ class Serializer {
       postData += "&form="+btoa(JSON.stringify(additionalData));
     }
 
-    $.post(`${web2print.links.apiUrl}save/${Parameters.sId || ''}?export=${_export}`, postData)
+    return $.post(`${web2print.links.apiUrl}save/${Parameters.sId || ''}?export=${_export}`, postData)
       .then(function(response : string) {
-        Parameters.sId = response;
-        window.history.replaceState({}, Editor.storage.loadedCard.name+" - Web2Print", stringifyParameters());
+        let export_data : export_response;
+        if(_export)
+          Parameters.sId = (export_data = JSON.parse(response) as export_response).sId;
+        else
+          Parameters.sId = response as string;
+        window.history.replaceState({}, Editor.storage.loadedCard.name+" - Web2Print", stringifyParameters(Parameters));
         let txt = 'Daten erfolgreich gesendet!';
         if(!_export)
           txt += ` Sie befinden sich nun auf<br/><a href="${window.location}">${window.location}</a></br> Besuchen Sie diese Addresse später erneut wird das gespeicherte Design automatisch geladen.<br/>Die Addresse kann von jedem ge&ouml;ffnet werden, insofern er den link kennt!`;
@@ -54,6 +64,8 @@ class Serializer {
           txt += ' Sie können die Karte weiter bearbeiten, allerdings erhällt Kettcards Ihr Design in dem Zustand indem es war als Sie die Karte abgesendet haben.';
         Dialogs.loading.hide();
         Dialogs.alert.showHtml("Erfolg!", txt);
+        if(_export)
+          return export_data;
       }).catch(function(e) {
         Dialogs.loading.hide();
         Dialogs.alert.showErrorHtml(`<p>Fehler beim Senden der Daten:</p><code>${JSON.stringify(e)}</code>`, "error while sending data: ", e);
@@ -131,7 +143,7 @@ class Serializer {
       delete Parameters.sId;
     }
 
-    window.history.replaceState({}, Editor.storage.loadedCard.name+" - Web2Print", stringifyParameters());
+    window.history.replaceState({}, Editor.storage.loadedCard.name+" - Web2Print", stringifyParameters(Parameters));
 
     Serializer.loadElements(data);
   }

@@ -1,8 +1,8 @@
 type ParametersObj = { [p: string]: string | 'no_value'; }
 
-function stringifyParameters() : string {
+function stringifyParameters(parameters : ParametersObj) : string {
   let s = '?';
-  for(const [k, v] of Object.entries(Parameters)) {
+  for(const [k, v] of Object.entries(parameters)) {
     if(s.length > 2)
       s += '&';
     s += k + '=' + v;

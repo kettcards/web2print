@@ -40,9 +40,6 @@ dependencies {
 
 	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-	implementation group: 'org.jsoup', name: 'jsoup', version: '1.13.1'
-
-
 	//db
 	runtimeOnly 'org.hsqldb:hsqldb'
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'

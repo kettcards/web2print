@@ -32,13 +32,13 @@ public final class SaveController {
             @RequestParam(required = false) String form
     ) throws IOException, ParseException, MessagingException {
         if (export.equals("true")) {
-            storageId = userLayoutService.storeCard(null, cardData);
-            var internal_storageId = userLayoutService.storeCard(null, cardData);
-            orderingService.exportCard(cardData, internal_storageId, form);
-        } else {
             storageId = userLayoutService.storeCard(storageId, cardData);
+            var internal_storageId = userLayoutService.storeCard(null, cardData);
+            var file_path = orderingService.exportCard(cardData, internal_storageId, form);
+            return "{\"sId\":\""+storageId+"\",\"iId\":\""+internal_storageId+"\",\"fp\":\""+file_path+"\"}";
+        } else {
+            return userLayoutService.storeCard(storageId, cardData);
         }
-        return storageId;
     }
 
     @GetMapping(value = {"/load/{storageId}"}, produces = "application/octet-stream")

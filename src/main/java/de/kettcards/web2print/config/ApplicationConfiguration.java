@@ -59,6 +59,9 @@ public class ApplicationConfiguration {
         @JsonView(Include.Public.class)
         private String redirectUrl;
 
+        @JsonView(Include.Public.class)
+        private String orderUrl;
+
     }
 
     @Data

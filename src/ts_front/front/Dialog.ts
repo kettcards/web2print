@@ -119,72 +119,32 @@ class ProgressDialog extends Dialog {
 }
 
 class OrderDialog extends Dialog {
-  $reqFields : JQuery<HTMLInputElement>;
-  $submitBtn : JQuery;
-  $billingTableCover : JQuery;
-
   constructor() {
     super($('#order-dialog'));
     const $ctrls = this._attach();
-    this.$target.parent().submit(this._submit.bind(this));
 
-    this.$submitBtn = $ctrls.children('input[type="submit"]');
-    this.$reqFields = this.$target.find<HTMLInputElement>('input[required]' as JQuery.Selector)
-      .on('input', this._hFieldChanged.bind(this))
-      .after(make('span.req-marker', makeT('*')))
-    this._hFieldChanged(); // fixes autofill on startup not triggering validation
-    this.$billingTableCover = $('#billing-table-cover')
-    $<HTMLInputElement>('#check-billing-addr-differs')
-      .change(function(e) {
-        this.$billingTableCover.toggleClass('show', e.target.checked);
-      }.bind(this))
-      [0].checked = false;
+    $ctrls.find<HTMLButtonElement>('#order-btn-ok' as JQuery.Selector)
+      .click(this._submit.bind(this));
   }
 
-  private _hFieldChanged() : void {
-    let disabled = false;
-    for(let i = 0; i < this.$reqFields.length; i++) {
-      if(this.$reqFields[i].value === '') {
-        disabled = true;
-        break;
-      }
-    }
-
-    this.$submitBtn.prop('disabled', disabled);
-  }
-
-  protected _show() {
-    super._show();
-    if(web2print.ref_data) return;
-    $.get(`${web2print.links.apiUrl}order-ref/${Parameters.card}`)
-      .done(function(data) { web2print.ref_data = data; })
-      .fail(function(err) {
-        Dialogs.alert.showErrorHtml("Preisinformationen konnten nicht abgerufen werden.<br />Sie können diese Karte zur Zeit leider nicht bestellen.<br />Bitte versuchen Sie es zu einem späteren Zeitpunkt erneut oder kontaktieren Sie Kettcards.", "cant load price", err);
-      });
-  }
-
-  private _submit(e : JQuery.SubmitEvent) : void {
-    e.preventDefault();
-
-    const form = e.target as HTMLFormElement;
-    if(!form.checkValidity()) {
-      Dialogs.alert.showHtml("Ungültige Daten", "Bitte tragen Sie g&uuml;ltige Datein ein!");
-      return;
-    }
-
-    const array = $(e.target).serializeArray();
-    const data = {};
-    for(const entry of array) {
-      data[entry.name] = entry.value;
-    }
-    if(!web2print.ref_data) {
-      Dialogs.alert.showError("Preisdaten wurden noch nicht von Kettcards geladen, leider ist eine Anfrage noch nicht möglich.");
-      return;
-    }
-    Object.assign(data, web2print.ref_data.attributes);
+  private _submit() : void {
+    let { sId, ...parameters } = Parameters;
+    let { card, ...data } = parameters as ParametersObj;
 
     this._hide();
-    Serializer.submit(true, data);
+    Serializer.submit(true)
+      .then(function(r) {
+        const response = r as unknown as export_response;
+        const form = $<HTMLFormElement>(`<field action="${web2print.links.orderUrl}" method="post">`);
+        for(const [key, value] of Object.entries(data))
+          form.append(`<input type="hidden" name="${key}" value="${value}">`);
+
+        parameters.sId = response.iId;
+        const internal_link = `${window.location.href.substr(0, window.location.href.indexOf('?'))}${stringifyParameters(parameters)}`;
+        form.append(`<input type="hidden" name="w2p_href" value="${internal_link}">`)
+            .append(`<input type="hidden" name="w2p_link" value="${response.fp}">`)
+            .submit();
+      });
   }
 }
 

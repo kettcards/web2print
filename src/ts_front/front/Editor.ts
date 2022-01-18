@@ -54,7 +54,7 @@ class Editor {
       throw new Error("Keine Karte ausgewählt.");
 
     console.log('loading', card);
-    window.history.replaceState({}, card.name+" - Web2Print", stringifyParameters());
+    window.history.replaceState({}, card.name+" - Web2Print", stringifyParameters(Parameters));
 
     document.querySelector<HTMLInputElement>('#preview-container>img').src
       = web2print.links.thumbnailUrl+card.thumbSlug;

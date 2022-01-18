@@ -33,7 +33,6 @@ class Fonts {
       Fonts.beginLoadFont(fName);
     }
 
-    console.log();
     const fontOptions = document.getElementById("font-options");
     fontOptions.style.minWidth = "0";
     fontOptions.style.width = document.getElementById("font-select").offsetWidth + "px";
