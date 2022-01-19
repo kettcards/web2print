@@ -58,15 +58,23 @@ class Editor {
 
     document.querySelector<HTMLInputElement>('#preview-container>img').src
       = web2print.links.thumbnailUrl+card.thumbSlug;
+    document.querySelector('#card-id-label').textContent = Parameters.card;
 
     for(let i = 0; i < RenderStyles.length; i++) {
       const renderStyle = RenderStyles[i];
       if(!renderStyle.condition(card))
         continue;
-      const frag = make('button.render-select');
-      $(frag).text(renderStyle.name).attr('onclick', `UI.hRenderStyleBtnClick(${i});`);
+      const frag = make('p', makeT(renderStyle.name));
       get('render-styles-container').appendChild(frag);
     }
+    UI.viewSelect = new SelectEx($('#render-style-select-ex'), function(value) {
+      for(let i = 0; i < RenderStyles.length; i++) {
+        if(RenderStyles[i].name == value) {
+          UI.hRenderStyleBtnClick(i);
+          break;
+        }
+      }
+    });
 
     Editor.storage.loadedCard = card;
     Editor.fitToContainer();

@@ -15,6 +15,7 @@ class UI {
   static $fileUpBtn  = $<HTMLInputElement>('#file-upload')
     .change(ImageEl.hFileUploadChanged);
   static saveSelect  = new SelectEx($('#save-select-ex'));
+  static viewSelect : SelectEx | undefined = undefined;
   static $applyColor = $('#apply-color');
   static $fontSelect = $<HTMLDivElement>('#font-select')
     .mousedown(Editor.saveSelection)
@@ -242,6 +243,7 @@ $('body')
   .click(function() {
     Fonts.$options.css('visibility', 'collapse');
     UI.saveSelect.close();
+    UI.viewSelect.close();
   })
   .mousedown(function(e) {
     // (lucas 11.02.21) I know e.which is deprecated, but there is no suitable replacement as of now

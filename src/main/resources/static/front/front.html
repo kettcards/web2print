@@ -16,6 +16,22 @@
   </head>
   <body>
     <div id="horizontal-wrapper">
+      <div id="left-container">
+        <div id="preview-container">
+          <img alt="Vorschaubild fehlt" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" />
+        </div>
+        <span id="card-id-label">card_id</span>
+        <div id="view-ctrl-box">
+          <h3>Ansicht</h3>
+          <div id="render-style-select-ex" class="select-ex">
+            <p><span class="select-ex-label">mein Rechner</span><span class="select-ex-tick">V</span></p>
+            <div id="render-styles-container" class="select-ex-options" style="visibility: collapse;">
+            </div>
+          </div>
+          <button id="recenter-btn">Zentrieren</button>
+        </div>
+        <button id="dsgvo-btn" class="floater bottom" onclick="Dialogs.dsgvo.show();">Datenschutzerkl&auml;rung</button>
+      </div>
       <div id="editor-container">
         <div id="toolbar">
           <div class="toolbar-row" >
@@ -61,7 +77,6 @@
             <span class="toolbar-label">Sonstige Funktionen</span>
             <div class="toolbar-buttons">
               <button id="del-btn">Entfernen</button>
-              <button id="dsgvo-btn" onclick="Dialogs.dsgvo.show();">Datenschutzerkl&auml;rung</button>
               <button id="tutorial" onclick="Dialogs.tutorial.show();">Hilfe</button>
             </div>
           </div>
@@ -87,7 +102,6 @@
           </template>
           <div class="top floater">
             <span id="zoom-label">Zoom:&nbsp;<span id="zoom-val"></span>%</span>
-            <button id="recenter-btn">Zentrieren</button>
           </div>
           <div class="center">
             <div id="transform-anchor">
@@ -115,10 +129,7 @@
         </div>
       </div>
       <div id="right-container">
-        <div id="preview-container">
-          <img alt="Vorschaubild fehlt" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" />
-        </div>
-        <div id="render-styles-container"></div>
+        <img id="logo" src="https://www.kettcards.de/img/kettcards-logo.svg" alt="" />
         <div class="floater bottom no-select">
           <div class="lower-btn">
             <button id="upl-des-btn" onclick="$('#upl-des').trigger('click')">&Ouml;ffnen</button>
@@ -132,7 +143,7 @@
               </div>
             </div>
           </div>
-          <button id="submit-btn" class="lower-btn" onclick="Dialogs.order.show();">Anfrage senden</button>
+          <button id="submit-btn" class="lower-btn" onclick="Dialogs.order.show();">Zur Bestellung</button>
         </div>
       </div>
     </div>
@@ -156,7 +167,7 @@
         </div>
       </div>
       <div class="dialog center" id="order-dialog" style="visibility: collapse;">
-        <h2 class="dialog-title">Anfrage abschicken</h2>
+        <h2 class="dialog-title">Zur Bestellung</h2>
         <div class="spacer"></div>
         <div class="dialog-body">
           <span>Gerne machen wir Ihnen ein Angebot, dafür werden Sie wieder zu Kettcards zurück geleitet.</span>

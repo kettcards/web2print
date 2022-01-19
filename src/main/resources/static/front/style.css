@@ -23,15 +23,23 @@ body {
   flex-direction: column;
   flex-grow: 1;
   overflow: hidden;
-  background-color: #ffffee;
+  background-color: #e3e3e3;
 }
 
-#right-container {
+#right-container,
+#left-container {
   min-width: 10em;
   width: 20%;
   max-width: 300px;
-  background-color: lightgray;
+  background-color: #f7f7f7;
   position: relative;
+  text-align: center;
+}
+
+#logo {
+  display: inline-block;
+  width: 80%;
+  margin-top: 20px;
 }
 
 #preview-container {
@@ -47,13 +55,38 @@ body {
 #preview-container>img {
   position: absolute;
   width: 100%;
+  display: block;
 }
 #preview-container>img::before {
   position: absolute;
 }
 
-.render-select{
-  margin-left: 2px;
+#card-id-label {
+  margin: 2px 0 10px 0;
+  display: inline-block;
+}
+
+#view-ctrl-box {
+  box-sizing: border-box;
+  border: solid #003f73 thin;
+}
+#view-ctrl-box>h3 {
+  color: white;
+  background-color: #003f73;
+  margin: 0;
+  padding: 5px 0;
+}
+
+#dsgvo-btn {
+  display: block;
+  background-color: transparent;
+  color: initial;
+  border: none;
+}
+
+#recenter-btn {
+  display: block;
+  width: 100%;
 }
 
 .lower-btn {
@@ -221,10 +254,6 @@ body {
   perspective-origin: center bottom;
   position: relative;
   tab-index: 0;
-}
-
-#recenter-btn {
-  float: right;
 }
 
 .ruler {
