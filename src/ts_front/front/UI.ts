@@ -113,6 +113,8 @@ $('#save-btn').click(function() {
   }
 });
 
+$('#impress').attr('href', web2print.links.impressUrl);
+
 $('#del-btn')
   .mouseup(stopPropagation)
   .click(function () {

@@ -62,6 +62,8 @@ public class ApplicationConfiguration {
         @JsonView(Include.Public.class)
         private String orderUrl;
 
+        @JsonView(Include.Public.class)
+        private String impressUrl;
     }
 
     @Data

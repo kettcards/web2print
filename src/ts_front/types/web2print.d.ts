@@ -9,6 +9,7 @@ type Web2print = {
           apiUrl : string;
      redirectUrl : string;
         orderUrl : string;
+      impressUrl : string;
   };
   editorConfiguration: {
     maxFileSize : number;

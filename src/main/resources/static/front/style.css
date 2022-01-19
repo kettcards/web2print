@@ -77,11 +77,19 @@ body {
   padding: 5px 0;
 }
 
-#dsgvo-btn {
+#dsgvo-btn,
+#impress {
   display: block;
   background-color: transparent;
   color: initial;
   border: none;
+  width: 100%;
+  font-size: small;
+}
+#dsgvo-btn:hover,
+#impress:hover {
+  background-color: #003f73;
+  color: white;
 }
 
 #recenter-btn {
