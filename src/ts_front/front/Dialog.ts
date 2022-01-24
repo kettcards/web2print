@@ -135,15 +135,16 @@ class OrderDialog extends Dialog {
     Serializer.submit(true)
       .then(function(r) {
         const response = r as unknown as export_response;
-        const form = $<HTMLFormElement>(`<field action="${web2print.links.orderUrl}" method="post" target="_blank">`);
+        const form = $<HTMLFormElement>(`<form action="${web2print.links.orderUrl}" method="post" target="_blank">`);
         for(const [key, value] of Object.entries(data))
           form.append(`<input type="hidden" name="${key}" value="${value}">`);
 
         parameters.sId = response.iId;
         const internal_link = `${window.location.href.substr(0, window.location.href.indexOf('?'))}${stringifyParameters(parameters)}`;
         form.append(`<input type="hidden" name="w2p_href" value="${internal_link}">`)
-            .append(`<input type="hidden" name="w2p_link" value="${response.fp}">`)
-            .submit();
+            .append(`<input type="hidden" name="w2p_link" value="${response.fp}">`);
+        $(document.body).append(form);
+        form.submit();
       });
   }
 }
