@@ -3,6 +3,18 @@
 /// <reference path="./UI.ts" />
 /// <reference path="./Dialog.ts" />
 
+{
+  const required = ["preis", "artikel", "nummer", "format"];
+  for(const field of required)
+  {
+    if(!Parameters[field]) {
+      alert("In dem Link über welchen Sie den Editor aufgerufen haben fehlen relevante Informationen, sodass dieser ungültig ist.\nSie werden auf " + web2print.links.redirectUrl + ' weitergeleitet.');
+      location.href = web2print.links.redirectUrl;
+      break;
+    }
+  }
+}
+
 $.get(`${web2print.links.apiUrl}card/${Parameters.card}`)
   .then(Editor.loadCard)
   .catch(function() {

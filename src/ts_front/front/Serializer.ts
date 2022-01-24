@@ -59,9 +59,9 @@ class Serializer {
         window.history.replaceState({}, Editor.storage.loadedCard.name+" - Web2Print", stringifyParameters(Parameters));
         let txt = 'Daten erfolgreich gesendet!';
         if(!_export)
-          txt += ` Sie befinden sich nun auf<br/><a href="${window.location}">${window.location}</a></br> Besuchen Sie diese Addresse später erneut wird das gespeicherte Design automatisch geladen.<br/>Die Addresse kann von jedem ge&ouml;ffnet werden, insofern er den link kennt!`;
+          txt += ` Sie befinden sich nun auf<br/><a href="${window.location}">${window.location}</a></br> Besuchen Sie diese Adresse später erneut, wird das gespeicherte Layout automatisch geladen.<br/>Die Addresse kann von jedem ge&ouml;ffnet werden, insofern er den link kennt!<br /> Wenn wir es löschen sollen, geben Sie uns bitte Bescheid: <a href="mailto:info@kettcards.de">info@kettcards.de</a>`;
         else
-          txt += ' Sie können die Karte weiter bearbeiten, allerdings erhällt Kettcards Ihr Design in dem Zustand indem es war als Sie die Karte abgesendet haben.';
+          txt += ' Sie können die Karte weiter bearbeiten, allerdings erhält Kettcards Ihr Layout in dem Zustand wie Sie es gerade abgesendet haben.';
         Dialogs.loading.hide();
         Dialogs.alert.showHtml("Erfolg!", txt);
         if(_export)

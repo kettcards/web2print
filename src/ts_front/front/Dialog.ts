@@ -135,7 +135,7 @@ class OrderDialog extends Dialog {
     Serializer.submit(true)
       .then(function(r) {
         const response = r as unknown as export_response;
-        const form = $<HTMLFormElement>(`<field action="${web2print.links.orderUrl}" method="post">`);
+        const form = $<HTMLFormElement>(`<field action="${web2print.links.orderUrl}" method="post" target="_blank">`);
         for(const [key, value] of Object.entries(data))
           form.append(`<input type="hidden" name="${key}" value="${value}">`);
 

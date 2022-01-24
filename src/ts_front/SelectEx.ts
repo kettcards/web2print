@@ -26,10 +26,10 @@ class SelectEx {
         if(e.target.nodeName !== 'P')
           return;
 
-        if(onChange)
-          onChange(This.value);
         This.value = e.target.textContent;
         This.$label.text(This.value);
+        if(onChange)
+          onChange(This.value);
       });
   }
 
